@@ -23,17 +23,14 @@ public class Recipe {
 	
 	@OneToOne(/*cascade = CascadeType.ALL*/)
 	@JoinColumn(name = "id")
-	@Column(name = "username", nullable = false)
 	private User user;
 	
 	@OneToOne(/*cascade = CascadeType.ALL*/)
 	@JoinColumn(name = "id")
-	@Column(name = "id_trigger", nullable = false)
 	private Trigger trigger;
 	
 	@OneToOne(/*cascade = CascadeType.ALL*/)
 	@JoinColumn(name = "id")
-	@Column(name = "id_action", nullable = false)
 	private Action action;
 	
 	
