@@ -23,15 +23,15 @@ public class Recipe {
 	private Long groupId;
 	
 	@OneToOne(/*cascade = CascadeType.ALL*/)
-	@JoinColumn(name = "id")
+	@JoinColumn(name = "id_user")
 	private User user;
 	
 	@OneToOne(/*cascade = CascadeType.ALL*/)
-	@JoinColumn(name = "id")
+	@JoinColumn(name = "id_trigger")
 	private Trigger trigger;
 	
 	@OneToOne(/*cascade = CascadeType.ALL*/)
-	@JoinColumn(name = "id")
+	@JoinColumn(name = "id_action")
 	private Action action;
 	
 	

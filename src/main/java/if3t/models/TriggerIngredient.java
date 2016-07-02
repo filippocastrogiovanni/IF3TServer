@@ -21,12 +21,12 @@ public class TriggerIngredient {
 	
 	@NotNull
 	@ManyToOne
-	@JoinColumn(name="id")
+	@JoinColumn(name="id_recipe")
 	private Recipe recipe;
 	
 	@NotNull
 	@ManyToOne
-	@JoinColumn(name="id")
+	@JoinColumn(name="id_param")
 	private Parameter param;
 	
 	@Column(name = "param_value", nullable = false)

@@ -28,6 +28,10 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
     
+    private String email;
+    
+    private String timezone;
+    
     @Column(name = "enabled", nullable = false)
     private boolean enabled;
     
@@ -36,11 +40,11 @@ public class User {
     private Role role;
     
     @ManyToMany()
-    @JoinTable(name = "authorization", 
-    			joinColumns = @JoinColumn(name = "username", referencedColumnName = "id"), 
-    			inverseJoinColumns = @JoinColumn(name = "id_channel", referencedColumnName = "channelId"))
+    @JoinTable(name = "authorizations", 
+    			joinColumns = @JoinColumn(name = "id_user"), 
+    			inverseJoinColumns = @JoinColumn(name = "id_channel"))
     private Set<Channel> channels;
-
+    
 	/**
 	 * @return the id
 	 */
@@ -109,6 +113,34 @@ public class User {
 	 */
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	/**
+	 * @return the email
+	 */
+	public String getEmail() {
+		return email;
+	}
+
+	/**
+	 * @param email the email to set
+	 */
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	/**
+	 * @return the timezone
+	 */
+	public String getTimezone() {
+		return timezone;
+	}
+
+	/**
+	 * @param timezone the timezone to set
+	 */
+	public void setTimezone(String timezone) {
+		this.timezone = timezone;
 	}
 
 	/**

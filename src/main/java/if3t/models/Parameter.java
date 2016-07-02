@@ -21,7 +21,7 @@ public class Parameter {
 	
 	@NotNull
 	@ManyToOne
-	@JoinColumn(name="channelId")
+	@JoinColumn(name="id_channel")
 	private Channel channel;
 	
 	@NotNull
