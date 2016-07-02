@@ -1,18 +1,7 @@
 package if3t.controllers;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import if3t.services.UserService;
@@ -24,6 +13,7 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 	
+	/*
 	@RequestMapping(value="/bookings", method=RequestMethod.GET)
 	public List<Booking> getBookings() {
 		return bookingService.getBookings();
@@ -83,4 +73,5 @@ public class UserController {
 			}
 		}
 	}
+	*/
 }
