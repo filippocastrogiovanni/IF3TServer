@@ -9,7 +9,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.data.annotation.Id;
+import javax.persistence.Id;
 
 @Entity
 @Table(name="action_ingredients")
@@ -23,13 +23,11 @@ public class ActionIngredient {
 	@NotNull
 	@ManyToOne
 	@JoinColumn(name="id")
-	@Column(name = "id_recipe", nullable = false)
 	private Recipe recipe;
 	
 	@NotNull
 	@ManyToOne
 	@JoinColumn(name="id")
-	@Column(name = "id_param", nullable = false)
 	private Parameter param;
 	
 	@Column(name = "param_value", nullable = false)

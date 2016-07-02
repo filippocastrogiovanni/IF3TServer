@@ -10,8 +10,12 @@ import javax.validation.constraints.NotNull;
 public class User {
  
 	@Id
-    @Column(name = "username", nullable = false)
-    private String id;
+    @Column(name = "id_user", nullable = false)
+    private Long id;
+	
+	@NotNull
+	@Column(name = "username", nullable = false)
+	private String username;
 	
 	@NotNull
     @Column(name = "name", nullable = false)
@@ -36,6 +40,118 @@ public class User {
     			joinColumns = @JoinColumn(name = "username", referencedColumnName = "id"), 
     			inverseJoinColumns = @JoinColumn(name = "id_channel", referencedColumnName = "channelId"))
     private Set<Channel> channels;
+
+	/**
+	 * @return the id
+	 */
+	public Long getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	/**
+	 * @return the username
+	 */
+	public String getUsername() {
+		return username;
+	}
+
+	/**
+	 * @param username the username to set
+	 */
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * @return the surname
+	 */
+	public String getSurname() {
+		return surname;
+	}
+
+	/**
+	 * @param surname the surname to set
+	 */
+	public void setSurname(String surname) {
+		this.surname = surname;
+	}
+
+	/**
+	 * @return the password
+	 */
+	public String getPassword() {
+		return password;
+	}
+
+	/**
+	 * @param password the password to set
+	 */
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	/**
+	 * @return the enabled
+	 */
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	/**
+	 * @param enabled the enabled to set
+	 */
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	/**
+	 * @return the role
+	 */
+	public Role getRole() {
+		return role;
+	}
+
+	/**
+	 * @param role the role to set
+	 */
+	public void setRole(Role role) {
+		this.role = role;
+	}
+
+	/**
+	 * @return the channels
+	 */
+	public Set<Channel> getChannels() {
+		return channels;
+	}
+
+	/**
+	 * @param channels the channels to set
+	 */
+	public void setChannels(Set<Channel> channels) {
+		this.channels = channels;
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()

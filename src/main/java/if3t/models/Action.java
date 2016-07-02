@@ -10,7 +10,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.data.annotation.Id;
+import javax.persistence.Id;
 
 @Entity
 @Table(name="actions")
@@ -24,7 +24,6 @@ public class Action {
 	@NotNull
 	@ManyToOne
 	@JoinColumn(name="channelId")
-	@Column(name = "id_channel", nullable = false)
 	private Channel channel;
 	
 	@NotNull
@@ -46,7 +45,6 @@ public class Action {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
 
 	/**
 	 * @return the recipe
