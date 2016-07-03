@@ -6,7 +6,9 @@ import if3t.models.User;
 public interface UserRepository extends Repository<User, Long> {
 
 	public Iterable<User> findAll();
+	public User findOne(Long id);
 	public User findByUsername(String username);
-	public User save(User booking);
-	public void delete(User booking);
+	public User save(User user);
+	public void delete(User user);
+	public User findByEmail(String email);
 }

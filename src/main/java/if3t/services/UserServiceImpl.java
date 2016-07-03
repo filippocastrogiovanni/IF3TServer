@@ -18,4 +18,21 @@ public class UserServiceImpl implements UserService {
 		return userRepo.findByUsername(username);
 	}
 
+	public void addUser(User user) {
+		userRepo.save(user);
+	}
+
+	public void deleteUser(Long id) {
+		User user = userRepo.findOne(id);
+		userRepo.delete(user);
+	}
+
+	public void updateUser(User user) {
+		userRepo.save(user);
+	}
+
+	public User getUserByEmail(String email) {
+		return userRepo.findByEmail(email);
+	}
+
 }

@@ -35,6 +35,7 @@ public class RecipeController {
 	
 	@RequestMapping(value="/add_recipe", method=RequestMethod.POST)
 	public void addRecipe(@RequestBody Recipe recipe) {
+		//TODO check if the user has authorization for the channels of the recipe
 		recipeService.addRecipe(recipe);;
 	}
 	
