@@ -7,4 +7,5 @@ import if3t.models.Channel;
 public interface ChannelRespository extends Repository<Channel, Long> {
 
 	public Iterable<Channel> findAll();
+	public Channel findOne(Long id);
 }

@@ -19,7 +19,7 @@ public class Recipe {
 	private Long id;
 	
 	@Column(name = "id_group", nullable = false)
-	private Long groupId;
+	private String groupId;
 	
 	@OneToOne(/*cascade = CascadeType.ALL*/)
 	@JoinColumn(name = "id_user")
@@ -59,14 +59,14 @@ public class Recipe {
 	/**
 	 * @return the groupId
 	 */
-	public Long getGroupId() {
+	public String getGroupId() {
 		return groupId;
 	}
 
 	/**
 	 * @param groupId the groupId to set
 	 */
-	public void setGroupId(Long groupId) {
+	public void setGroupId(String groupId) {
 		this.groupId = groupId;
 	}
 
