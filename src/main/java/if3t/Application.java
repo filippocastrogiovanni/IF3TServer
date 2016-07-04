@@ -15,10 +15,10 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
     
-    /*@CrossOrigin
+    @CrossOrigin
     @RequestMapping(value="/user")
     public Principal user(Principal user) {
     	return user;
-    }*/
+    }
     
 } 
