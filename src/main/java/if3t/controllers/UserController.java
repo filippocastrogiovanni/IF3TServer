@@ -3,6 +3,7 @@ package if3t.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +31,7 @@ public class UserController {
 		}
 		//TODO fare controlli su user
 		//TODO salvare la password come hash
+		u.setPassword(new BCryptPasswordEncoder().encode(u.getPassword()));
 		userService.addUser(u);
 	}
 
