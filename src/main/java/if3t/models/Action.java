@@ -32,9 +32,6 @@ public class Action {
 	@NotNull
 	private String paragraph;
 	
-	@NotNull
-	private String extra_element;
-	
 	@OneToOne(mappedBy = "action")
 	private Recipe recipe;
 
@@ -70,14 +67,6 @@ public class Action {
 		this.paragraph = paragraph;
 	}
 
-	public String getExtra_element() {
-		return extra_element;
-	}
-
-	public void setExtra_element(String extra_element) {
-		this.extra_element = extra_element;
-	}
-
 	public Recipe getRecipe() {
 		return recipe;
 	}
@@ -90,7 +79,6 @@ public class Action {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((extra_element == null) ? 0 : extra_element.hashCode());
 		result = prime * result + ((header == null) ? 0 : header.hashCode());
 		result = prime * result + ((paragraph == null) ? 0 : paragraph.hashCode());
 		return result;
@@ -105,11 +93,6 @@ public class Action {
 		if (getClass() != obj.getClass())
 			return false;
 		Action other = (Action) obj;
-		if (extra_element == null) {
-			if (other.extra_element != null)
-				return false;
-		} else if (!extra_element.equals(other.extra_element))
-			return false;
 		if (header == null) {
 			if (other.header != null)
 				return false;
@@ -124,5 +107,4 @@ public class Action {
 	}
 
 
-	
 }
