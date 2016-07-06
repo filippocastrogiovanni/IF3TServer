@@ -7,11 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import if3t.models.Action;
 import if3t.models.Channel;
-import if3t.models.Parameter;
+import if3t.models.ParametersActions;
+import if3t.models.ParametersTriggers;
 import if3t.models.Trigger;
 import if3t.repositories.ActionRepository;
 import if3t.repositories.ChannelRespository;
-import if3t.repositories.ParamRepository;
+import if3t.repositories.ParametersActionsRepository;
+import if3t.repositories.ParametersTriggersRepository;
 import if3t.repositories.TriggerRepository;
 
 @Service
@@ -25,7 +27,9 @@ public class CreateRecipeServiceImpl implements CreateRecipeService {
 	@Autowired
 	private TriggerRepository triggerRepository;
 	@Autowired
-	private ParamRepository paramRepository;
+	private ParametersTriggersRepository parametersTriggersRepository;
+	@Autowired
+	private ParametersActionsRepository parametersActionsRepository;
 	
 	public List<Channel> readChannels() {
 		List<Channel> channels = new ArrayList<Channel>();
@@ -58,13 +62,22 @@ public class CreateRecipeServiceImpl implements CreateRecipeService {
 		return triggerRepository.findOne(id);
 	}
 
-	public List<Parameter> readChannelParameters(Long channelId) {
+	public List<ParametersTriggers> readChannelParametersTriggers(Long channelId) {
 		Channel channel = channelRepository.findOne(channelId);
-		return paramRepository.findByChannel(channel);
+		return parametersTriggersRepository.findByChannel(channel);
+	}
+	
+	public List<ParametersActions> readChannelParametersActions(Long channelId) {
+		Channel channel = channelRepository.findOne(channelId);
+		return parametersActionsRepository.findByChannel(channel);
 	}
 
-	public Parameter readParameter(Long id) {
-		return paramRepository.findOne(id);
+	public ParametersTriggers readParameterTrigger(Long id) {
+		return parametersTriggersRepository.findOne(id);
+	}
+	
+	public ParametersActions readParameterAction(Long id) {
+		return parametersActionsRepository.findOne(id);
 	}
 
 }

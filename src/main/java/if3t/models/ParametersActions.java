@@ -11,8 +11,8 @@ import javax.validation.constraints.NotNull;
 import javax.persistence.Id;
 
 @Entity
-@Table(name="parameters")
-public class Parameter {
+@Table(name="parameters_actions")
+public class ParametersActions {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,8 +29,8 @@ public class Parameter {
 	private String name;
 	
 	@NotNull
-	@Column(name = "types", nullable = false)
-	private Byte type;
+	@Column(name = "type", nullable = false)
+	private String type;
 
 	/**
 	 * @return the id
@@ -77,47 +77,35 @@ public class Parameter {
 	/**
 	 * @return the type
 	 */
-	public Byte getType() {
+	public String getType() {
 		return type;
 	}
 
 	/**
 	 * @param type the type to set
 	 */
-	public void setType(Byte type) {
+	public void setType(String type) {
 		this.type = type;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((channel == null) ? 0 : channel.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (!(obj instanceof Parameter))
+		if (getClass() != obj.getClass())
 			return false;
-		Parameter other = (Parameter) obj;
-		if (channel == null) {
-			if (other.channel != null)
-				return false;
-		} else if (!channel.equals(other.channel))
-			return false;
+		ParametersActions other = (ParametersActions) obj;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -130,6 +118,7 @@ public class Parameter {
 			return false;
 		return true;
 	}
+
 
 	
 }

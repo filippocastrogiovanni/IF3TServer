@@ -27,7 +27,7 @@ public class TriggerIngredient {
 	@NotNull
 	@ManyToOne
 	@JoinColumn(name="id_param")
-	private Parameter param;
+	private ParametersTriggers param;
 	
 	@Column(name = "param_value", nullable = false)
 	private String value;
@@ -63,14 +63,14 @@ public class TriggerIngredient {
 	/**
 	 * @return the param
 	 */
-	public Parameter getParam() {
+	public ParametersTriggers getParam() {
 		return param;
 	}
 
 	/**
 	 * @param param the param to set
 	 */
-	public void setParam(Parameter param) {
+	public void setParam(ParametersTriggers param) {
 		this.param = param;
 	}
 

@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import if3t.models.Action;
 import if3t.models.Channel;
-import if3t.models.Parameter;
+import if3t.models.ParametersActions;
+import if3t.models.ParametersTriggers;
 import if3t.models.Trigger;
 import if3t.services.CreateRecipeService;
 
@@ -50,13 +51,23 @@ public class CreateRecipeController {
 		return createRecipeService.readChannelTriggers(channelId);
 	}
 	
-	@RequestMapping(value="/param/{id}", method=RequestMethod.GET)
-	public Parameter getParameter(@PathVariable Long id) {
-		return createRecipeService.readParameter(id);
+	@RequestMapping(value="/parameter_trigger/{id}", method=RequestMethod.GET)
+	public ParametersTriggers getParameterTrigger(@PathVariable Long id) {
+		return createRecipeService.readParameterTrigger(id);
 	}
 	
-	@RequestMapping(value="/params/{channelId}", method=RequestMethod.GET)
-	public List<Parameter> getChannelParameters(@PathVariable Long channelId) {
-		return createRecipeService.readChannelParameters(channelId);
+	@RequestMapping(value="/parameters_triggers/{channelId}", method=RequestMethod.GET)
+	public List<ParametersTriggers> getChannelParametersTriggers(@PathVariable Long channelId) {
+		return createRecipeService.readChannelParametersTriggers(channelId);
+	}
+	
+	@RequestMapping(value="/parameter_action/{id}", method=RequestMethod.GET)
+	public ParametersActions getParameterAction(@PathVariable Long id) {
+		return createRecipeService.readParameterAction(id);
+	}
+	
+	@RequestMapping(value="/parameters_actions/{channelId}", method=RequestMethod.GET)
+	public List<ParametersActions> getChannelParametersActions(@PathVariable Long channelId) {
+		return createRecipeService.readChannelParametersActions(channelId);
 	}
 }
