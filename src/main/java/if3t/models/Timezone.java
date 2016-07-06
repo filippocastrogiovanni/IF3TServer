@@ -1,9 +1,12 @@
 package if3t.models;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 
 public class Timezone {
@@ -23,6 +26,10 @@ public class Timezone {
 	@NotNull
 	@Column(name = "timezone_value", nullable = false)
 	private int timezone_value;
+	
+	@NotNull
+	@OneToMany(mappedBy = "users")
+	public List<User> users;
 
 	public Long getId() {
 		return id;
