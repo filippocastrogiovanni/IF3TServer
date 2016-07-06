@@ -25,6 +25,10 @@ public class ParametersTriggers {
 	private Channel channel;
 	
 	@NotNull
+	@Column(name = "id_group", nullable = false)
+	private String id_group;
+	
+	@NotNull
 	@Column(name = "name", nullable = false)
 	private String name;
 	
@@ -32,58 +36,42 @@ public class ParametersTriggers {
 	@Column(name = "type", nullable = false)
 	private String type;
 
-	/**
-	 * @return the id
-	 */
 	public Long getId() {
 		return id;
 	}
 
-	/**
-	 * @param id the id to set
-	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	/**
-	 * @return the channel
-	 */
 	public Channel getChannel() {
 		return channel;
 	}
 
-	/**
-	 * @param channel the channel to set
-	 */
 	public void setChannel(Channel channel) {
 		this.channel = channel;
 	}
 
-	/**
-	 * @return the name
-	 */
+	public String getId_group() {
+		return id_group;
+	}
+
+	public void setId_group(String id_group) {
+		this.id_group = id_group;
+	}
+
 	public String getName() {
 		return name;
 	}
 
-	/**
-	 * @param name the name to set
-	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	/**
-	 * @return the type
-	 */
 	public String getType() {
 		return type;
 	}
 
-	/**
-	 * @param type the type to set
-	 */
 	public void setType(String type) {
 		this.type = type;
 	}
@@ -92,6 +80,7 @@ public class ParametersTriggers {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((id_group == null) ? 0 : id_group.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
@@ -106,6 +95,11 @@ public class ParametersTriggers {
 		if (getClass() != obj.getClass())
 			return false;
 		ParametersTriggers other = (ParametersTriggers) obj;
+		if (id_group == null) {
+			if (other.id_group != null)
+				return false;
+		} else if (!id_group.equals(other.id_group))
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
