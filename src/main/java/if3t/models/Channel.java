@@ -22,6 +22,9 @@ public class Channel {
 	
 	@NotNull
 	private String name;
+	
+	@NotNull
+	private String image_url;
 
 	@ManyToMany(mappedBy = "channels")
 	private Set<User> users;

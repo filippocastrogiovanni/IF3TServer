@@ -29,9 +29,7 @@ public class User {
     private String password;
     
     private String email;
-    
-    private String timezone;
-    
+       
     @Column(name = "enabled", nullable = false)
     private boolean enabled;
     
@@ -45,184 +43,142 @@ public class User {
     			inverseJoinColumns = @JoinColumn(name = "id_channel"))
     private Set<Channel> channels;
     
-	/**
-	 * @return the id
-	 */
+	@NotNull
+	@ManyToOne
+	@JoinColumn(name="id_timezone")
+	private Timezone timezone;
+
 	public Long getId() {
 		return id;
 	}
 
-	/**
-	 * @param id the id to set
-	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	/**
-	 * @return the username
-	 */
 	public String getUsername() {
 		return username;
 	}
 
-	/**
-	 * @param username the username to set
-	 */
 	public void setUsername(String username) {
 		this.username = username;
 	}
 
-	/**
-	 * @return the name
-	 */
 	public String getName() {
 		return name;
 	}
 
-	/**
-	 * @param name the name to set
-	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	/**
-	 * @return the surname
-	 */
 	public String getSurname() {
 		return surname;
 	}
 
-	/**
-	 * @param surname the surname to set
-	 */
 	public void setSurname(String surname) {
 		this.surname = surname;
 	}
 
-	/**
-	 * @return the password
-	 */
 	public String getPassword() {
 		return password;
 	}
 
-	/**
-	 * @param password the password to set
-	 */
 	public void setPassword(String password) {
 		this.password = password;
 	}
 
-	/**
-	 * @return the email
-	 */
 	public String getEmail() {
 		return email;
 	}
 
-	/**
-	 * @param email the email to set
-	 */
 	public void setEmail(String email) {
 		this.email = email;
 	}
 
-	/**
-	 * @return the timezone
-	 */
-	public String getTimezone() {
-		return timezone;
-	}
-
-	/**
-	 * @param timezone the timezone to set
-	 */
-	public void setTimezone(String timezone) {
-		this.timezone = timezone;
-	}
-
-	/**
-	 * @return the enabled
-	 */
 	public boolean isEnabled() {
 		return enabled;
 	}
 
-	/**
-	 * @param enabled the enabled to set
-	 */
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
 
-	/**
-	 * @return the role
-	 */
 	public Role getRole() {
 		return role;
 	}
 
-	/**
-	 * @param role the role to set
-	 */
 	public void setRole(Role role) {
 		this.role = role;
 	}
 
-	/**
-	 * @return the channels
-	 */
 	public Set<Channel> getChannels() {
 		return channels;
 	}
 
-	/**
-	 * @param channels the channels to set
-	 */
 	public void setChannels(Set<Channel> channels) {
 		this.channels = channels;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
+	public Timezone getTimezone() {
+		return timezone;
+	}
+
+	public void setTimezone(Timezone timezone) {
+		this.timezone = timezone;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((email == null) ? 0 : email.hashCode());
+		result = prime * result + (enabled ? 1231 : 1237);
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((role == null) ? 0 : role.hashCode());
+		result = prime * result + ((password == null) ? 0 : password.hashCode());
 		result = prime * result + ((surname == null) ? 0 : surname.hashCode());
+		result = prime * result + ((username == null) ? 0 : username.hashCode());
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (!(obj instanceof User))
+		if (getClass() != obj.getClass())
 			return false;
 		User other = (User) obj;
+		if (email == null) {
+			if (other.email != null)
+				return false;
+		} else if (!email.equals(other.email))
+			return false;
+		if (enabled != other.enabled)
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
-		if (role != other.role)
+		if (password == null) {
+			if (other.password != null)
+				return false;
+		} else if (!password.equals(other.password))
 			return false;
 		if (surname == null) {
 			if (other.surname != null)
 				return false;
 		} else if (!surname.equals(other.surname))
 			return false;
+		if (username == null) {
+			if (other.username != null)
+				return false;
+		} else if (!username.equals(other.username))
+			return false;
 		return true;
 	}
+    
     
 }

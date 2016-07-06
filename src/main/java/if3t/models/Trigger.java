@@ -26,114 +26,98 @@ public class Trigger {
 	private Channel channel;
 	
 	@NotNull
-	private String description;
+	private String header;
+	
+	@NotNull
+	private String paragraph;
+	
+	@NotNull
+	private String extra_element;
 	
 	@OneToOne(mappedBy = "trigger")
 	private Recipe recipe;
 
-	/**
-	 * @return the id
-	 */
 	public Long getId() {
 		return id;
 	}
 
-	/**
-	 * @param id the id to set
-	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	/**
-	 * @return the channel
-	 */
 	public Channel getChannel() {
 		return channel;
 	}
 
-	/**
-	 * @param channel the channel to set
-	 */
 	public void setChannel(Channel channel) {
 		this.channel = channel;
 	}
 
-	/**
-	 * @return the recipe
-	 */
+	public String getHeader() {
+		return header;
+	}
+
+	public void setHeader(String header) {
+		this.header = header;
+	}
+
+	public String getParagraph() {
+		return paragraph;
+	}
+
+	public void setParagraph(String paragraph) {
+		this.paragraph = paragraph;
+	}
+
+	public String getExtra_element() {
+		return extra_element;
+	}
+
+	public void setExtra_element(String extra_element) {
+		this.extra_element = extra_element;
+	}
+
 	public Recipe getRecipe() {
 		return recipe;
 	}
 
-	/**
-	 * @param recipe the recipe to set
-	 */
 	public void setRecipe(Recipe recipe) {
 		this.recipe = recipe;
 	}
 
-	/**
-	 * @return the channelId
-	 */
-	public Channel getChannelId() {
-		return channel;
-	}
-
-	/**
-	 * @param channel the channelId to set
-	 */
-	public void setChannelId(Channel channel) {
-		this.channel = channel;
-	}
-
-	/**
-	 * @return the description
-	 */
-	public String getDescription() {
-		return description;
-	}
-
-	/**
-	 * @param description the description to set
-	 */
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((channel == null) ? 0 : channel.hashCode());
-		result = prime * result + ((description == null) ? 0 : description.hashCode());
+		result = prime * result + ((extra_element == null) ? 0 : extra_element.hashCode());
+		result = prime * result + ((header == null) ? 0 : header.hashCode());
+		result = prime * result + ((paragraph == null) ? 0 : paragraph.hashCode());
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (!(obj instanceof Trigger))
+		if (getClass() != obj.getClass())
 			return false;
 		Trigger other = (Trigger) obj;
-		if (channel == null) {
-			if (other.channel != null)
+		if (extra_element == null) {
+			if (other.extra_element != null)
 				return false;
-		} else if (!channel.equals(other.channel))
+		} else if (!extra_element.equals(other.extra_element))
 			return false;
-		if (description == null) {
-			if (other.description != null)
+		if (header == null) {
+			if (other.header != null)
 				return false;
-		} else if (!description.equals(other.description))
+		} else if (!header.equals(other.header))
+			return false;
+		if (paragraph == null) {
+			if (other.paragraph != null)
+				return false;
+		} else if (!paragraph.equals(other.paragraph))
 			return false;
 		return true;
 	}
