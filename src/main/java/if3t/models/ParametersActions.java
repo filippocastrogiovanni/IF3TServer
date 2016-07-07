@@ -25,8 +25,8 @@ public class ParametersActions {
 	private Channel channel;
 	
 	@NotNull
-	@Column(name = "id_group", nullable = false)
-	private String id_group;
+	@Column(name = "id_action", nullable = false)
+	private String id_action;
 	
 	@NotNull
 	@Column(name = "name", nullable = false)
@@ -52,12 +52,12 @@ public class ParametersActions {
 		this.channel = channel;
 	}
 
-	public String getId_group() {
-		return id_group;
+	public String getid_action() {
+		return id_action;
 	}
 
-	public void setId_group(String id_group) {
-		this.id_group = id_group;
+	public void setid_action(String id_action) {
+		this.id_action = id_action;
 	}
 
 	public String getName() {
@@ -80,7 +80,7 @@ public class ParametersActions {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id_group == null) ? 0 : id_group.hashCode());
+		result = prime * result + ((id_action == null) ? 0 : id_action.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
@@ -95,10 +95,10 @@ public class ParametersActions {
 		if (getClass() != obj.getClass())
 			return false;
 		ParametersActions other = (ParametersActions) obj;
-		if (id_group == null) {
-			if (other.id_group != null)
+		if (id_action == null) {
+			if (other.id_action != null)
 				return false;
-		} else if (!id_group.equals(other.id_group))
+		} else if (!id_action.equals(other.id_action))
 			return false;
 		if (name == null) {
 			if (other.name != null)

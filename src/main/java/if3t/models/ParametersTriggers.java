@@ -25,8 +25,8 @@ public class ParametersTriggers {
 	private Channel channel;
 	
 	@NotNull
-	@Column(name = "id_group", nullable = false)
-	private String id_group;
+	@Column(name = "id_trigger", nullable = false)
+	private String id_trigger;
 	
 	@NotNull
 	@Column(name = "name", nullable = false)
@@ -52,12 +52,12 @@ public class ParametersTriggers {
 		this.channel = channel;
 	}
 
-	public String getId_group() {
-		return id_group;
+	public String getid_trigger() {
+		return id_trigger;
 	}
 
-	public void setId_group(String id_group) {
-		this.id_group = id_group;
+	public void setid_trigger(String id_trigger) {
+		this.id_trigger = id_trigger;
 	}
 
 	public String getName() {
@@ -80,7 +80,7 @@ public class ParametersTriggers {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id_group == null) ? 0 : id_group.hashCode());
+		result = prime * result + ((id_trigger == null) ? 0 : id_trigger.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
@@ -95,10 +95,10 @@ public class ParametersTriggers {
 		if (getClass() != obj.getClass())
 			return false;
 		ParametersTriggers other = (ParametersTriggers) obj;
-		if (id_group == null) {
-			if (other.id_group != null)
+		if (id_trigger == null) {
+			if (other.id_trigger != null)
 				return false;
-		} else if (!id_group.equals(other.id_group))
+		} else if (!id_trigger.equals(other.id_trigger))
 			return false;
 		if (name == null) {
 			if (other.name != null)
