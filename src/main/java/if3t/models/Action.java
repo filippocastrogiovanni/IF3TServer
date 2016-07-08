@@ -10,6 +10,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.Id;
 
 @Entity
@@ -33,6 +35,7 @@ public class Action {
 	private String paragraph;
 	
 	@OneToOne(mappedBy = "action")
+	@JsonBackReference
 	private Recipe recipe;
 
 	public Long getId() {

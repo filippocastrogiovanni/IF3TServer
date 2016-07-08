@@ -9,6 +9,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.Id;
 
 @Entity
@@ -32,6 +35,7 @@ public class Trigger {
 	private String paragraph;
 		
 	@OneToOne(mappedBy = "trigger")
+	@JsonBackReference
 	private Recipe recipe;
 
 	public Long getId() {
