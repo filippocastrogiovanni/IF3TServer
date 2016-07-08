@@ -5,6 +5,8 @@ import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 @Table(name="users")
 public class User {
@@ -46,6 +48,7 @@ public class User {
 	@NotNull
 	@ManyToOne
 	@JoinColumn(name="id_timezone")
+	@JsonBackReference
 	private Timezone timezone;
 
 	public Long getId() {
