@@ -21,7 +21,7 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 
-	@RequestMapping(value = "/signup", method = RequestMethod.POST)
+	@RequestMapping(value = "/users", method = RequestMethod.POST)
 	public void createUser(@RequestBody User u) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null) {
@@ -31,7 +31,6 @@ public class UserController {
 			}
 		}
 		//TODO fare controlli su user
-		//TODO salvare la password come hash
 		u.setPassword(new BCryptPasswordEncoder().encode(u.getPassword()));
 		userService.addUser(u);
 	}
@@ -39,6 +38,17 @@ public class UserController {
 	@RequestMapping(value="/users/{username}", method=RequestMethod.GET)
 	public User getUser(@PathVariable String username) {
 		return userService.getUserByUsername(username);
+	}
+	
+	@RequestMapping(value="/users", method=RequestMethod.PUT)
+	public void saveUser(@RequestBody User u){
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if(auth != null) {
+			User loggedUser = userService.getUserByUsername(auth.getName());
+			if(loggedUser != null) {
+				userService.updateUser(u);
+			}
+		}
 	}
 
 }
