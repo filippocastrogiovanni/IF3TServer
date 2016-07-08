@@ -48,7 +48,7 @@ public class User {
 	@NotNull
 	@ManyToOne
 	@JoinColumn(name="id_timezone")
-	@JsonBackReference
+	//@JsonBackReference
 	private Timezone timezone;
 
 	public Long getId() {
