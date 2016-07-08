@@ -17,8 +17,8 @@ public class RecipeServiceImpl implements RecipeService {
 	@Autowired
 	private RecipeRepository recipeRepository;
 	
-	public List<Recipe> readUserRecipes(String username) {
-		return recipeRepository.findByUser_Username(username);
+	public List<Recipe> readUserRecipes(Long userId) {
+		return recipeRepository.findByUser_Id(userId);
 	}
 
 	public List<Recipe> readPublicRecipes() {

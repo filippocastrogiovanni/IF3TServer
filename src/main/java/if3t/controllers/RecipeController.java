@@ -18,9 +18,9 @@ public class RecipeController {
 	@Autowired
 	private RecipeService recipeService;
 	
-	@RequestMapping(value="/recipes/{username}", method=RequestMethod.GET)
-	public List<Recipe> getUserRecipes(@PathVariable String username) {
-		return recipeService.readUserRecipes(username);
+	@RequestMapping(value="/recipes/{userId}", method=RequestMethod.GET)
+	public List<Recipe> getUserRecipes(@PathVariable Long userId) {
+		return recipeService.readUserRecipes(userId);
 	}
 	
 	@RequestMapping(value="/public_recipes", method=RequestMethod.GET)

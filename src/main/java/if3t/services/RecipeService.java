@@ -6,7 +6,7 @@ import if3t.models.Recipe;
 
 public interface RecipeService {
 
-	public List<Recipe> readUserRecipes(String username);
+	public List<Recipe> readUserRecipes(Long userId);
 	public List<Recipe> readPublicRecipes();
 	public List<Recipe> readRecipe(Long id);
 	public void deleteRecipe(Long id);

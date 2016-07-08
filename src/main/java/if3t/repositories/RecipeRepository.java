@@ -12,7 +12,7 @@ public interface RecipeRepository extends Repository<Recipe, Long> {
 	  	correspond to only one recipe with more than one action */
 	public Recipe findOne(Long id);
 	public List<Recipe> findByGroupId(String groupId);
-	public List<Recipe> findByUser_Username(String username);
+	public List<Recipe> findByUser_Id(Long userId);
 	public List<Recipe> findByIsPublic(Boolean isPublic);
 	public Recipe save(Recipe booking);
 	public void delete(Recipe booking);
