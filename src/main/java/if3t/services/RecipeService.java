@@ -10,6 +10,6 @@ public interface RecipeService {
 	public List<Recipe> readPublicRecipes();
 	public List<Recipe> readRecipe(Long id);
 	public void deleteRecipe(Long id);
-	public void addRecipe(Recipe recipe);
+	public void addRecipe(List<Recipe> recipe);
 	public void updateRecipe(Recipe recipe);
 }

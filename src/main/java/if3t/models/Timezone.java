@@ -32,7 +32,7 @@ public class Timezone {
 	private int timezone_value;
 	
 	@NotNull
-	@OneToMany(mappedBy = "users")
+	@OneToMany(mappedBy = "id")
 	public List<User> users;
 
 	public Long getId() {

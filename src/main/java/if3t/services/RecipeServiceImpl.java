@@ -1,6 +1,7 @@
 package if3t.services;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,8 +36,12 @@ public class RecipeServiceImpl implements RecipeService {
 		recipeRepository.delete(recipe);
 	}
 
-	public void addRecipe(Recipe recipe) {
-		recipeRepository.save(recipe);
+	public void addRecipe(List<Recipe> recipe) {
+		UUID groupId = UUID.randomUUID();
+		for(Recipe r: recipe){
+			r.setGroupId(groupId.toString());
+			recipeRepository.save(r);
+		}
 	}
 
 	public void updateRecipe(Recipe recipe) {

@@ -34,9 +34,9 @@ public class RecipeController {
 	}
 	
 	@RequestMapping(value="/add_recipe", method=RequestMethod.POST)
-	public void addRecipe(@RequestBody Recipe recipe) {
+	public void addRecipe(@RequestBody List<Recipe> recipe) {
 		//TODO check if the user has authorization for the channels of the recipe
-		recipeService.addRecipe(recipe);;
+		recipeService.addRecipe(recipe);
 	}
 	
 	@RequestMapping(value="/remove_recipe/{id}", method=RequestMethod.POST)
