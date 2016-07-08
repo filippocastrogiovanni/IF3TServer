@@ -43,6 +43,7 @@ public class User {
     @JoinTable(name = "authorizations", 
     			joinColumns = @JoinColumn(name = "id_user"), 
     			inverseJoinColumns = @JoinColumn(name = "id_channel"))
+    @JsonBackReference
     private Set<Channel> channels;
     
 	@NotNull
