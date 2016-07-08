@@ -30,10 +30,6 @@ public class Timezone {
 	@NotNull
 	@Column(name = "timezone_value", nullable = false)
 	private int timezone_value;
-	
-	@NotNull
-	@OneToMany(mappedBy = "id")
-	public List<User> users;
 
 	public Long getId() {
 		return id;
