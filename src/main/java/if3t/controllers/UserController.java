@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import if3t.models.Role;
 import if3t.models.User;
 import if3t.services.UserService;
 
@@ -31,7 +32,10 @@ public class UserController {
 			}
 		}
 		//TODO fare controlli su user
+		
 		u.setPassword(new BCryptPasswordEncoder().encode(u.getPassword()));
+		u.setEnabled(true);
+		u.setRole(Role.USER);
 		userService.addUser(u);
 	}
 	
