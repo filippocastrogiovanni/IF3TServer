@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 public class User {
  
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_user", nullable = false)
     private Long id;
 	
@@ -49,7 +50,7 @@ public class User {
 	@NotNull
 	@ManyToOne
 	@JoinColumn(name="id_timezone")
-	//@JsonBackReference
+	@JsonBackReference
 	private Timezone timezone;
 
 	public Long getId() {
