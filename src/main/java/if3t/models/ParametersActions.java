@@ -33,7 +33,7 @@ public class ParametersActions {
 	private String name;
 	
 	@NotNull
-	@Column(name = "type", nullable = false)
+	@Column(name = "param_type", nullable = false)
 	private String type;
 
 	public Long getId() {

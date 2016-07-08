@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
 import javax.persistence.Id;
 
 @Entity
-@Table(name="parameters_trigger")
+@Table(name="parameters_triggers")
 public class ParametersTriggers {
 
 	@Id
@@ -33,7 +33,7 @@ public class ParametersTriggers {
 	private String name;
 	
 	@NotNull
-	@Column(name = "type", nullable = false)
+	@Column(name = "param_type", nullable = false)
 	private String type;
 
 	public Long getId() {
