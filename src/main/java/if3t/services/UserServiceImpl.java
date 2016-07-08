@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import if3t.models.Timezone;
 import if3t.models.User;
+import if3t.repositories.TimezoneRepository;
 import if3t.repositories.UserRepository;
 
 @Service
@@ -13,6 +15,8 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private UserRepository userRepo;
+	@Autowired
+	private TimezoneRepository timezoneRepo;
 
 	public User getUserByUsername(String username) {
 		return userRepo.findByUsername(username);
@@ -33,6 +37,10 @@ public class UserServiceImpl implements UserService {
 
 	public User getUserByEmail(String email) {
 		return userRepo.findByEmail(email);
+	}
+	
+	public Timezone getTimezone(Long id) {
+		return timezoneRepo.findOne(id);
 	}
 
 }

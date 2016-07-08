@@ -1,5 +1,6 @@
 package if3t.services;
 
+import if3t.models.Timezone;
 import if3t.models.User;
 
 public interface UserService {
@@ -9,4 +10,5 @@ public interface UserService {
 	public void deleteUser(Long id);
 	public void updateUser(User user);
 	public User getUserByEmail(String email);
+	public Timezone getTimezone(Long id);
 }
