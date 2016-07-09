@@ -2,6 +2,8 @@ package if3t.services;
 
 import java.util.List;
 
+import if3t.exceptions.ChannelNotAuthorizedException;
+import if3t.exceptions.NotLoggedInException;
 import if3t.models.Recipe;
 
 public interface RecipeService {
@@ -12,4 +14,5 @@ public interface RecipeService {
 	public void deleteRecipe(Long id);
 	public void addRecipe(List<Recipe> recipe);
 	public void updateRecipe(Recipe recipe);
+	public void enableRecipe(Recipe recipe) throws NotLoggedInException, ChannelNotAuthorizedException;
 }

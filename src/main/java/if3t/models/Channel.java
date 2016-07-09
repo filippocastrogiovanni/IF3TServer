@@ -9,6 +9,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.Id;
 
 @Entity
@@ -27,6 +30,7 @@ public class Channel {
 	private String image_url;
 
 	@ManyToMany(mappedBy = "channels")
+	@JsonBackReference
 	private Set<User> users;
 	 
 	/**
