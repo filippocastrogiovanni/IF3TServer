@@ -6,17 +6,22 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import if3t.exceptions.ChannelNotAuthorizedException;
+import if3t.exceptions.ActionChannelNotAuthorizedException;
+import if3t.exceptions.TriggerChannelNotAuthorizedException;
 
 
 @ControllerAdvice  
 @RestController  
 public class MyExceptionHandler {  
   
-    @ResponseStatus(HttpStatus.FORBIDDEN)  
-    @ExceptionHandler(value = ChannelNotAuthorizedException.class)  
-    public String handleBaseException(ChannelNotAuthorizedException e){  
-        return e.getMessage();  
+    @ResponseStatus(value = HttpStatus.FORBIDDEN, reason="Trigger channel not authorized")  
+    @ExceptionHandler(value = TriggerChannelNotAuthorizedException.class)  
+    public void handleTriggerException(TriggerChannelNotAuthorizedException e){
+    }
+    
+    @ResponseStatus(value = HttpStatus.FORBIDDEN, reason="Action channel not authorized")  
+    @ExceptionHandler(value = ActionChannelNotAuthorizedException.class)  
+    public void handleChannelException(ActionChannelNotAuthorizedException e){
     }  
   
     @ExceptionHandler(value = Exception.class)  

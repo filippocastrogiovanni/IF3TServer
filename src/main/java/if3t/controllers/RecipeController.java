@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import if3t.exceptions.ChannelNotAuthorizedException;
+import if3t.exceptions.TriggerChannelNotAuthorizedException;
+import if3t.exceptions.ActionChannelNotAuthorizedException;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Recipe;
 import if3t.models.User;
@@ -59,12 +60,18 @@ public class RecipeController {
 		if (auth != null)
 			user = userService.getUserByUsername(auth.getName());
 		recipe.setUser(user);
-		recipeService.updateRecipe(recipe);
+		recipe.setIsPublic(true);
+		recipeService.publishRecipe(recipe);
 	}
 	
 	@RequestMapping(value="/enable_recipe", method=RequestMethod.PUT)
-	public String enableRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, ChannelNotAuthorizedException {
+	public void enableRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, TriggerChannelNotAuthorizedException, ActionChannelNotAuthorizedException {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		User user = null;
+		if (auth != null)
+			user = userService.getUserByUsername(auth.getName());
+		recipe.setUser(user);
 		recipeService.enableRecipe(recipe);
-		return "Done";
+		//return "Done";
 	}
 }
