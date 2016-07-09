@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import if3t.exceptions.ChannelNotAuthorizedException;
+import if3t.exceptions.NotLoggedInException;
 import if3t.models.Recipe;
 import if3t.services.RecipeService;
 
@@ -35,7 +38,6 @@ public class RecipeController {
 	
 	@RequestMapping(value="/add_recipe", method=RequestMethod.POST)
 	public void addRecipe(@RequestBody List<Recipe> recipe) {
-		//TODO check if the user has authorization for the channels of the recipe
 		recipeService.addRecipe(recipe);
 	}
 	
@@ -44,8 +46,14 @@ public class RecipeController {
 		recipeService.deleteRecipe(id);
 	}
 	
-	@RequestMapping(value="/update_recipe", method=RequestMethod.PUT)
-	public void updateRecipe(@RequestBody Recipe recipe) {
+	@RequestMapping(value="/publish_recipe", method=RequestMethod.PUT)
+	public void publishRecipe(@RequestBody Recipe recipe) {
 		recipeService.updateRecipe(recipe);
+	}
+	
+	@RequestMapping(value="/enable_recipe", method=RequestMethod.PUT)
+	public String enableRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, ChannelNotAuthorizedException {
+		recipeService.enableRecipe(recipe);
+		return "Done";
 	}
 }

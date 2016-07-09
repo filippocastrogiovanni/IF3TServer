@@ -22,7 +22,7 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 
-	@RequestMapping(value = "/users", method = RequestMethod.POST)
+	@RequestMapping(value = "/signin", method = RequestMethod.POST)
 	public void createUser(@RequestBody User u) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null) {
