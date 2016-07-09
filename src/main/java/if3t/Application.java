@@ -16,7 +16,7 @@ public class Application {
     }
     
     @CrossOrigin
-    @RequestMapping(value="/user")
+    @RequestMapping(value="/login")
     public Principal user(Principal user) {
     	return user;
     }
