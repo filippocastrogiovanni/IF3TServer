@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import if3t.exceptions.ChannelNotAuthorizedException;
+import if3t.exceptions.InvalidParametersException;
 import if3t.exceptions.NotLoggedInException;
 import if3t.exceptions.WrongPasswordException;
 
@@ -24,6 +25,12 @@ public class MyExceptionHandler {
     @ExceptionHandler(value = NotLoggedInException.class)  
     public Response handleLogInException(NotLoggedInException e){
     	return new Response(e.getMessage(), 400);
+    }
+    
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)  
+    @ExceptionHandler(value = InvalidParametersException.class)  
+    public Response handleInvalidParametersException(InvalidParametersException e){
+    	return new Response(e.getMessage(), 401);
     }
     
     @ResponseStatus(value = HttpStatus.CONFLICT)  
