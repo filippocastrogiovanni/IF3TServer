@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import if3t.exceptions.ChannelNotAuthorizedException;
 import if3t.exceptions.NotLoggedInException;
+import if3t.exceptions.WrongPasswordException;
 
 
 @ControllerAdvice  
@@ -23,6 +24,12 @@ public class MyExceptionHandler {
     @ExceptionHandler(value = NotLoggedInException.class)  
     public Response handleLogInException(NotLoggedInException e){
     	return new Response(e.getMessage(), 400);
+    }
+    
+    @ResponseStatus(value = HttpStatus.CONFLICT)  
+    @ExceptionHandler(value = WrongPasswordException.class)  
+    public Response handlePasswordException(WrongPasswordException e){
+    	return new Response(e.getMessage(), 409);
     }
   
     @ResponseStatus(value = HttpStatus.NOT_FOUND) 
