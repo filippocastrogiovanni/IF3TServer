@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import if3t.RequestPassword;
 import if3t.exceptions.NotLoggedInException;
+import if3t.exceptions.WrongPasswordException;
 import if3t.models.Role;
 import if3t.models.User;
 import if3t.services.UserService;
@@ -47,8 +49,21 @@ public class UserController {
 		return userService.getUserByUsername(username);
 	}
 	
-	@RequestMapping(value="/users", method=RequestMethod.PUT)
-	public void saveUser(@RequestBody User u) throws NotLoggedInException, NoPermissionException{
+	@RequestMapping(value="/userpassword", method=RequestMethod.PUT)
+	public void changePassword(@RequestBody RequestPassword passwordReq) throws NotLoggedInException, WrongPasswordException{
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if(auth == null)
+			throw new NotLoggedInException("ERROR: not logged in!");
+			
+		User loggedUser = userService.getUserByUsername(auth.getName());
+		if(loggedUser == null)
+			throw new NotLoggedInException("ERROR: not logged in!");
+		
+		userService.changePassword(loggedUser, passwordReq);
+	}
+	
+	@RequestMapping(value="/userinfo", method=RequestMethod.PUT)
+	public void updateInfo(@RequestBody User u) throws NotLoggedInException, NoPermissionException{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if(auth == null)
 			throw new NotLoggedInException("ERROR: not logged in!");
