@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import if3t.models.Action;
-import if3t.models.Channel;
 import if3t.models.ParametersActions;
 import if3t.models.ParametersTriggers;
 import if3t.models.Trigger;
@@ -21,15 +20,6 @@ public class CreateRecipeController {
 	@Autowired
 	private CreateRecipeService createRecipeService;
 	
-	@RequestMapping(value="/channel/{id}", method=RequestMethod.GET)
-	public Channel getChannel(@PathVariable Long id) {
-		return createRecipeService.readChannel(id);
-	}
-	
-	@RequestMapping(value="/channels", method=RequestMethod.GET)
-	public List<Channel> getChannels() {
-		return createRecipeService.readChannels();
-	}
 	
 	@RequestMapping(value="/action/{id}", method=RequestMethod.GET)
 	public Action getAction(@PathVariable Long id) {

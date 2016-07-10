@@ -11,5 +11,4 @@ public interface UserRepository extends Repository<User, Long> {
 	public User save(User user);
 	public void delete(User user);
 	public User findByEmail(String email);
-	public User findByIdAndChannels_ChannelId(Long id, Long channelId);
 }

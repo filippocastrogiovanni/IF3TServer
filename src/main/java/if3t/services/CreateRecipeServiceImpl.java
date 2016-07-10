@@ -1,6 +1,5 @@
 package if3t.services;
 
-import java.util.ArrayList;
 import java.util.List;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,7 @@ import if3t.models.ParametersActions;
 import if3t.models.ParametersTriggers;
 import if3t.models.Trigger;
 import if3t.repositories.ActionRepository;
-import if3t.repositories.ChannelRespository;
+import if3t.repositories.ChannelRepository;
 import if3t.repositories.ParametersActionsRepository;
 import if3t.repositories.ParametersTriggersRepository;
 import if3t.repositories.TriggerRepository;
@@ -21,7 +20,7 @@ import if3t.repositories.TriggerRepository;
 public class CreateRecipeServiceImpl implements CreateRecipeService {
 
 	@Autowired
-	private ChannelRespository channelRepository;
+	private ChannelRepository channelRepository;
 	@Autowired
 	private ActionRepository actionRepository;
 	@Autowired
@@ -30,19 +29,6 @@ public class CreateRecipeServiceImpl implements CreateRecipeService {
 	private ParametersTriggersRepository parametersTriggersRepository;
 	@Autowired
 	private ParametersActionsRepository parametersActionsRepository;
-	
-	public List<Channel> readChannels() {
-		List<Channel> channels = new ArrayList<Channel>();
-		
-		for(Channel channel: channelRepository.findAll())
-			channels.add(channel);
-		
-		return channels;
-	}
-	
-	public Channel readChannel(Long id) {
-		return channelRepository.findOne(id);
-	}
 
 	public List<Action> readChannelActions(Long channelId) {
 		Channel channel = channelRepository.findOne(channelId);
