@@ -9,12 +9,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import if3t.exceptions.TriggerChannelNotAuthorizedException;
-import if3t.exceptions.ActionChannelNotAuthorizedException;
+import if3t.exceptions.ChannelNotAuthorizedException;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Channel;
 import if3t.models.Recipe;
 import if3t.models.User;
+import if3t.repositories.AuthorizationRepository;
 import if3t.repositories.RecipeRepository;
 import if3t.repositories.UserRepository;
 
@@ -26,6 +26,8 @@ public class RecipeServiceImpl implements RecipeService {
 	private RecipeRepository recipeRepository;
 	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+	private AuthorizationRepository authRepository;
 	
 	public List<Recipe> readUserRecipes(Long userId) {
 		return recipeRepository.findByUser_Id(userId);
@@ -58,7 +60,7 @@ public class RecipeServiceImpl implements RecipeService {
 		recipeRepository.save(recipe);
 	}
 
-	public void enableRecipe(Recipe recipe) throws NotLoggedInException, TriggerChannelNotAuthorizedException, ActionChannelNotAuthorizedException {
+	public void enableRecipe(Recipe recipe) throws NotLoggedInException, ChannelNotAuthorizedException {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		User user = null;
 		if (auth != null)
@@ -68,16 +70,16 @@ public class RecipeServiceImpl implements RecipeService {
 			throw new NotLoggedInException();
 		
 		Long userId = user.getId();
-		Long triggerChannelId = recipe.getTrigger().getChannel().getChannelId();
-		Long actionChannelId = recipe.getAction().getChannel().getChannelId();
+		Channel triggerChannel = recipe.getTrigger().getChannel();
+		Channel actionChannel = recipe.getAction().getChannel();
 		
-		if(userRepository.findByIdAndChannels_ChannelId(userId, triggerChannelId) == null)
-			throw new TriggerChannelNotAuthorizedException();
+		if(authRepository.findByUser_IdAndChannel_ChannelId(userId, triggerChannel.getChannelId()) == null)
+			throw new ChannelNotAuthorizedException("Trigger channel (" + triggerChannel.getName() + ") not authorized!");
 		
-		if(userRepository.findByIdAndChannels_ChannelId(userId, actionChannelId) == null)
-			throw new ActionChannelNotAuthorizedException();
+		if(authRepository.findByUser_IdAndChannel_ChannelId(userId, actionChannel.getChannelId()) == null)
+			throw new ChannelNotAuthorizedException("Action channel (" + actionChannel.getName() + ") not authorized!");
 		
-		recipe.setIsEnabled(true);
+		recipe.setIsEnabled(!recipe.getIsEnabled());
 		recipeRepository.save(recipe);
 		
 	}

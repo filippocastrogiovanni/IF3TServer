@@ -2,11 +2,12 @@ package if3t.models;
 
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
-import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -29,9 +30,9 @@ public class Channel {
 	@NotNull
 	private String image_url;
 
-	@ManyToMany(mappedBy = "channels")
+	@OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
 	@JsonBackReference
-	private Set<User> users;
+	private Set<Authorization> authorizations;
 	 
 	/**
 	 * @return the channelId
@@ -70,17 +71,17 @@ public class Channel {
 	}
 
 	/**
-	 * @return the users
+	 * @return the authorizations
 	 */
-	public Set<User> getUsers() {
-		return users;
+	public Set<Authorization> getAuthorizations() {
+		return authorizations;
 	}
 
 	/**
-	 * @param users the users to set
+	 * @param authorizations the authorizations to set
 	 */
-	public void setUsers(Set<User> users) {
-		this.users = users;
+	public void setAuthorizations(Set<Authorization> autorizations) {
+		this.authorizations = autorizations;
 	}
 
 	/* (non-Javadoc)

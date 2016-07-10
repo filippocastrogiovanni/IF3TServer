@@ -1,5 +1,7 @@
 package if3t.controllers;
 
+import javax.naming.NoPermissionException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import if3t.exceptions.NotLoggedInException;
 import if3t.models.Role;
 import if3t.models.User;
 import if3t.services.UserService;
@@ -45,14 +48,19 @@ public class UserController {
 	}
 	
 	@RequestMapping(value="/users", method=RequestMethod.PUT)
-	public void saveUser(@RequestBody User u){
+	public void saveUser(@RequestBody User u) throws NotLoggedInException, NoPermissionException{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		if(auth != null) {
-			User loggedUser = userService.getUserByUsername(auth.getName());
-			if(loggedUser != null) {
-				userService.updateUser(u);
-			}
-		}
+		if(auth == null)
+			throw new NotLoggedInException("ERROR: not logged in!");
+			
+		User loggedUser = userService.getUserByUsername(auth.getName());
+		if(loggedUser == null)
+			throw new NotLoggedInException("ERROR: not logged in!");
+		
+		if(loggedUser.getId() != u.getId() && !u.getRole().equals(Role.ADMIN))
+			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
+		
+		userService.updateUser(u);
 	}
 
 }

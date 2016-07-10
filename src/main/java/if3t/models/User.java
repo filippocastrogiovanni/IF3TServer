@@ -40,12 +40,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
     
-    @ManyToMany()
-    @JoinTable(name = "authorizations", 
-    			joinColumns = @JoinColumn(name = "id_user"), 
-    			inverseJoinColumns = @JoinColumn(name = "id_channel"))
-    @JsonBackReference
-    private Set<Channel> channels;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	@JsonBackReference
+	private Set<Authorization> authorizations;
     
 	@NotNull
 	@ManyToOne
@@ -116,12 +113,18 @@ public class User {
 		this.role = role;
 	}
 
-	public Set<Channel> getChannels() {
-		return channels;
+	/**
+	 * @return the authorizations
+	 */
+	public Set<Authorization> getAuthorizations() {
+		return authorizations;
 	}
 
-	public void setChannels(Set<Channel> channels) {
-		this.channels = channels;
+	/**
+	 * @param authorizations the authorizations to set
+	 */
+	public void setAuthorizations(Set<Authorization> authorizations) {
+		this.authorizations = authorizations;
 	}
 
 	public Timezone getTimezone() {
