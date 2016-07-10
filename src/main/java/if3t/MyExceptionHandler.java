@@ -35,6 +35,8 @@ public class MyExceptionHandler {
     @ResponseStatus(value = HttpStatus.NOT_FOUND) 
     @ExceptionHandler(value = Exception.class)  
     public Response handleException(Exception e){
-    	return new Response(e.getMessage(), 404);
+    	Response res = new Response(e.getMessage(), 404);
+    	res.setException(e);
+    	return res;
     }  
 }  
