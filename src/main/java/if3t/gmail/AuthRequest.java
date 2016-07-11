@@ -17,7 +17,7 @@ public class AuthRequest {
 		this.redirect_uri = "http://localhost:8181/gmail/authresponse";
 		this.response_type = "code";
 		this.state = new BCryptPasswordEncoder().encode(user.getUsername());
-		this.prompt = "consent select-account";
+		this.prompt = "consent select_account";
 		this.access_type = "offline";
 	}
 
@@ -31,7 +31,7 @@ public class AuthRequest {
 		builder.append("redirect_uri=" + this.redirect_uri + "&");
 		builder.append("state=" + this.state + "&");
 		builder.append("prompt=" + this.prompt + "&");
-		builder.append("access_type=" + this.access_type + "&");
+		builder.append("access_type=" + this.access_type);
 		
 		return builder.toString();
 	}

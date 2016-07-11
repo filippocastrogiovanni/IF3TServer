@@ -31,10 +31,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         	.antMatchers(HttpMethod.GET, "/login").permitAll()
         	.antMatchers(HttpMethod.GET, "/channels").permitAll()
         	.antMatchers(HttpMethod.GET, "/images/**").permitAll()
+        	.antMatchers(HttpMethod.GET, "/gmail/**").permitAll()
         	.antMatchers(HttpMethod.POST, "/signin").permitAll()
         	.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
         	.anyRequest().authenticated()
-        	
+        	.and()
+        	.logout()
         	.and()
             .addFilterAfter(new CsrfHeaderFilter(), CsrfFilter.class)
             .csrf().csrfTokenRepository(csrfTokenRepository());
