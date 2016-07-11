@@ -50,7 +50,7 @@ public class RecipeController {
 	}
 	
 	@RequestMapping(value="/add_recipe", method=RequestMethod.POST)
-	public void addRecipe(@RequestBody List<Recipe> recipe) {
+	public void addRecipe(@RequestBody List<Recipe> recipe) throws NotLoggedInException {
 		//TODO controlli user
 		System.out.println("ADDING RECIPE");
 		recipeService.addRecipe(recipe);

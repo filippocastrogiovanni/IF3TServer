@@ -24,7 +24,7 @@ public class ActionIngredient {
 	
 	@NotNull
 	@ManyToOne
-	@JsonBackReference
+	@JsonBackReference(value="actioningredient-recipe")
 	@JoinColumn(name="id_recipe")
 	private Recipe recipe;
 	

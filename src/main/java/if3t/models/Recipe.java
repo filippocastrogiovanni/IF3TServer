@@ -30,7 +30,7 @@ public class Recipe {
 	
 	@ManyToOne(/*cascade = CascadeType.ALL*/)
 	@JoinColumn(name = "id_user")
-	@JsonBackReference
+	@JsonBackReference(value="recipe-user")
 	private User user;
 	
 	@OneToOne(/*cascade = CascadeType.ALL*/)

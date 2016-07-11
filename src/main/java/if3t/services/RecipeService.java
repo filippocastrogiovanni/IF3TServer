@@ -12,7 +12,7 @@ public interface RecipeService {
 	public List<Recipe> readPublicRecipes();
 	public List<Recipe> readRecipe(Long id);
 	public void deleteRecipe(Long id);
-	public void addRecipe(List<Recipe> recipe);
+	public void addRecipe(List<Recipe> recipe) throws NotLoggedInException;
 	public void publishRecipe(Recipe recipe);
 	public void enableRecipe(Recipe recipe) throws NotLoggedInException, ChannelNotAuthorizedException;
 }

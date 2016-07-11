@@ -36,15 +36,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         	.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
         	.anyRequest().authenticated()
         	.and()
-        	.logout()
-        	.and()
-            .addFilterAfter(new CsrfHeaderFilter(), CsrfFilter.class)
-            .csrf().csrfTokenRepository(csrfTokenRepository());
+        	.logout();
+        	//.and()
+            //.addFilterAfter(new CsrfHeaderFilter(), CsrfFilter.class)
+            //.csrf().csrfTokenRepository(csrfTokenRepository());
         	
         	//.and()
         	//.logout();
         
-        //http.csrf().disable();
+        http.csrf().disable();
         
     }
     

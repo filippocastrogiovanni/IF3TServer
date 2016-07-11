@@ -41,7 +41,7 @@ public class User {
     private Role role;
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-	@JsonBackReference
+	@JsonBackReference(value="user-authorizations")
 	private Set<Authorization> authorizations;
     
 	@NotNull

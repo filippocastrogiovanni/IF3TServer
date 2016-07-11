@@ -27,6 +27,8 @@ public class RecipeServiceImpl implements RecipeService {
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
+	private UserService userService;
+	@Autowired
 	private AuthorizationRepository authRepository;
 	
 	public List<Recipe> readUserRecipes(Long userId) {
@@ -48,10 +50,15 @@ public class RecipeServiceImpl implements RecipeService {
 		recipeRepository.delete(recipe);
 	}
 
-	public void addRecipe(List<Recipe> recipe) {
+	public void addRecipe(List<Recipe> recipe) throws NotLoggedInException {
 		UUID groupId = UUID.randomUUID();
 		for(Recipe r: recipe){
 			r.setGroupId(groupId.toString());
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			if (auth == null)
+				throw new NotLoggedInException("ERROR: not logged in!");
+			User loggedUser = userService.getUserByUsername(auth.getName());
+			r.setUser(loggedUser);
 			recipeRepository.save(r);
 		}
 	}

@@ -38,11 +38,11 @@ public class Action {
 	private String paragraph;
 	
 	@OneToOne(mappedBy = "action")
-	@JsonBackReference
+	@JsonBackReference(value="action-recipe")
 	private Recipe recipe;
 	
 	@OneToMany(mappedBy = "action")
-	@JsonBackReference
+	@JsonBackReference(value="action-parameters")
 	private Set<ParametersActions> parameters;
 
 	public Long getId() {
