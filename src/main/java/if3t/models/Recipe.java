@@ -1,5 +1,8 @@
 package if3t.models;
 
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -7,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -33,10 +37,15 @@ public class Recipe {
 	@JoinColumn(name = "id_trigger")
 	private Trigger trigger;
 	
+	@OneToMany(mappedBy = "recipe")
+	private Set<TriggerIngredient> trigger_ingredients;
+	
 	@OneToOne(/*cascade = CascadeType.ALL*/)
 	@JoinColumn(name = "id_action")
 	private Action action;
 	
+	@OneToMany(mappedBy = "recipe")
+	private Set<ActionIngredient> action_ingredients;
 	
 	private String description;
 	
@@ -156,6 +165,22 @@ public class Recipe {
 	 */
 	public void setIsEnabled(Boolean isEnabled) {
 		this.isEnabled = isEnabled;
+	}
+
+	public Set<TriggerIngredient> getTrigger_ingredients() {
+		return trigger_ingredients;
+	}
+
+	public void setTrigger_ingredients(Set<TriggerIngredient> trigger_ingredients) {
+		this.trigger_ingredients = trigger_ingredients;
+	}
+
+	public Set<ActionIngredient> getAction_ingredients() {
+		return action_ingredients;
+	}
+
+	public void setAction_ingredients(Set<ActionIngredient> action_ingredients) {
+		this.action_ingredients = action_ingredients;
 	}
 
 	/* (non-Javadoc)

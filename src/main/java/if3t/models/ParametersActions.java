@@ -25,16 +25,17 @@ public class ParametersActions {
 	private Channel channel;
 	
 	@NotNull
-	@Column(name = "id_action", nullable = false)
-	private String id_action;
-	
-	@NotNull
 	@Column(name = "name", nullable = false)
 	private String name;
 	
 	@NotNull
 	@Column(name = "param_type", nullable = false)
 	private String type;
+	
+	@NotNull
+	@ManyToOne
+	@JoinColumn(name = "id_action", nullable = false)
+	private Action action;
 
 	public Long getId() {
 		return id;
@@ -52,14 +53,6 @@ public class ParametersActions {
 		this.channel = channel;
 	}
 
-	public String getid_action() {
-		return id_action;
-	}
-
-	public void setid_action(String id_action) {
-		this.id_action = id_action;
-	}
-
 	public String getName() {
 		return name;
 	}
@@ -75,12 +68,22 @@ public class ParametersActions {
 	public void setType(String type) {
 		this.type = type;
 	}
+	
+	
+
+	public Action getAction() {
+		return action;
+	}
+
+	public void setAction(Action action) {
+		this.action = action;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id_action == null) ? 0 : id_action.hashCode());
+		result = prime * result + ((action == null) ? 0 : action.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
@@ -95,10 +98,10 @@ public class ParametersActions {
 		if (getClass() != obj.getClass())
 			return false;
 		ParametersActions other = (ParametersActions) obj;
-		if (id_action == null) {
-			if (other.id_action != null)
+		if (action == null) {
+			if (other.action != null)
 				return false;
-		} else if (!id_action.equals(other.id_action))
+		} else if (!action.equals(other.action))
 			return false;
 		if (name == null) {
 			if (other.name != null)

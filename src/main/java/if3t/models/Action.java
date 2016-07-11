@@ -1,11 +1,14 @@
 package if3t.models;
 
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -37,6 +40,10 @@ public class Action {
 	@OneToOne(mappedBy = "action")
 	@JsonBackReference
 	private Recipe recipe;
+	
+	@OneToMany(mappedBy = "action")
+	@JsonBackReference
+	private Set<ParametersActions> parameters;
 
 	public Long getId() {
 		return id;
@@ -76,6 +83,15 @@ public class Action {
 
 	public void setRecipe(Recipe recipe) {
 		this.recipe = recipe;
+	}
+		
+
+	public Set<ParametersActions> getParameters() {
+		return parameters;
+	}
+
+	public void setParameters(Set<ParametersActions> parameters) {
+		this.parameters = parameters;
 	}
 
 	@Override

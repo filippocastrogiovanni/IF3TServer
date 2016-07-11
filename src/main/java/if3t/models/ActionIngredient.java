@@ -9,6 +9,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.Id;
 
 @Entity
@@ -22,6 +24,7 @@ public class ActionIngredient {
 	
 	@NotNull
 	@ManyToOne
+	@JsonBackReference
 	@JoinColumn(name="id_recipe")
 	private Recipe recipe;
 	

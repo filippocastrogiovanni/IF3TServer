@@ -1,11 +1,15 @@
 package if3t.models;
 
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -38,6 +42,10 @@ public class Trigger {
 	@JsonBackReference
 	private Recipe recipe;
 
+	@OneToMany(mappedBy = "trigger")
+	@JsonBackReference
+	private Set<ParametersTriggers> parameters;
+	
 	public Long getId() {
 		return id;
 	}
