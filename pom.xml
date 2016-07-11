@@ -46,10 +46,5 @@
   		<artifactId>spring-boot-devtools</artifactId>
   		<version>1.3.5.RELEASE</version>
   	</dependency>
-  	<dependency>
-  		<groupId>com.goldmansachs</groupId>
-  		<artifactId>gs-collections</artifactId>
-  		<version>5.1.0</version>
-  	</dependency>
   </dependencies>
 </project>
