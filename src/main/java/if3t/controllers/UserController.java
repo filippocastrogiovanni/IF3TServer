@@ -85,7 +85,7 @@ public class UserController {
 		if (loggedUser == null)
 			throw new NotLoggedInException("ERROR: not logged in!");
 
-		if (loggedUser.getId() != u.getId() && !loggedUser.getRole().equals(Role.ADMIN))
+		if ((loggedUser.getId() != u.getId() && !loggedUser.getRole().equals(Role.ADMIN)) || !loggedUser.isEnabled())
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 		
 
@@ -135,6 +135,9 @@ public class UserController {
 		User loggedUser = userService.getUserByUsername(auth.getName());
 		if (loggedUser == null)
 			throw new NotLoggedInException("ERROR: not logged in!");
+		
+		if (!loggedUser.isEnabled())
+			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 		
 		if (!passwordReq.getCurrentPassword().matches(passwordRegex))
 			throw new InvalidParametersException("ERROR: current password field is not valid");
