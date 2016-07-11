@@ -1,4 +1,4 @@
-package if3t;
+package if3t.models;
 
 public class RequestPassword {
 	private String currentPassword;

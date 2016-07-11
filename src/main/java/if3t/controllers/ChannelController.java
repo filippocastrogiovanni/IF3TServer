@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import if3t.Response;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Channel;
+import if3t.models.Response;
 import if3t.models.User;
 import if3t.services.ChannelService;
 import if3t.services.UserService;
