@@ -1,6 +1,7 @@
 package if3t;
 
 import java.security.Principal;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -15,24 +16,24 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @RestController
 public class Application {
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
-    
-    @CrossOrigin
-    @RequestMapping(value="/login")
-    public Principal user(Principal user) {
-    	return user;
-    }
-    
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurerAdapter() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowCredentials(true);
-            }
-        };
-    }
-    
-} 
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args);
+	}
+
+	@CrossOrigin
+	@RequestMapping(value = "/login")
+	public Principal user(Principal user) {
+		return user;
+	}
+
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurerAdapter() {
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/**").allowCredentials(true);
+			}
+		};
+	}
+
+}

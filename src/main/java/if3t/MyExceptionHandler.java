@@ -9,6 +9,7 @@ import if3t.exceptions.ChannelNotAuthorizedException;
 import if3t.exceptions.InvalidParametersException;
 import if3t.exceptions.NotLoggedInException;
 import if3t.exceptions.WrongPasswordException;
+import if3t.models.Response;
 
 
 @ControllerAdvice  

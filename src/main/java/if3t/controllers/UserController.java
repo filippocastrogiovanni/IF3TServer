@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import if3t.RequestPassword;
-import if3t.Response;
 import if3t.exceptions.InvalidParametersException;
 import if3t.exceptions.NotLoggedInException;
 import if3t.exceptions.WrongPasswordException;
+import if3t.models.RequestPassword;
+import if3t.models.Response;
 import if3t.models.Role;
 import if3t.models.User;
 import if3t.services.UserService;
@@ -85,7 +85,7 @@ public class UserController {
 		if (loggedUser == null)
 			throw new NotLoggedInException("ERROR: not logged in!");
 
-		if (loggedUser.getId() != u.getId() && !loggedUser.getRole().equals(Role.ADMIN))
+		if ((loggedUser.getId() != u.getId() && !loggedUser.getRole().equals(Role.ADMIN)) || !loggedUser.isEnabled())
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 		
 
@@ -135,6 +135,9 @@ public class UserController {
 		User loggedUser = userService.getUserByUsername(auth.getName());
 		if (loggedUser == null)
 			throw new NotLoggedInException("ERROR: not logged in!");
+		
+		if (!loggedUser.isEnabled())
+			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 		
 		if (!passwordReq.getCurrentPassword().matches(passwordRegex))
 			throw new InvalidParametersException("ERROR: current password field is not valid");
