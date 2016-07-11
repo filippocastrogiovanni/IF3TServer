@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Channel;
-import if3t.models.Response;
 import if3t.models.User;
 import if3t.services.ChannelService;
 import if3t.services.UserService;
@@ -48,6 +47,7 @@ public class ChannelController {
 		return channelService.readUserChannels(user.getId());
 	}
 	
+	/*
 	@RequestMapping(value="/unauthorize_channel/{channelId}", method=RequestMethod.POST)
 	public Response unautorizeChannel(@PathVariable Long channelId) throws NotLoggedInException {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -59,4 +59,5 @@ public class ChannelController {
 		channelService.unautorizeChannel(user.getId(), channelId);
 		return new Response("Successful", 200);
 	}
+	*/
 }

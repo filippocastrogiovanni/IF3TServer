@@ -20,6 +20,12 @@ public class AuthRequest {
 		this.prompt = "consent select_account";
 		this.access_type = "offline";
 	}
+	
+	
+
+	public String getState() {
+		return state;
+	}
 
 	@Override
 	public String toString() {

@@ -1,11 +1,14 @@
 package if3t.controllers;
 
 import javax.naming.NoPermissionException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -153,6 +156,15 @@ public class UserController {
 		
 		loggedUser.setPassword(new BCryptPasswordEncoder().encode(passwordReq.getNewPassword()));
 		userService.updateUser(loggedUser);
+		return new Response("Successful", 200);
+	}
+	
+	@RequestMapping(value = "/logout", method = RequestMethod.POST)
+	public Response logout(HttpServletRequest request, HttpServletResponse response) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if(auth == null)
+			return null;
+		new SecurityContextLogoutHandler().logout(request, response, auth);
 		return new Response("Successful", 200);
 	}
 
