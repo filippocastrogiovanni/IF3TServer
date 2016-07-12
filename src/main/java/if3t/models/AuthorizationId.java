@@ -30,7 +30,7 @@ public class AuthorizationId implements Serializable{
 	public User getUser() {
 		return user;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */

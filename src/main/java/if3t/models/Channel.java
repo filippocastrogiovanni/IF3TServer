@@ -34,7 +34,7 @@ public class Channel {
 	private String keyword;
 
 	@OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
-	@JsonBackReference
+	@JsonBackReference(value="channel-authorizations")
 	private Set<Authorization> authorizations;
 	 
 	/**

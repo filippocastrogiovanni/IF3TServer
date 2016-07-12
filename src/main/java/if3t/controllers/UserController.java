@@ -34,7 +34,7 @@ public class UserController {
 	String usernameRegex = "^[a-zA-Z0-9]{6,30}$";
 	String passwordRegex = "^[a-zA-Z0-9,!?.£%&;:-=]{6,30}$";
 
-	@RequestMapping(value = "/signin", method = RequestMethod.POST)
+	@RequestMapping(value = "/signup", method = RequestMethod.POST)
 	public Response createUser(@RequestBody User u) throws InvalidParametersException {
 		User checkUser = null;
 

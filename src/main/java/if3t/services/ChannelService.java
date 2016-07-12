@@ -9,4 +9,5 @@ public interface ChannelService {
 	public Channel readChannel(Long id);
 	public List<Channel> readUserChannels(Long userId);
 	public void unautorizeChannel(Long userId, Long channelId);
+	public void authorizeChannel(Long userId, Long channelId, String token);
 }

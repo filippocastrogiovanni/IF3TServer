@@ -1,4 +1,4 @@
-package if3t.gmail;
+package if3t.apis;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import if3t.models.User;
@@ -19,6 +19,12 @@ public class AuthRequest {
 		this.state = new BCryptPasswordEncoder().encode(user.getUsername());
 		this.prompt = "consent select_account";
 		this.access_type = "offline";
+	}
+	
+	
+
+	public String getState() {
+		return state;
 	}
 
 	@Override
