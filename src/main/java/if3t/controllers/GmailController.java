@@ -11,8 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import if3t.apis.AuthRequest;
+import if3t.apis.GoogleTokenRequest;
 import if3t.exceptions.NotLoggedInException;
-import if3t.gmail.AuthRequest;
 import if3t.models.Response;
 import if3t.models.User;
 import if3t.services.ChannelService;
@@ -76,7 +79,30 @@ public class GmailController {
 		
 		if(code == null)
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
+		
+		RestTemplate restTemplate = new RestTemplate();
+		
+		GoogleTokenRequest request = new GoogleTokenRequest();
+		request.
+        Quote quote = restTemplate.postForObject(url, request, responseType)
+        		
+        		.getForObject("http://gturnquist-quoters.cfapps.io/api/random", Quote.class);
+        log.info(quote.toString());
+		
+		
+		
+		/*
+		 * 
+		 * POST /oauth2/v4/token HTTP/1.1
+Host: www.googleapis.com
+Content-Type: application/x-www-form-urlencoded
 
+code=4/P7q7W91a-oMsCeLvIaQm6bTrgtp7&
+client_id=8819981768.apps.googleusercontent.com&
+client_secret={client_secret}&
+redirect_uri=https://oauth2.example.com/code&
+grant_type=authorization_code
+		 */
 		channelService.authorizeChannel(loggedUser.getId(), (long) 1, code);
 		
 		return "<script>window.close();</script>";

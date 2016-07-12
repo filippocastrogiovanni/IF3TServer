@@ -1,4 +1,4 @@
-package if3t.gmail;
+package if3t.apis;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import if3t.models.User;
