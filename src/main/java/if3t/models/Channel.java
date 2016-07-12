@@ -29,6 +29,9 @@ public class Channel {
 	
 	@NotNull
 	private String image_url;
+	
+	@NotNull
+	private String keyword;
 
 	@OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
 	@JsonBackReference
@@ -68,6 +71,20 @@ public class Channel {
 	 */
 	public void setImage_url(String image_url) {
 		this.image_url = image_url;
+	}
+
+	/**
+	 * @return the keyword
+	 */
+	public String getKeyword() {
+		return keyword;
+	}
+
+	/**
+	 * @param keyword the keyword to set
+	 */
+	public void setKeyword(String keyword) {
+		this.keyword = keyword;
 	}
 
 	/**
