@@ -3,13 +3,13 @@ package if3t.apis;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import if3t.models.User;
 
-public class AuthRequest {
+public class GoogleAuthRequest {
 
 	private String client_id, state, access_type, prompt, 
 					scope, response_type, redirect_uri;
 	
 	
-	public AuthRequest(User user) {
+	public GoogleAuthRequest(User user) {
 		this.client_id = "1087608412755-q2loo7j3fu403k55mmclebf0e6u06e91.apps.googleusercontent.com";
 		this.scope = "https://www.googleapis.com/auth/gmail.readonly "
 					+ "https://www.googleapis.com/auth/gmail.compose "
