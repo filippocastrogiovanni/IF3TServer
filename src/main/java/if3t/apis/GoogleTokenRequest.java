@@ -1,7 +1,10 @@
 package if3t.apis;
 
-public class GoogleTokenRequest {
+import java.io.Serializable;
 
+public class GoogleTokenRequest implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 	String code;			//The authorization code returned from the initial request.
 	String client_id;		//The client ID obtained from the API Console.
 	String client_secret;	//The client secret obtained from the API Console.

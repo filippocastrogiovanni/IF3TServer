@@ -46,14 +46,18 @@ public class ChannelServiceImpl implements ChannelService {
 		authRepository.deleteByUser_IdAndChannel_ChannelId(userId, channelId);
 	}
 
-	public void authorizeChannel(Long userId, Long channelId, String token){
-		//TODO ATTENZIONE non funziona
-		//mi pare di capire che JPA abbia qualche problema a gestire l'entià con la chiave composta
-		//secondo me bisogna cambiare la struttura del db
+	public void authorizeChannel(Long userId, String channel, 
+			String access_token, 
+			String refresh_token,
+			String token_type,
+			Long expires_date){
 		Authorization auth = new Authorization();
-		auth.setChannel(channelRepository.findOne(channelId));
+		auth.setChannel(channelRepository.findByKeyword(channel));
 		auth.setUser(userRepository.findOne(userId));
-		auth.setToken(token);
+		auth.setAccessToken(access_token);
+		auth.setRefreshToken(refresh_token);
+		auth.setTokenType(token_type);
+		auth.setExpireDate(expires_date);
 		authRepository.save(auth);
 	}
 }
