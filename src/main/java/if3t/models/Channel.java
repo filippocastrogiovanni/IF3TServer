@@ -108,7 +108,7 @@ public class Channel {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((keyword == null) ? 0 : keyword.hashCode());
 		return result;
 	}
 
@@ -124,13 +124,12 @@ public class Channel {
 		if (!(obj instanceof Channel))
 			return false;
 		Channel other = (Channel) obj;
-		if (name == null) {
-			if (other.name != null)
+		if (keyword == null) {
+			if (other.keyword != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!keyword.equals(other.keyword))
 			return false;
 		return true;
 	}
-	
-	
+
 }
