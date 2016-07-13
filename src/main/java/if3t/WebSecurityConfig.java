@@ -41,7 +41,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         	.and()
             .addFilterAfter(new CsrfHeaderFilter(), CsrfFilter.class)
             .csrf().csrfTokenRepository(csrfTokenRepository())
-            .ignoringAntMatchers("/signup", "/gmail/**");
+            .ignoringAntMatchers("/gmail/**");
         
     }
     
