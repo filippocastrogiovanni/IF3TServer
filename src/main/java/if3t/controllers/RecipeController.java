@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import if3t.exceptions.ChannelNotAuthorizedException;
+import if3t.exceptions.NoPermissionException;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Recipe;
 import if3t.models.Response;
@@ -48,6 +49,16 @@ public class RecipeController {
 	public List<Recipe> readRecipe(@PathVariable Long id) {
 		//TODO aggiungere controllo sull'utente che fa richiesta. Deve essere una sua ricetta (se è pubblica, ma non sua, no altrimenti potrebbe modificarla)
 		return recipeService.readRecipe(id);
+	public List<Recipe> readRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		User loggedUser = null;
+		if (auth == null)
+			throw new NotLoggedInException("ERROR: not loggedIn");
+		
+		loggedUser = userService.getUserByUsername(auth.getName());
+		List<Recipe> recipeList  = recipeService.readRecipe(id, loggedUser);
+		
+		return recipeList;
 	}
 	
 	@RequestMapping(value="/add_recipe", method=RequestMethod.POST)
@@ -58,9 +69,14 @@ public class RecipeController {
 	}
 	
 	@RequestMapping(value="/remove_recipe/{id}", method=RequestMethod.POST)
-	public void delRecipe(@PathVariable Long id) {
-		//TODO controlli user
-		recipeService.deleteRecipe(id);
+	public void delRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		User loggedUser = null;
+		if (auth == null)
+			throw new NotLoggedInException("ERROR: not loggedIn");
+		
+		loggedUser = userService.getUserByUsername(auth.getName());
+		recipeService.deleteRecipe(id, loggedUser);
 	}
 	
 	@RequestMapping(value="/publish_recipe", method=RequestMethod.PUT)

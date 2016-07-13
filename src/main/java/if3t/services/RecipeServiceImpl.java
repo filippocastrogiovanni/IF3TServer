@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import if3t.exceptions.ChannelNotAuthorizedException;
+import if3t.exceptions.NoPermissionException;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Channel;
 import if3t.models.Recipe;
@@ -39,14 +40,23 @@ public class RecipeServiceImpl implements RecipeService {
 		return recipeRepository.findByIsPublic(true);
 	}
 
-	public List<Recipe> readRecipe(Long id) {
-		Recipe recipe = recipeRepository.findOne(id);
-		String groupId = recipe.getGroupId();
-		return recipeRepository.findByGroupId(groupId);
+	public List<Recipe> readRecipe(Long id, User loggedUser) throws NoPermissionException {
+		Recipe targetRecipe = recipeRepository.findOne(id);
+		String groupId = targetRecipe.getGroupId();
+		
+		List<Recipe> recipeList = recipeRepository.findByGroupId(groupId);
+		for(Recipe recipe: recipeList){
+			if(!recipe.getUser().getId().equals(loggedUser.getId()))
+				throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
+		}
+		
+		return recipeList;
 	}
 
-	public void deleteRecipe(Long id) {
+	public void deleteRecipe(Long id, User loggedUser) throws NoPermissionException {
 		Recipe recipe = recipeRepository.findOne(id);
+		if(!recipe.getUser().getId().equals(loggedUser.getId()))
+			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 		recipeRepository.delete(recipe);
 	}
 
