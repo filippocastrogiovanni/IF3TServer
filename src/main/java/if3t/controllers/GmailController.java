@@ -128,12 +128,12 @@ public class GmailController {
 		GoogleTokenResponse googleRS = new GoogleTokenResponse(response.getBody());
 
 		if(!googleRS.isValid())
-			return "KO";
+			return "ERROR";
 		channelService.authorizeChannel(loggedUser.getId(), "gmail", googleRS.getAccess_token(), googleRS.getRefresh_token(),
 				googleRS.getToken_type(), googleRS.getExpiration_date());
 
 
-		return "ciao";
+		return "<script>windows.close();</script>";
 	}
 
 	@RequestMapping(value = "/gmail/tokenresponse", method = RequestMethod.GET)
