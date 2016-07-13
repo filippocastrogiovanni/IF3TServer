@@ -118,6 +118,7 @@ public class GmailController {
 		/////////////////////////////////////////////////////////////////////////////////////////////////////
 		String tokenUrl = "https://accounts.google.com/o/oauth2/token";
 		System.out.println("codice: "+code);
+		/*
 		RestTemplate restTemplate = new RestTemplate();
 		FormHttpMessageConverter converter = new FormHttpMessageConverter();
         MediaType mediaType = new MediaType("application","x-www-form-urlencoded", Charset.forName("UTF-8"));
@@ -135,8 +136,8 @@ public class GmailController {
 				.post(new URI(tokenUrl))
 				.body(requestBody);
 		ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+		*/
 		
-		/*
 		try {
 		URL obj = new URL(tokenUrl);
 		
@@ -146,9 +147,9 @@ public class GmailController {
 		//con.setRequestProperty("User-Agent", USER_AGENT);
 		//con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 		String urlParameters = "code="+code+"&"
-				+ "client_id=1087608412755-q2loo7j3fu403k55mmclebf0e6u06e91.apps.googleusercontent.com&"
-				+ "client_secret=1087608412755-q2loo7j3fu403k55mmclebf0e6u06e91.apps.googleusercontent.com&"
-				+ "redirect_uri=http://localhost:8181/gmailresponse&"
+				+ "client_id=205247608184-qn9jd5afpqai7n8n6hbhb2qgvad7mih8.apps.googleusercontent.com&"
+				+ "client_secret=DPPiyrVcd-uqUMw7ponxFKv1&"
+				+ "redirect_uri=http://localhost:8181/gmail/tokenresponse&"
 				+ "grant_type=authorization_code";
 		con.setDoOutput(true);
 		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
@@ -184,7 +185,7 @@ public class GmailController {
 			e.printStackTrace();
 		}
 		
-		*/
+		
 		
 		
 		
