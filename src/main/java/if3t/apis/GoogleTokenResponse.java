@@ -27,34 +27,18 @@ public class GoogleTokenResponse implements Serializable {
 
 	public GoogleTokenResponse(String jsonString) {
 		JSONObject obj = new JSONObject(jsonString);
-		
-		if(obj.getString("access_token") != null) {
+		System.out.println("ricevuto il json : " + jsonString);
+		try {
 			this.access_token = obj.getString("access_token");
-		} else {
-			valid = false;
-		}
-		
-		if(obj.getString("refresh_token") != null) {
 			this.refresh_token = obj.getString("refresh_token");
-		} else {
-			valid = false;
-		}
-		
-		if(obj.getString("expires_in") != null) {
-			this.expires_in = Long.parseLong(obj.getString("expires_in"));
-		} else {
-			valid = false;
-		}
-		
-		if(obj.getString("token_type") != null) {
+			this.expires_in = new Long(obj.getInt("expires_in"));
 			this.token_type = obj.getString("token_type");
-		} else {
+			Calendar now = Calendar.getInstance();
+			this.timestamp = now.getTimeInMillis() / 1000;
+		} catch (Exception e) {
 			valid = false;
 		}
-		
-		Calendar now = Calendar.getInstance();
-		this.timestamp = now.getTimeInMillis()/1000;
-		
+
 	}
 
 	public String getAccess_token() {
@@ -68,10 +52,10 @@ public class GoogleTokenResponse implements Serializable {
 	public Long getExpires_in() {
 		return expires_in;
 	}
-	
+
 	public Long getExpiration_date() {
-		return this.timestamp+this.expires_in-1;
-		
+		return this.timestamp + this.expires_in - 1;
+
 	}
 
 	public String getToken_type() {
