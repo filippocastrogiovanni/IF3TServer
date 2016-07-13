@@ -40,7 +40,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         	.logout()
         	.and()
             .addFilterAfter(new CsrfHeaderFilter(), CsrfFilter.class)
-            .csrf().csrfTokenRepository(csrfTokenRepository());
+            .csrf().csrfTokenRepository(csrfTokenRepository())
+            .ignoringAntMatchers("/signup");
         
     }
     
