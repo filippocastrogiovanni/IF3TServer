@@ -3,7 +3,9 @@ package if3t.controllers;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URI;
@@ -104,7 +106,7 @@ public class GmailController {
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 		
 		String username = authRequests.get(state);
-		authRequests.remove(state);
+		
 		User loggedUser = userService.getUserByUsername(username);
 		if (loggedUser == null)
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
@@ -115,9 +117,39 @@ public class GmailController {
 		if(code == null)
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 		
+		GoogleTokenRequest requestObj = new GoogleTokenRequest(code);
+		RestTemplate restTemplate = new RestTemplate();
+		//FormHttpMessageConverter converter = new FormHttpMessageConverter();
+        MediaType mediaType = new MediaType("application","x-www-form-urlencoded", Charset.forName("UTF-8"));
+        //converter.setSupportedMediaTypes(Arrays.asList(mediaType));
+		//restTemplate.getMessageConverters().add(0, converter);
+		RequestEntity<String> request = RequestEntity
+				.post(new URI(requestObj.getToken_uri()))
+				.contentLength(requestObj.getRequestBody().getBytes().length)
+				.contentType(mediaType)
+				.body(requestObj.getRequestBody());
+		
+		
+		
+		//connection.setDoOutput(true);
+	    //connection.setDoInput(true);
+	    //connection.setInstanceFollowRedirects(true);
+	    //connection.setUseCaches(false);
+	    System.out.println("prima");
+		ResponseEntity<Object[]> response = restTemplate.exchange(request, Object[].class);
+		System.out.println("dopo");
+		Object[] objects = response.getBody();
+		//MediaType contentType = response.getHeaders().getContentType();
+		//HttpStatus statusCode = response.getStatusCode();
+		System.out.println(objects.toString());
+		return "OK";
+		
+		
+		
+		
 		/////////////////////////////////////////////////////////////////////////////////////////////////////
-		String tokenUrl = "https://accounts.google.com/o/oauth2/token";
-		System.out.println("codice: "+code);
+		//String tokenUrl = "https://accounts.google.com/o/oauth2/token";
+		//System.out.println("codice: "+code);
 		/*
 		RestTemplate restTemplate = new RestTemplate();
 		FormHttpMessageConverter converter = new FormHttpMessageConverter();
@@ -138,40 +170,43 @@ public class GmailController {
 		ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 		*/
 		
+		/*
+		 ////////////////////////////////////////FUNZIONA
 		try {
-		URL obj = new URL(tokenUrl);
+		URL url = new URL(tokenUrl);
 		
-		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
-		con.setRequestMethod("POST");
-		con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
-		//con.setRequestProperty("User-Agent", USER_AGENT);
-		//con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 		String urlParameters = "code="+code+"&"
 				+ "client_id=205247608184-qn9jd5afpqai7n8n6hbhb2qgvad7mih8.apps.googleusercontent.com&"
 				+ "client_secret=DPPiyrVcd-uqUMw7ponxFKv1&"
-				+ "redirect_uri=http://localhost:8181/gmail/tokenresponse&"
+				+ "redirect_uri=http://localhost:8181/gmail/authresponse&"
 				+ "grant_type=authorization_code";
-		con.setDoOutput(true);
-		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-		wr.writeBytes(urlParameters);
-		wr.flush();
-		wr.close();
-
-		int responseCode = con.getResponseCode();
-		System.out.println("Response Code : " + responseCode);
-
-		BufferedReader in = new BufferedReader(
-		        new InputStreamReader(con.getInputStream()));
-		String inputLine;
-		StringBuffer response = new StringBuffer();
-
-		while ((inputLine = in.readLine()) != null) {
-			response.append(inputLine);
-		}
-		in.close();
 		
-		//print result
-		System.out.println(response.toString());
+		
+		HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+	    connection.setDoOutput(true);
+	    connection.setDoInput(true);
+	    connection.setInstanceFollowRedirects(true);
+	    connection.setRequestMethod("POST");
+	    connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+	    //connection.setRequestProperty("Authorization", "Bearer 4/q3Xh_pJI458XXXXXXXkh-lxe3-8.cmaD6o7V5BkQXE-XXXXX-edgI");
+	    connection.setRequestProperty("Content-Length", "" + Integer.toString(urlParameters.getBytes().length));
+	    //connection.setRequestProperty("X-GData-Key", "key=AI39siXXXXXXM7tyHBvXEM1lLcORetit6QSArQ3sjelBxXXXXXXtgLSPdZPxvsF_vkntOQMnAEYAuVFqhN7oUw");
+	    //connection.setRequestProperty("GData-Version", "2");
+	    connection.setUseCaches(false);
+		
+		DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+
+	    wr.writeBytes(urlParameters);
+	    wr.flush();
+	    InputStream inputStream = connection.getInputStream();
+	    byte[] b = new byte[1024];
+	    while (inputStream.read(b) != -1) {
+	        System.out.print(new String(b));
+
+	    }
+	    System.out.println("");
+	    wr.close();
+	    connection.disconnect();
 		
 		
 		} catch (MalformedURLException e) {
@@ -184,6 +219,11 @@ public class GmailController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		
+		///////////////////////////////////////FUNZIONA
+		 */
+		
 		
 		
 		
@@ -219,7 +259,8 @@ public class GmailController {
 		HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<MultiValueMap<String, String>>(requestBody, requestHeaders);
 		ResponseEntity<String> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, requestEntity, String.class);
 		String result = response.getBody();*/
-		return code;
+		//authRequests.remove(state);
+		//return code;
 		
 		
 		
