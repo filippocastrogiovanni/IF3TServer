@@ -46,6 +46,7 @@ public class RecipeController {
 	
 	@RequestMapping(value="/recipe/{id}", method=RequestMethod.GET)
 	public List<Recipe> readRecipe(@PathVariable Long id) {
+		//TODO aggiungere controllo sull'utente che fa richiesta. Deve essere una sua ricetta (se è pubblica, ma non sua, no altrimenti potrebbe modificarla)
 		return recipeService.readRecipe(id);
 	}
 	
