@@ -4,29 +4,28 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Table;
 import javax.persistence.Id;
-import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 @Entity
 @Table(name="authorizations")
-@IdClass(AuthorizationId.class)
 public class Authorization implements Serializable{
-	
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 3501617069367109567L;
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false)
+	private Long id;
+	
 	@ManyToOne
 	@JoinColumn(name = "id_channel")
 	private Channel channel;
 	
-	@Id
 	@ManyToOne
 	@JoinColumn(name = "id_user")
 	private User user;
@@ -43,6 +42,14 @@ public class Authorization implements Serializable{
 	@Column(name = "token_type")
 	private String tokenType;
 	
+	
+	
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
 	/**
 	 * @return the channel
 	 */
