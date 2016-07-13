@@ -19,7 +19,7 @@ public class Authorization implements Serializable{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false)
+	@Column(name = "id")
 	private Long id;
 	
 	@ManyToOne
@@ -30,7 +30,7 @@ public class Authorization implements Serializable{
 	@JoinColumn(name = "id_user")
 	private User user;
 	
-	@Column(name = "acces_token")
+	@Column(name = "access_token")
 	private String accessToken;
 	
 	@Column(name = "refresh_token")

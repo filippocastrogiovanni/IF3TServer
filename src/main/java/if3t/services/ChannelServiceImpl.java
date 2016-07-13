@@ -51,7 +51,7 @@ public class ChannelServiceImpl implements ChannelService {
 			String refresh_token,
 			String token_type,
 			Long expires_date){
-		try {
+		
 		Authorization auth = new Authorization();
 		auth.setChannel(channelRepository.findByKeyword(channel));
 		auth.setUser(userRepository.findOne(userId));
@@ -60,8 +60,6 @@ public class ChannelServiceImpl implements ChannelService {
 		auth.setTokenType(token_type);
 		auth.setExpireDate(expires_date);
 		authRepository.save(auth);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+
 	}
 }
