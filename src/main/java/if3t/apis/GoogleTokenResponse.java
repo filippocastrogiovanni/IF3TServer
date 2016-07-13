@@ -27,7 +27,6 @@ public class GoogleTokenResponse implements Serializable {
 
 	public GoogleTokenResponse(String jsonString) {
 		JSONObject obj = new JSONObject(jsonString);
-		System.out.println("ricevuto il json : " + jsonString);
 		try {
 			this.access_token = obj.getString("access_token");
 			this.refresh_token = obj.getString("refresh_token");
