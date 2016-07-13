@@ -127,9 +127,11 @@ public class GmailController {
 		ResponseEntity<String> response = restTemplate.exchange(request, String.class);
 		GoogleTokenResponse googleRS = new GoogleTokenResponse(response.getBody());
 
-		
+		if(!googleRS.isValid())
+			return "KO";
 		channelService.authorizeChannel(loggedUser.getId(), "gmail", googleRS.getAccess_token(), googleRS.getRefresh_token(),
 				googleRS.getToken_type(), googleRS.getExpiration_date());
+
 
 		return "ciao";
 	}
