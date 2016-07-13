@@ -32,6 +32,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         	.antMatchers(HttpMethod.GET, "/channels").permitAll()
         	.antMatchers(HttpMethod.GET, "/images/**").permitAll()
         	.antMatchers(HttpMethod.GET, "/gmail/**").permitAll()
+        	.antMatchers(HttpMethod.GET, "/gmailresponse").permitAll()
         	.antMatchers(HttpMethod.POST, "/signup").permitAll()
         	.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
         	.anyRequest().authenticated()

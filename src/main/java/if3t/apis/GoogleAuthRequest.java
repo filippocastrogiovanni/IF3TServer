@@ -10,7 +10,7 @@ public class GoogleAuthRequest {
 	
 	
 	public GoogleAuthRequest(User user) {
-		this.client_id = "1087608412755-q2loo7j3fu403k55mmclebf0e6u06e91.apps.googleusercontent.com";
+		this.client_id = "205247608184-qn9jd5afpqai7n8n6hbhb2qgvad7mih8.apps.googleusercontent.com";
 		this.scope = "https://www.googleapis.com/auth/gmail.readonly "
 					+ "https://www.googleapis.com/auth/gmail.compose "
 					+ "https://www.googleapis.com/auth/gmail.send "
@@ -31,7 +31,7 @@ public class GoogleAuthRequest {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("https://accounts.google.com/o/oauth2/v2/auth?");
+		builder.append("https://accounts.google.com/o/oauth2/auth?");
 		builder.append("response_type=" + this.response_type + "&");
 		builder.append("client_id=" + this.client_id + "&");
 		builder.append("scope=" + this.scope + "&");
