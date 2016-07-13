@@ -9,7 +9,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -37,9 +36,9 @@ public class Trigger {
 	@NotNull
 	private String paragraph;
 		
-	@OneToOne(mappedBy = "trigger")
+	@OneToMany(mappedBy = "trigger")
 	@JsonBackReference(value="trigger-recipe")
-	private Recipe recipe;
+	private Set<Recipe> recipe;
 
 	@OneToMany(mappedBy = "trigger")
 	@JsonBackReference(value="trigger-parameters")
@@ -77,14 +76,6 @@ public class Trigger {
 		this.paragraph = paragraph;
 	}
 
-	public Recipe getRecipe() {
-		return recipe;
-	}
-
-	public void setRecipe(Recipe recipe) {
-		this.recipe = recipe;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -114,9 +105,5 @@ public class Trigger {
 		} else if (!paragraph.equals(other.paragraph))
 			return false;
 		return true;
-	}
-
-
-	
-	
+	}	
 }

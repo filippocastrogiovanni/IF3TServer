@@ -9,7 +9,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -37,9 +36,9 @@ public class Action {
 	@NotNull
 	private String paragraph;
 	
-	@OneToOne(mappedBy = "action")
+	@OneToMany(mappedBy = "action")
 	@JsonBackReference(value="action-recipe")
-	private Recipe recipe;
+	private Set<Recipe> recipe;
 	
 	@OneToMany(mappedBy = "action")
 	@JsonBackReference(value="action-parameters")
@@ -76,15 +75,6 @@ public class Action {
 	public void setParagraph(String paragraph) {
 		this.paragraph = paragraph;
 	}
-
-	public Recipe getRecipe() {
-		return recipe;
-	}
-
-	public void setRecipe(Recipe recipe) {
-		this.recipe = recipe;
-	}
-		
 
 	public Set<ParametersActions> getParameters() {
 		return parameters;
@@ -124,6 +114,4 @@ public class Action {
 			return false;
 		return true;
 	}
-
-
 }
