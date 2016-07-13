@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import javax.persistence.Id;
 
 @Entity
-@Table(name="action_ingredients")
+@Table(name="actions_ingredients")
 public class ActionIngredient {
 
 	@Id

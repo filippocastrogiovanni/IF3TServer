@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import javax.persistence.Id;
 
 @Entity
-@Table(name="trigger_ingredients")
+@Table(name="triggers_ingredients")
 public class TriggerIngredient {
 	
 	@Id
