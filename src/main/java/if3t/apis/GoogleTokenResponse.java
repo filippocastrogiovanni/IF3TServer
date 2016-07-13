@@ -1,6 +1,9 @@
 package if3t.apis;
 
 import java.io.Serializable;
+import java.util.Calendar;
+
+import org.json.JSONObject;
 
 public class GoogleTokenResponse implements Serializable {
 
@@ -15,52 +18,68 @@ public class GoogleTokenResponse implements Serializable {
 									// is only present if access_type=offline is
 									// included in the authorization code
 									// request.
-	private String expires_in; // The remaining lifetime of the access token.
+	private Long expires_in; // The remaining lifetime of the access token.
 	private String token_type; // Identifies the type of token returned. At this
 								// time, this field will always have the value
 								// Bearer.
+	private Long timestamp;
+	private boolean valid = true;
 
-	public GoogleTokenResponse() {
-	}
-
-	public GoogleTokenResponse(String access_token, String refresh_token, String expires_in, String token_type) {
-		super();
-		this.access_token = access_token;
-		this.refresh_token = refresh_token;
-		this.expires_in = expires_in;
-		this.token_type = token_type;
+	public GoogleTokenResponse(String jsonString) {
+		JSONObject obj = new JSONObject(jsonString);
+		
+		if(obj.getString("access_token") != null) {
+			this.access_token = obj.getString("access_token");
+		} else {
+			valid = false;
+		}
+		
+		if(obj.getString("refresh_token") != null) {
+			this.refresh_token = obj.getString("refresh_token");
+		} else {
+			valid = false;
+		}
+		
+		if(obj.getString("expires_in") != null) {
+			this.expires_in = Long.parseLong(obj.getString("expires_in"));
+		} else {
+			valid = false;
+		}
+		
+		if(obj.getString("token_type") != null) {
+			this.token_type = obj.getString("token_type");
+		} else {
+			valid = false;
+		}
+		
+		Calendar now = Calendar.getInstance();
+		this.timestamp = now.getTimeInMillis()/1000;
+		
 	}
 
 	public String getAccess_token() {
 		return access_token;
 	}
 
-	public void setAccess_token(String access_token) {
-		this.access_token = access_token;
-	}
-
 	public String getRefresh_token() {
 		return refresh_token;
 	}
 
-	public void setRefresh_token(String refresh_token) {
-		this.refresh_token = refresh_token;
-	}
-
-	public String getExpires_in() {
+	public Long getExpires_in() {
 		return expires_in;
 	}
-
-	public void setExpires_in(String expires_in) {
-		this.expires_in = expires_in;
+	
+	public Long getExpiration_date() {
+		return this.timestamp+this.expires_in-1;
+		
 	}
 
 	public String getToken_type() {
 		return token_type;
 	}
 
-	public void setToken_type(String token_type) {
-		this.token_type = token_type;
+	public boolean isValid() {
+		return valid;
 	}
 
 }
