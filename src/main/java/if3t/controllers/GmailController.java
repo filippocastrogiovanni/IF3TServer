@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -112,6 +113,10 @@ public class GmailController {
 		String tokenUrl = "https://www.googleapis.com/oauth2/v4/token";
 		
 		RestTemplate restTemplate = new RestTemplate();
+		FormHttpMessageConverter converter = new FormHttpMessageConverter();
+        MediaType mediaType = new MediaType("application","x-www-form-urlencoded", Charset.forName("UTF-8"));
+        converter.setSupportedMediaTypes(Arrays.asList(mediaType));
+		restTemplate.getMessageConverters().add(0, converter);
 		
 		MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<String, String>();
 		requestBody.add("code",code);
@@ -120,14 +125,17 @@ public class GmailController {
 		requestBody.add("redirect_uri","http://localhost:8181/gmail/tokenresponse");
 		requestBody.add("grant_type","authorization_code");
 		
-		HttpHeaders requestHeaders = new HttpHeaders();
+		RequestEntity<MultiValueMap<String, String>> request = RequestEntity
+				.post(new URI(tokenUrl))
+				.body(requestBody);
+
+		ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+		
+		/*HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 		HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<MultiValueMap<String, String>>(requestBody, requestHeaders);
 		ResponseEntity<String> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, requestEntity, String.class);
-		String result = response.getBody();
-		
-		
-		
+		String result = response.getBody();*/
 		
 		
 		
