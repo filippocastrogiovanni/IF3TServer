@@ -1,11 +1,38 @@
 package if3t.controllers;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.naming.NoPermissionException;
+import javax.net.ssl.HttpsURLConnection;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.hibernate.engine.transaction.jta.platform.internal.SynchronizationRegistryBasedSynchronizationStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -13,8 +40,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+
 import if3t.apis.GoogleAuthRequest;
 import if3t.apis.GoogleTokenRequest;
+import if3t.apis.GoogleTokenResponse;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Response;
 import if3t.models.User;
@@ -55,7 +84,7 @@ public class GmailController {
 	public String gmailAuthResponse(@RequestParam(value = "state", required = false) String state,
 			@RequestParam(value = "code", required = false) String code,
 			@RequestParam(value = "error", required = false) String error)
-			throws NotLoggedInException, NoPermissionException {
+			throws NotLoggedInException, NoPermissionException, URISyntaxException {
 
 		if (error != null) {
 			// TODO creare GMAil exception
@@ -80,32 +109,128 @@ public class GmailController {
 		if(code == null)
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 		
+		String tokenUrl = "https://www.googleapis.com/oauth2/v4/token";
+		
 		RestTemplate restTemplate = new RestTemplate();
 		
-		GoogleTokenRequest request = new GoogleTokenRequest();
-		request.
-        Quote quote = restTemplate.postForObject(url, request, responseType)
-        		
-        		.getForObject("http://gturnquist-quoters.cfapps.io/api/random", Quote.class);
-        log.info(quote.toString());
+		MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<String, String>();
+		requestBody.add("code",code);
+		requestBody.add("client_id","1087608412755-q2loo7j3fu403k55mmclebf0e6u06e91.apps.googleusercontent.com");
+		requestBody.add("client_secret","DkbqPB6Wh0mD1zuvuwqsWjeY");
+		requestBody.add("redirect_uri","http://localhost:8181/gmail/tokenresponse");
+		requestBody.add("grant_type","authorization_code");
+		
+		HttpHeaders requestHeaders = new HttpHeaders();
+		requestHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+		HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<MultiValueMap<String, String>>(requestBody, requestHeaders);
+		ResponseEntity<String> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, requestEntity, String.class);
+		String result = response.getBody();
+		
+		
+		
+		
+		
 		
 		
 		
 		/*
-		 * 
-		 * POST /oauth2/v4/token HTTP/1.1
-Host: www.googleapis.com
-Content-Type: application/x-www-form-urlencoded
-
-code=4/P7q7W91a-oMsCeLvIaQm6bTrgtp7&
-client_id=8819981768.apps.googleusercontent.com&
-client_secret={client_secret}&
-redirect_uri=https://oauth2.example.com/code&
-grant_type=authorization_code
-		 */
-		channelService.authorizeChannel(loggedUser.getId(), (long) 1, code);
 		
-		return "<script>window.close();</script>";
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.getMessageConverters().add(new MappingJacksonHttpMessageConverter());
+		restTemplate.getMessageConverters().add(new StringHttpMessageConverter());
+		
+        
+        
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
+		map.add("code", code);
+		map.add("client_id", "1087608412755-q2loo7j3fu403k55mmclebf0e6u06e91.apps.googleusercontent.com");
+		map.add("client_secret", "DkbqPB6Wh0mD1zuvuwqsWjeY");
+		map.add("redirect_uri", "http://localhost:8181/gmail/tokenresponse");
+		map.add("grant_type", "authorization_code");
+		
+		User returns = restTemplate.postForObject(tokenUrl, u, User.class, map);
+		*/
+		
+		
+		/*HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setReadTimeout(2000);
+        factory.setConnectTimeout(2000);
+		ClientHttpRequestFactory requestFactory = factory;
+		*/
+		
+		/*
+
+		HttpMessageConverter<MultiValueMap<String, ?>> formHttpMessageConverter = new FormHttpMessageConverter();
+		HttpMessageConverter<String> stringHttpMessageConverternew = new StringHttpMessageConverter();
+		restTemplate.setMessageConverters(Arrays.asList(formHttpMessageConverter, stringHttpMessageConverternew));
+		
+		MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<String, String>();
+		requestBody.add("code",code);
+		requestBody.add("client_id","1087608412755-q2loo7j3fu403k55mmclebf0e6u06e91.apps.googleusercontent.com");
+		requestBody.add("client_secret","DkbqPB6Wh0mD1zuvuwqsWjeY");
+		requestBody.add("redirect_uri","http://localhost:8181/gmail/tokenresponse");
+		requestBody.add("grant_type","authorization_code");
+		/*
+		GoogleTokenRequest requestBody = new GoogleTokenRequest();
+		requestBody.setCode(code);
+		requestBody.setClient_id("1087608412755-q2loo7j3fu403k55mmclebf0e6u06e91.apps.googleusercontent.com");
+		requestBody.setClient_secret("DkbqPB6Wh0mD1zuvuwqsWjeY");
+		requestBody.setRedirect_uri("http://localhost:8181/gmail/tokenresponse");
+		requestBody.setGrant_type("authorization_code");
+		*/
+		/*
+		RequestEntity<MultiValueMap<String, String>> request = RequestEntity
+				.post(new URI(tokenUrl))
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.body(requestBody);
+		
+		ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+				
+		//GoogleTokenResponse responseBody = response.getBody();
+		//System.out.println("response "+responseBody.getAccess_token());
+		
+		
+		
+		
+		
+		/*HttpMessageConverter<?> formHttpMessageConverter = new FormHttpMessageConverter();
+		HttpMessageConverter<?> stringHttpMessageConverternew = new StringHttpMessageConverter();
+		restTemplate.setMessageConverters(Arrays.asList(formHttpMessageConverter, stringHttpMessageConverternew));*/
+		
+
+		/*
+		RequestEntity<MultiValueMap<String, String>> request = RequestEntity
+														.post(new URI(tokenUrl))
+		 												.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+		 												.body(map);
+		*/
+		//System.out.println("header:" + request.getHeaders());
+		
+		//ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+ /*
+		String body = response.getBody();
+		MediaType contentType = response.getHeaders().getContentType();
+		HttpStatus statusCode = response.getStatusCode();
+		*/
+		
+		/*
+        Calendar now = Calendar.getInstance();
+        GoogleTokenResponse resp = response.getBody();
+		channelService.authorizeChannel(loggedUser.getId(), "gmail", 
+				resp.getAccess_token(), 
+				resp.getRefresh_token(),
+				resp.getToken_type(),
+				now.getTimeInMillis()/1000+resp.getExpires_in()-1);
+		*/
+        
+		return "ciao";
 	}
+	/*
+	@RequestMapping(value = "/gmail/tokenresponse", method = RequestMethod.GET)
+	public String gmailTokenResponse() {
+		System.out.println("ciao");
+		return null;
+	}
+	*/
 
 }

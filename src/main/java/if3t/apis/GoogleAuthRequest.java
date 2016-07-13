@@ -13,7 +13,8 @@ public class GoogleAuthRequest {
 		this.client_id = "1087608412755-q2loo7j3fu403k55mmclebf0e6u06e91.apps.googleusercontent.com";
 		this.scope = "https://www.googleapis.com/auth/gmail.readonly "
 					+ "https://www.googleapis.com/auth/gmail.compose "
-					+ "https://www.googleapis.com/auth/gmail.send";
+					+ "https://www.googleapis.com/auth/gmail.send "
+					+ "https://www.googleapis.com/auth/gmail.modify";
 		this.redirect_uri = "http://localhost:8181/gmail/authresponse";
 		this.response_type = "code";
 		this.state = new BCryptPasswordEncoder().encode(user.getUsername());

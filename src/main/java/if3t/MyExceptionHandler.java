@@ -13,7 +13,7 @@ import if3t.models.Response;
 
 
 @ControllerAdvice  
-@RestController  
+@RestController
 public class MyExceptionHandler {  
   
     @ResponseStatus(value = HttpStatus.FORBIDDEN)  
@@ -46,5 +46,5 @@ public class MyExceptionHandler {
     	Response res = new Response(e.getMessage(), 404);
     	res.setException(e);
     	return res;
-    }  
+    } 
 }  
