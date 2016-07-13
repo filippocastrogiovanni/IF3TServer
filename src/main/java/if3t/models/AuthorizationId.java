@@ -3,8 +3,11 @@ package if3t.models;
 import java.io.Serializable;
 
 public class AuthorizationId implements Serializable{
-	private static final long serialVersionUID = 1L;
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8223341883100335936L;
 	private Channel channel;
 	private User user;
 	

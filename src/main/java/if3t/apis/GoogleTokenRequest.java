@@ -4,7 +4,10 @@ import java.io.Serializable;
 
 public class GoogleTokenRequest implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4785786466577755789L;
 	String code;			//The authorization code returned from the initial request.
 	String client_id;		//The client ID obtained from the API Console.
 	String client_secret;	//The client secret obtained from the API Console.

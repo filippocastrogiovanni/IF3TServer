@@ -15,7 +15,11 @@ import javax.persistence.ManyToOne;
 @IdClass(AuthorizationId.class)
 public class Authorization implements Serializable{
 	
-	private static final long serialVersionUID = 1L;
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3501617069367109567L;
 
 	@Id
 	@ManyToOne

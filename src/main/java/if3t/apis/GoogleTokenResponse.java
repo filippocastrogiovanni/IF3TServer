@@ -4,7 +4,10 @@ import java.io.Serializable;
 
 public class GoogleTokenResponse implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 827192631964662672L;
 	private String access_token; // The token that can be sent to a Google API.
 	private String refresh_token; // A token that may be used to obtain a new
 									// access token. Refresh tokens are valid
