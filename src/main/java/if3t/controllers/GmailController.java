@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import if3t.apis.AuthRequest;
+import if3t.apis.GoogleAuthRequest;
 import if3t.apis.GoogleTokenRequest;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Response;
@@ -46,7 +46,7 @@ public class GmailController {
 		if (!loggedUser.isEnabled())
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
-		AuthRequest req = new AuthRequest(loggedUser);
+		GoogleAuthRequest req = new GoogleAuthRequest(loggedUser);
 		authRequests.put(req.getState(), loggedUser.getUsername());
 		return new Response(req.toString(), 200);
 	}
