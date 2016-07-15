@@ -76,6 +76,7 @@ public class RecipeController {
 		recipeService.deleteRecipe(id, loggedUser);
 	}
 	
+	//FIXME cose analoghe a enableRecipe
 	@RequestMapping(value="/publish_recipe", method=RequestMethod.PUT)
 	public void publishRecipe(@RequestBody Recipe recipe) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();

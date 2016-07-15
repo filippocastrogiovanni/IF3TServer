@@ -43,7 +43,7 @@ public class MyExceptionHandler
     }
     
     @ResponseStatus(value = HttpStatus.FORBIDDEN)  
-    @ExceptionHandler(value = WrongPasswordException.class)  
+    @ExceptionHandler(value = NoPermissionException.class)  
     public Response handleNoPermissionException(NoPermissionException e) {
     	return new Response(e.getMessage(), HttpStatus.FORBIDDEN.value());
     }
