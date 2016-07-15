@@ -74,7 +74,7 @@ public class Timezone {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof Timezone))
 			return false;
 		Timezone other = (Timezone) obj;
 		if (daylight_time != other.daylight_time)
@@ -88,6 +88,4 @@ public class Timezone {
 			return false;
 		return true;
 	}
-	
-	
 }

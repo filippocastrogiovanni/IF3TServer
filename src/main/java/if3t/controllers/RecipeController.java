@@ -88,15 +88,27 @@ public class RecipeController {
 	}
 	
 	@RequestMapping(value="/enable_recipe", method=RequestMethod.PUT)
-	public Response enableRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, ChannelNotAuthorizedException {
+	public Response enableRecipe(@PathVariable Long id) throws NotLoggedInException, ChannelNotAuthorizedException, NoPermissionException 
+	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User user = null;
-		if (auth == null)
-			throw new NotLoggedInException("ERROR: not loggedIn");
 		
-		user = userService.getUserByUsername(auth.getName());
-		recipe.setUser(user);
-		recipeService.enableRecipe(recipe);
+		if (auth == null) {
+			throw new NotLoggedInException("ERROR: not loggedIn");
+		}
+		
+		User user = userService.getUserByUsername(auth.getName());
+		List<Recipe> recipeList = recipeService.readRecipe(id, user);
+		
+		//Lo user è lo stesso (se non ci sono falle) in tutte le recipe (in cui cambia solo la action) quindi faccio un solo check
+		if (!recipeList.get(0).getUser().equals(user)) {
+			throw new NoPermissionException();
+		}
+		
+		for (Recipe rec : recipeList)
+		{
+			recipeService.enableRecipe(rec);
+		}
+		
 		return new Response("Successful", 200);
 	}
 }

@@ -95,7 +95,7 @@ public class ParametersActions {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof ParametersActions))
 			return false;
 		ParametersActions other = (ParametersActions) obj;
 		if (action == null) {
@@ -114,9 +114,5 @@ public class ParametersActions {
 		} else if (!type.equals(other.type))
 			return false;
 		return true;
-	}
-
-
-
-	
+	}	
 }
