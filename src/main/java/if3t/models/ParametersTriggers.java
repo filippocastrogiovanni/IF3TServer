@@ -81,8 +81,9 @@ public class ParametersTriggers {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((trigger == null) ? 0 : trigger.hashCode());
+		result = prime * result + ((channel == null) ? 0 : channel.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((trigger == null) ? 0 : trigger.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
@@ -93,18 +94,23 @@ public class ParametersTriggers {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof ParametersTriggers))
 			return false;
 		ParametersTriggers other = (ParametersTriggers) obj;
-		if (trigger == null) {
-			if (other.trigger != null)
+		if (channel == null) {
+			if (other.channel != null)
 				return false;
-		} else if (!trigger.equals(other.trigger))
+		} else if (!channel.equals(other.channel))
 			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
+			return false;
+		if (trigger == null) {
+			if (other.trigger != null)
+				return false;
+		} else if (!trigger.equals(other.trigger))
 			return false;
 		if (type == null) {
 			if (other.type != null)
@@ -113,6 +119,7 @@ public class ParametersTriggers {
 			return false;
 		return true;
 	}
+	
 
 
 	

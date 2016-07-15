@@ -68,8 +68,6 @@ public class ParametersActions {
 	public void setType(String type) {
 		this.type = type;
 	}
-	
-	
 
 	public Action getAction() {
 		return action;
@@ -84,6 +82,7 @@ public class ParametersActions {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((action == null) ? 0 : action.hashCode());
+		result = prime * result + ((channel == null) ? 0 : channel.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
@@ -95,13 +94,18 @@ public class ParametersActions {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof ParametersActions))
 			return false;
 		ParametersActions other = (ParametersActions) obj;
 		if (action == null) {
 			if (other.action != null)
 				return false;
 		} else if (!action.equals(other.action))
+			return false;
+		if (channel == null) {
+			if (other.channel != null)
+				return false;
+		} else if (!channel.equals(other.channel))
 			return false;
 		if (name == null) {
 			if (other.name != null)
@@ -115,7 +119,7 @@ public class ParametersActions {
 			return false;
 		return true;
 	}
-
+	
 
 
 	

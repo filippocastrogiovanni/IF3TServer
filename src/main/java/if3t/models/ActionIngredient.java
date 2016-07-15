@@ -36,65 +36,38 @@ public class ActionIngredient {
 	@Column(name = "param_value", nullable = false)
 	private String value;
 
-	/**
-	 * @return the id
-	 */
 	public Long getId() {
 		return id;
 	}
 
-	/**
-	 * @param id the id to set
-	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	/**
-	 * @return the recipe
-	 */
 	public Recipe getRecipe() {
 		return recipe;
 	}
 
-	/**
-	 * @param recipe the recipe to set
-	 */
 	public void setRecipe(Recipe recipe) {
 		this.recipe = recipe;
 	}
 
-	/**
-	 * @return the param
-	 */
 	public ParametersActions getParam() {
 		return param;
 	}
 
-	/**
-	 * @param param the param to set
-	 */
 	public void setParam(ParametersActions param) {
 		this.param = param;
 	}
 
-	/**
-	 * @return the value
-	 */
 	public String getValue() {
 		return value;
 	}
 
-	/**
-	 * @param value the value to set
-	 */
 	public void setValue(String value) {
 		this.value = value;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -105,9 +78,6 @@ public class ActionIngredient {
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -134,5 +104,7 @@ public class ActionIngredient {
 			return false;
 		return true;
 	}
+	
+
 	
 }
