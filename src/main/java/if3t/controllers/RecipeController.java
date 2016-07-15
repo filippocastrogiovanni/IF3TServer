@@ -315,27 +315,53 @@ public class RecipeController {
 		recipeService.deleteRecipe(id, loggedUser);
 	}
 	
-	@RequestMapping(value="/publish_recipe", method=RequestMethod.PUT)
-	public void publishRecipe(@RequestBody Recipe recipe) {
+	@RequestMapping(value="/publish_recipe/", method=RequestMethod.PUT)
+	public Response publishRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, NoPermissionException 
+	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User user = null;
-		if (auth != null)
-			user = userService.getUserByUsername(auth.getName());
-		recipe.setUser(user);
-		recipe.setIsPublic(recipe.getIsPublic());
-		recipeService.publishRecipe(recipe);
+		
+		if (auth == null) {
+			throw new NotLoggedInException("ERROR: not loggedIn");
+		}
+		
+		User user = userService.getUserByUsername(auth.getName());
+		List<Recipe> recipeList = recipeService.readRecipe(recipe.getId(), user);
+		
+		//Lo user è lo stesso (se non ci sono falle) in tutte le recipe (in cui cambia solo la action) quindi faccio un solo check
+		if (!recipeList.get(0).getUser().equals(user)) {
+			throw new NoPermissionException();
+		}
+				
+		for (Recipe rec : recipeList)
+		{
+			recipeService.toggleIsPublicRecipe(rec);
+		}
+				
+		return new Response("Successful", 200);
 	}
 	
 	@RequestMapping(value="/enable_recipe", method=RequestMethod.PUT)
-	public Response enableRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, ChannelNotAuthorizedException {
+	public Response enableRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, ChannelNotAuthorizedException, NoPermissionException 
+	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User user = null;
-		if (auth == null)
-			throw new NotLoggedInException("ERROR: not loggedIn");
 		
-		user = userService.getUserByUsername(auth.getName());
-		recipe.setUser(user);
-		recipeService.enableRecipe(recipe);
+		if (auth == null) {
+			throw new NotLoggedInException("ERROR: not loggedIn");
+		}
+		
+		User user = userService.getUserByUsername(auth.getName());
+		List<Recipe> recipeList = recipeService.readRecipe(recipe.getId(), user);
+		
+		//Lo user è lo stesso (se non ci sono falle) in tutte le recipe (in cui cambia solo la action) quindi faccio un solo check
+		if (!recipeList.get(0).getUser().equals(user)) {
+			throw new NoPermissionException();
+		}
+		
+		for (Recipe rec : recipeList)
+		{
+			recipeService.toggleIsEnabledRecipe(rec, user);
+		}
+		
 		return new Response("Successful", 200);
 	}
 }

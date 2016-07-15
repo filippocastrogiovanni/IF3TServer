@@ -2,27 +2,12 @@ package if3t.models;
 
 public class Response {
 	private String message;
-	private Exception exception;
 	private Integer code;
 	
 	public Response(String message, Integer code) {
 		super();
 		this.message = message;
 		this.code = code;
-	}
-	
-	/**
-	 * @return the cause
-	 */
-	public Exception getException() {
-		return exception;
-	}
-
-	/**
-	 * @param cause the cause to set
-	 */
-	public void setException(Exception exception) {
-		this.exception = exception;
 	}
 
 	/**
@@ -51,6 +36,4 @@ public class Response {
 	public void setCode(Integer code) {
 		this.code = code;
 	}
-	
-	
 }

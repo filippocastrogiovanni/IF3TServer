@@ -99,7 +99,7 @@ public class Action {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof Action))
 			return false;
 		Action other = (Action) obj;
 		if (header == null) {
