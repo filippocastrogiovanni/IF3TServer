@@ -91,7 +91,7 @@ public class Trigger {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof Trigger))
 			return false;
 		Trigger other = (Trigger) obj;
 		if (header == null) {
@@ -105,5 +105,5 @@ public class Trigger {
 		} else if (!paragraph.equals(other.paragraph))
 			return false;
 		return true;
-	}	
+	}
 }
