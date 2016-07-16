@@ -4,21 +4,13 @@ import java.io.Serializable;
 
 public class GoogleTokenRequest implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -4785786466577755789L;
 	private String token_uri;
-	private String code; // The authorization code returned from the initial
-							// request.
-	private String client_id; // The client ID obtained from the API Console.
-	private String client_secret; // The client secret obtained from the API
-									// Console.
-	private String redirect_uri; // One of the redirect URIs listed for this
-									// project in the API Console.
-	private String grant_type; // As defined in the OAuth 2.0 specification,
-								// this field must contain a value of
-								// authorization_code.
+	private String code; 			// The authorization code returned from the initial request.
+	private String client_id; 		// The client ID obtained from the API Console.
+	private String client_secret; 	// The client secret obtained from the API Console.
+	private String redirect_uri; 	// One of the redirect URIs listed for this project in the API Console.
+	private String grant_type; 		// As defined in the OAuth 2.0 specification, this field must contain a value of authorization_code.
 
 	public GoogleTokenRequest(String code) {
 		super();
