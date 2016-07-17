@@ -51,7 +51,6 @@ public class ScheduledTasks {
 	@Autowired
 	private AuthorizationService authService;
 
-<<<<<<< HEAD
     @Scheduled(fixedRate = 1000*60*5)
     public void gmailScheduler() {	 
     	
@@ -125,17 +124,4 @@ public class ScheduledTasks {
       
 		
     }
-=======
-//    @Scheduled(fixedRate = 5000)
-//    public void reportCurrentTime() {
-//        System.out.println("1: The time is now " + dateFormat.format(new Date()));
-//    }
-//    
-//    @Scheduled(fixedRate = 3000)
-//    public void reportTime() {
-//    	Calendar c = Calendar.getInstance();
-//    	c.setTimeInMillis(c.getTimeInMillis() + 10000);
-//        System.out.println("2: The time is now " + dateFormat.format(c.getTime()));
-//    }
->>>>>>> branch 'master' of https://github.com/filippocastrogiovanni/IF3Tserver.git
 }

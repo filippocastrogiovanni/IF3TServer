@@ -99,13 +99,9 @@ public class RecipeServiceImpl implements RecipeService {
 		recipe.setIsEnabled(!recipe.getIsEnabled());
 		recipeRepository.save(recipe);
 	}
-<<<<<<< HEAD
 
 	public List<Recipe> getRecipeByTriggerChannel(String channelKeyword) {
 		return recipeRepository.findByIsEnabledAndTrigger_Channel_Keyword(true, channelKeyword);
 	}
 
 }
-=======
-}
->>>>>>> branch 'master' of https://github.com/filippocastrogiovanni/IF3Tserver.git
