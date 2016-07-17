@@ -21,4 +21,6 @@ public interface ChannelService {
 	public List<Authorization> readExpiringAuthorizations(String channel, Long timestamp);
 	
 	public void refreshChannelAuthorization(Authorization auth);
+	
+	public String readUserChannelAuthorization(Long UserId, String channelKey);
 }

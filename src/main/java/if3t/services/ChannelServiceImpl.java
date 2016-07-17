@@ -75,4 +75,10 @@ public class ChannelServiceImpl implements ChannelService {
 		
 		return null;
 	}
+	
+	public String readUserChannelAuthorization(Long userId, String channelKey) {
+		Channel channel = channelRepository.findByKeyword(channelKey);
+		Authorization auth = authRepository.findByUser_IdAndChannel_ChannelId(userId, channel.getChannelId());
+		return auth.getAccessToken();
+	}
 }

@@ -19,7 +19,7 @@ public class FacebookTokenRequest implements Serializable {
 
 	public FacebookTokenRequest(String code) {
 		super();
-		this.token_uri = "https://graph.facebook.com/v2.3/oauth/access_token?";
+		this.token_uri = "https://graph.facebook.com/v2.3/oauth/access_token";
 		this.client_id = "1664045957250331";
 		this.redirect_uri = "http://localhost:8181/facebook/authresponse";
 		this.client_secret = "4489952bdf1294fe0fd156288a2602f4";
@@ -53,7 +53,7 @@ public class FacebookTokenRequest implements Serializable {
 		builder.append("client_id=" + this.client_id + "&");
 		builder.append("redirect_uri=" + this.redirect_uri + "&");
 		builder.append("client_secret=" + this.client_secret + "&");
-		builder.append("code=" + this.code + "&");
+		builder.append("code=" + this.code);
 
 		return builder.toString();
 	}

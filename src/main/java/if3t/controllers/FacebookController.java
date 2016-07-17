@@ -9,8 +9,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.NoPermissionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
+import org.springframework.http.RequestEntity.BodyBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
@@ -53,6 +58,8 @@ public class FacebookController {
 
 	@RequestMapping(value = "/facebook/auth", method = RequestMethod.GET)
 	public Response facebookAuth() throws NotLoggedInException, NoPermissionException {
+		System.out.println("Server has received a token request");
+
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth == null)
 			throw new NotLoggedInException("ERROR: not logged in!");
@@ -102,14 +109,39 @@ public class FacebookController {
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
 		FacebookTokenRequest facebookRQ = new FacebookTokenRequest(code);
-		RestTemplate restTemplate = new RestTemplate();
-		String response = restTemplate.getForObject(new URI(facebookRQ.getToken_uri()+"?"+facebookRQ.getRequestBody()), String.class);
+		////RestTemplate restTemplate = new RestTemplate();
+		////String response = restTemplate.getForObject(new URI("https://graph.facebook.com/v2.3/oauth/access_token?redirect_uri=http://localhost:8181/facebook/authresponse&client_id=1664045957250331"), String.class);
+			
+		//String response = restTemplate.getForObject(new URI(facebookRQ.getToken_uri()+"?"+facebookRQ.getRequestBody()), String.class);
 
-		FacebookTokenResponse facebookRS = new FacebookTokenResponse(response);
+		
+		
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(facebookRQ.getToken_uri())
+		        .queryParam("client_id", facebookRQ.getClient_id())
+		        .queryParam("client_secret", facebookRQ.getClient_secret())
+		        .queryParam("code", facebookRQ.getCode())
+		        .queryParam("redirect_uri", facebookRQ.getRedirect_uri());
+
+		HttpEntity<?> entity = new HttpEntity<>(headers);
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<String> response = restTemplate.exchange(
+		        builder.build().encode().toUri(), 
+		        HttpMethod.GET, 
+		        entity, 
+		        String.class);
+		FacebookTokenResponse facebookRS = new FacebookTokenResponse(response.getBody());
+		System.out.println(response.getBody());
+
 
 		if(!facebookRS.isValid())
 			return "ERROR";
 		else{
+			
 			channelService.authorizeChannel(loggedUser.getId(), "facebook", facebookRS.getAccess_token(), null,
 					facebookRS.getToken_type(), facebookRS.getExpiration_date());
 
