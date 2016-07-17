@@ -136,7 +136,11 @@ public class ParametersActions {
 		} else if (!keyword.equals(other.keyword))
 			return false;
 		return true;
+<<<<<<< HEAD
 	}
 
 
+=======
+	}	
+>>>>>>> branch 'master' of https://github.com/filippocastrogiovanni/IF3Tserver.git
 }

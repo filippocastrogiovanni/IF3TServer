@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,6 @@ import if3t.models.Recipe;
 import if3t.models.User;
 import if3t.repositories.AuthorizationRepository;
 import if3t.repositories.RecipeRepository;
-import if3t.repositories.UserRepository;
 
 @Service
 @Transactional
@@ -26,12 +26,12 @@ public class RecipeServiceImpl implements RecipeService {
 	@Autowired
 	private RecipeRepository recipeRepository;
 	@Autowired
-	private UserRepository userRepository;
-	@Autowired
 	private UserService userService;
 	@Autowired
 	private AuthorizationRepository authRepository;
 	
+	//TODO controllare se quest'annotazione serve anche in altri service
+	@PreAuthorize("hasRole('USER')")
 	public List<Recipe> readUserRecipes(Long userId) {
 		return recipeRepository.findByUser_Id(userId);
 	}
@@ -40,19 +40,21 @@ public class RecipeServiceImpl implements RecipeService {
 		return recipeRepository.findByIsPublic(true);
 	}
 
+	@PreAuthorize("hasRole('USER')")
 	public List<Recipe> readRecipe(Long id, User loggedUser) throws NoPermissionException {
 		Recipe targetRecipe = recipeRepository.findOne(id);
 		String groupId = targetRecipe.getGroupId();
 		
 		List<Recipe> recipeList = recipeRepository.findByGroupId(groupId);
 		for(Recipe recipe: recipeList){
-			if(!recipe.getUser().getId().equals(loggedUser.getId()))
+			if(!recipe.getUser().equals(loggedUser))
 				throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 		}
 		
 		return recipeList;
 	}
 
+	@PreAuthorize("hasRole('USER')")
 	public void deleteRecipe(Long id, User loggedUser) throws NoPermissionException {
 		Recipe recipe = recipeRepository.findOne(id);
 		if(!recipe.getUser().getId().equals(loggedUser.getId()))
@@ -60,6 +62,7 @@ public class RecipeServiceImpl implements RecipeService {
 		recipeRepository.delete(recipe);
 	}
 
+	@PreAuthorize("hasRole('USER')")
 	public void addRecipe(List<Recipe> recipe) throws NotLoggedInException {
 		UUID groupId = UUID.randomUUID();
 		for(Recipe r: recipe){
@@ -73,36 +76,36 @@ public class RecipeServiceImpl implements RecipeService {
 		}
 	}
 
-	public void publishRecipe(Recipe recipe) {
+	@PreAuthorize("hasRole('USER')")
+	public void toggleIsPublicRecipe(Recipe recipe) 
+	{
+		recipe.setIsPublic(!recipe.getIsPublic());
 		recipeRepository.save(recipe);
 	}
 
-	public void enableRecipe(Recipe recipe) throws NotLoggedInException, ChannelNotAuthorizedException {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User user = null;
-		if (auth != null)
-			user = userRepository.findByUsername(auth.getName());
-		
-		if(user == null)
-			throw new NotLoggedInException();
-		
+	@PreAuthorize("hasRole('USER')")
+	public void toggleIsEnabledRecipe(Recipe recipe, User user) throws ChannelNotAuthorizedException 
+	{		
 		Long userId = user.getId();
 		Channel triggerChannel = recipe.getTrigger().getChannel();
 		Channel actionChannel = recipe.getAction().getChannel();
 		
-		if(authRepository.findByUser_IdAndChannel_ChannelId(userId, triggerChannel.getChannelId()) == null)
+		if (authRepository.findByUser_IdAndChannel_ChannelId(userId, triggerChannel.getChannelId()) == null)
 			throw new ChannelNotAuthorizedException("Trigger channel (" + triggerChannel.getName() + ") not authorized!");
 		
-		if(authRepository.findByUser_IdAndChannel_ChannelId(userId, actionChannel.getChannelId()) == null)
+		if (authRepository.findByUser_IdAndChannel_ChannelId(userId, actionChannel.getChannelId()) == null)
 			throw new ChannelNotAuthorizedException("Action channel (" + actionChannel.getName() + ") not authorized!");
 		
 		recipe.setIsEnabled(!recipe.getIsEnabled());
 		recipeRepository.save(recipe);
-		
 	}
+<<<<<<< HEAD
 
 	public List<Recipe> getRecipeByTriggerChannel(String channelKeyword) {
 		return recipeRepository.findByIsEnabledAndTrigger_Channel_Keyword(true, channelKeyword);
 	}
 
 }
+=======
+}
+>>>>>>> branch 'master' of https://github.com/filippocastrogiovanni/IF3Tserver.git

@@ -133,13 +133,7 @@ public class GmailController {
 				googleRS.getToken_type(), googleRS.getExpiration_date());
 
 
-		return "<script>windows.close();</script>";
-	}
-
-	@RequestMapping(value = "/gmail/tokenresponse", method = RequestMethod.GET)
-	public String gmailTokenResponse() {
-		System.out.println("google ha risposto");
-		return null;
+		return "<script>window.close();</script>";
 	}
 
 }

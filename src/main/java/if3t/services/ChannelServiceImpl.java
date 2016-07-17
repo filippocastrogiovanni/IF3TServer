@@ -62,4 +62,17 @@ public class ChannelServiceImpl implements ChannelService {
 		authRepository.save(auth);
 
 	}
+	
+	public void refreshChannelAuthorization(Authorization auth){
+		authRepository.save(auth);
+	}
+	
+	public List<Authorization> readExpiringAuthorizations(String channel, Long timestamp) {
+		
+		if(timestamp > 0) {
+			return authRepository.queryByExpireDateGreaterThanAndChannel_Keyword(timestamp, channel);
+		}
+		
+		return null;
+	}
 }

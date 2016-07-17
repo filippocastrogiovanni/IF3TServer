@@ -1,6 +1,8 @@
 package if3t.services;
 
 import java.util.List;
+
+import if3t.models.Authorization;
 import if3t.models.Channel;
 
 public interface ChannelService {
@@ -15,4 +17,8 @@ public interface ChannelService {
 
 	public void authorizeChannel(Long userId, String channel, String access_token, String refresh_token,
 			String token_type, Long expires_date);
+	
+	public List<Authorization> readExpiringAuthorizations(String channel, Long timestamp);
+	
+	public void refreshChannelAuthorization(Authorization auth);
 }

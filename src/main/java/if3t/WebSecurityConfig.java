@@ -32,6 +32,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         	.antMatchers(HttpMethod.GET, "/channels").permitAll()
         	.antMatchers(HttpMethod.GET, "/images/**").permitAll()
         	.antMatchers(HttpMethod.GET, "/gmail/**").permitAll()
+        	.antMatchers(HttpMethod.POST, "/facebook/**").permitAll()
+        	.antMatchers(HttpMethod.GET, "/facebook/**").permitAll()
         	.antMatchers(HttpMethod.POST, "/gmail/**").permitAll()
         	.antMatchers(HttpMethod.POST, "/signup").permitAll()
         	.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -41,7 +43,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         	.and()
             .addFilterAfter(new CsrfHeaderFilter(), CsrfFilter.class)
             .csrf().csrfTokenRepository(csrfTokenRepository())
-            .ignoringAntMatchers("/signup", "/gmail/**");
+            .ignoringAntMatchers("/gmail/**")
+            .ignoringAntMatchers("/facebook/**");
+
         
     }
     
