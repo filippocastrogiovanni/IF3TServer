@@ -36,6 +36,8 @@ public class ParametersTriggers {
 	@NotNull
 	@Column(name = "param_type", nullable = false)
 	private String type;
+	
+	private String keyword;
 
 	public Long getId() {
 		return id;
@@ -43,6 +45,20 @@ public class ParametersTriggers {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	/**
+	 * @return the keyword
+	 */
+	public String getKeyword() {
+		return keyword;
+	}
+
+	/**
+	 * @param keyword the keyword to set
+	 */
+	public void setKeyword(String keyword) {
+		this.keyword = keyword;
 	}
 
 	public Channel getChannel() {

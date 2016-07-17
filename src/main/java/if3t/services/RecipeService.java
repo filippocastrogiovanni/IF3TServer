@@ -13,6 +13,7 @@ public interface RecipeService {
 	public List<Recipe> readUserRecipes(Long userId);
 	public List<Recipe> readPublicRecipes();
 	public List<Recipe> readRecipe(Long id, User loggedUser) throws NoPermissionException;
+	public List<Recipe> getRecipeByTriggerChannel(String channelKeyword);
 	public void deleteRecipe(Long id, User loggedUser) throws NoPermissionException;
 	public void addRecipe(List<Recipe> recipe) throws NotLoggedInException;
 	public void toggleIsPublicRecipe(Recipe recipe);

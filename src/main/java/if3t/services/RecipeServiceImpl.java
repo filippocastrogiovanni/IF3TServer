@@ -99,4 +99,9 @@ public class RecipeServiceImpl implements RecipeService {
 		recipe.setIsEnabled(!recipe.getIsEnabled());
 		recipeRepository.save(recipe);
 	}
+
+	public List<Recipe> getRecipeByTriggerChannel(String channelKeyword) {
+		return recipeRepository.findByIsEnabledAndTrigger_Channel_Keyword(true, channelKeyword);
+	}
+
 }
