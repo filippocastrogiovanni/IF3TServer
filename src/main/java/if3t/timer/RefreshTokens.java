@@ -16,6 +16,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import com.restfb.DefaultFacebookClient;
+import com.restfb.FacebookClient;
+import com.restfb.FacebookClient.AccessToken;
+
 import if3t.apis.GoogleRefreshTokenRequest;
 import if3t.apis.GoogleRefreshTokenResponse;
 import if3t.models.Authorization;
@@ -59,7 +63,7 @@ public class RefreshTokens {
 						googleRS = new GoogleRefreshTokenResponse(response.getBody());
 						
 						if(!googleRS.isValid())
-							log.info("GMail refresh: POST response error in authorization id {}", auth.getId());
+							log.error("GMail refresh: POST response error in authorization id {}", auth.getId());
 						else {
 							auth.setAccessToken(googleRS.getAccess_token());
 							auth.setExpireDate(googleRS.getExpiration_date());
@@ -69,7 +73,7 @@ public class RefreshTokens {
 						}						
 
 					} catch (URISyntaxException e) {
-						log.info("GMail refresh: POST request error in authorization id {}", auth.getId());
+						log.error("GMail refresh: POST request error in authorization id {}", auth.getId());
 						e.printStackTrace();
 					}
 				}
@@ -78,6 +82,43 @@ public class RefreshTokens {
 			}
 		} else {
 			log.info("GMail refresh: no tokens to refresh");
+		}
+	}
+	
+	@Scheduled(fixedRate = 5 * 60 * 1000)
+	public void facebookTokensRefresh() {
+		log.info("Faceook refresh: start check");
+
+		Long margin = 5L;// is the number of minutes (the same used in the
+		// annotations)
+		Calendar now = Calendar.getInstance();
+		Long timestamp = (now.getTimeInMillis() - (margin * 60 * 1000)) / 1000;
+		List<Authorization> tokens = channelService.readExpiringAuthorizations("facebook", timestamp);
+		if (tokens != null) {
+			if (!tokens.isEmpty()) {
+				log.info("Facebook refresh: {} tokens must be refreshed", tokens.size());
+				for (Authorization auth : tokens) {
+					String old_token = auth.getAccessToken();
+					FacebookClient fbClient = new DefaultFacebookClient(old_token);
+					AccessToken exAccessToken = fbClient.obtainExtendedAccessToken("1664045957250331", "4489952bdf1294fe0fd156288a2602f4"); //appId, appSecret
+					if(exAccessToken!=null){
+						System.out.println("The token access " + exAccessToken.getAccessToken() + " expires on" + exAccessToken.getExpires());
+						auth.setAccessToken(exAccessToken.getAccessToken());
+						Calendar c = Calendar.getInstance();
+						c.setTime(exAccessToken.getExpires());
+						auth.setExpireDate(c.getTimeInMillis()/1000);
+						channelService.refreshChannelAuthorization(auth);
+						log.info("Facebook refresh: authorization id {} succesfully refreshed", auth.getId());
+					}
+					else{
+						log.error("Facebook refresh: authorization id {} succesfully refreshed", auth.getId());
+					}
+				}
+			} else {
+				log.info("Facebook refresh: no tokens to refresh");
+			}
+		} else {
+			log.info("Facebook refresh: no tokens to refresh");
 		}
 	}
 
