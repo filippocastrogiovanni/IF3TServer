@@ -101,4 +101,8 @@ public class RecipeServiceImpl implements RecipeService {
 		
 	}
 
+	public List<Recipe> getRecipeByTriggerChannel(String channelKeyword) {
+		return recipeRepository.findByIsEnabledAndTrigger_Channel_Keyword(true, channelKeyword);
+	}
+
 }
