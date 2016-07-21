@@ -118,5 +118,78 @@ public class ScheduledTasks {
 		}	 
     }    
    
+      @Scheduled(fixedRate = 1000*60*5)
+    public void gmailScheduler() {	 
+    	
+	   RestTemplate restTemplate = new RestTemplate();
+	   
+       List<Recipe> gmailTriggerRecipes = recipeService.getRecipeByTriggerChannel("gmail");
+       for(Recipe recipe: gmailTriggerRecipes){
+    	   User user = recipe.getUser();
+    	   Channel triggerChannel = recipe.getTrigger().getChannel();
+    	   Authorization auth = authService.getAuthorization(user.getId(), triggerChannel.getChannelId());
+    	   
+    	   HttpHeaders headers = new HttpHeaders();
+    	   headers.set("Authorization", auth.getTokenType() + " " + auth.getAccessToken());
+    	   HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
+    	   
+    	   String url = "https://www.googleapis.com/gmail/v1/users/"
+     				+ "me/messages?"
+     				+ "q=";
+    	   
+    	   
+    	   List<TriggerIngredient> triggerIngredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
+    	   for(TriggerIngredient triggerIngredient: triggerIngredients){
+    		   ParametersTriggers param = triggerIngredient.getParam();
+    		   
+    		   url += param.getKeyword() + ":" + triggerIngredient.getValue();
+    	   }
+    	   Long timestamp = Calendar.getInstance().getTimeInMillis() - (1000*60*5);
+    	   
+    	   url += " after:" + timestamp/1000;
+    	   
+    	   HttpEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+    	   
+    	   JSONObject obj = new JSONObject(response.getBody());
+    	   try{
+    		   int result = obj.getInt("resultSizeEstimate");
+    		   if(result > 0){
+    			   JSONArray messages = obj.getJSONArray("messages");
+	    		   for(int i=0; i< messages.length(); i++){
+	    			   JSONObject message = messages.getJSONObject(i);
+	    			   String messageId = message.getString("id");
+	    			   String messageUrl = "https://www.googleapis.com/gmail/v1/users/me/messages/" + messageId;
+	    			   
+	    			   HttpEntity<String> messageResponse = restTemplate.exchange(messageUrl, HttpMethod.GET, entity, String.class);
+	    			   System.out.println(messageResponse.getBody());
+	    		   }
+	    		      		   
+    			   List<ActionIngredient> actionIngredients = actionIngredientService.getRecipeActionIngredients(recipe.getId());
+    			   if(recipe.getAction().getChannel().getKeyword().equals("gmail")){
+    				   String to = "";
+    	    		   String subject = "";
+    	    		   String body = "";
+	    	    	   for(ActionIngredient actionIngredient: actionIngredients){
+	    	    		   ParametersActions param = actionIngredient.getParam();
+	    	    		  
+	    	    		   if(param.getKeyword().equals("to"))
+	    	    			   to = actionIngredient.getValue();
+	    	    		   if(param.getKeyword().equals("subject"))
+	    	    			   subject = actionIngredient.getValue();
+	    	    		   if(param.getKeyword().equals("body"))
+	    	    			   body = actionIngredient.getValue();
+	    	    	   }
+	    	    	   
+	    	    	   GmailUtil.sendEmail(to, subject, body, auth.getTokenType(), auth.getAccessToken());
+    			   }
+    		   }
+    	   }catch (Exception e){
+    		   e.printStackTrace();
+    	   }
+       }
+       
+    }
    */
+	
+	
 }
