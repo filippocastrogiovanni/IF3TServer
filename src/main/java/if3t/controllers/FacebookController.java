@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.naming.NoPermissionException;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -40,7 +41,11 @@ import if3t.apis.GoogleAuthRequest;
 import if3t.apis.GoogleTokenRequest;
 import if3t.apis.GoogleTokenResponse;
 import if3t.exceptions.NotLoggedInException;
+import if3t.models.Authorization;
+import if3t.models.Channel;
 import if3t.models.Response;
+import if3t.repositories.AuthorizationRepository;
+import if3t.services.AuthorizationService;
 import if3t.services.ChannelService;
 import if3t.services.UserService;
 
@@ -53,6 +58,12 @@ public class FacebookController {
 	
 	@Autowired
 	private ChannelService channelService;
+	
+	@Autowired
+	private AuthorizationService authService;
+
+	@Autowired
+	private AuthorizationRepository authRepository;
 	
 	private ConcurrentHashMap<String, String> authRequests = new ConcurrentHashMap<String, String>();
 
@@ -113,9 +124,6 @@ public class FacebookController {
 		////String response = restTemplate.getForObject(new URI("https://graph.facebook.com/v2.3/oauth/access_token?redirect_uri=http://localhost:8181/facebook/authresponse&client_id=1664045957250331"), String.class);
 			
 		//String response = restTemplate.getForObject(new URI(facebookRQ.getToken_uri()+"?"+facebookRQ.getRequestBody()), String.class);
-
-		
-		
 		
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
@@ -149,25 +157,25 @@ public class FacebookController {
 		}
 	}
 		
-		/*
-		//do some stuff
-		String accessToken = "EAAXpcOQrZCRsBAFpU1GEZCeEdVZAlIZBdWS3CH1dmepoOfzNkqf3SBWJwksOwdvQRY19umTbXQJnwkXfChiMwxhL3zqjPqZAm7kBvZCcTLwZBowQyX0zTwvrhkAk27witQ4p1dyDfqGike47y4AeAZCCVDtnknZBrhTX4bXPpp91JnQZDZD";
-		FacebookClient fbClient = new DefaultFacebookClient(accessToken);
-		//extending token 
-		AccessToken exAccessToken = fbClient.obtainExtendedAccessToken("1664045957250331", "4489952bdf1294fe0fd156288a2602f4"); //appId, appSecret
-		System.out.println("The token access " + exAccessToken.getAccessToken() + " expires on" + exAccessToken.getExpires());
-		//getting user information
-		User me = fbClient.fetchObject("me", User.class);
-		System.out.println(me.getFirstName() + " " + me.getBirthdayAsDate().toString());
-		//get collection of allpages containing posts
-		int posts_counter = 0;
-		Connection<Post> result = fbClient.fetchConnection("me/feed", Post.class);
-		for(List<Post> page : result){
-			for(Post aPost : page){
-				System.out.println("POST ID at www.facebook.com/"+ aPost.getId() + " " + aPost.getMessage());
-				posts_counter++;
-			}
-		}
-		*/
+	@RequestMapping(value = "/facebook/revokeauth", method = RequestMethod.GET)
+	public Response facebookRevokeAuth() throws NotLoggedInException, NoPermissionException {
+		System.out.println("Server has received a token revocation request");
+
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth == null)
+			throw new NotLoggedInException("ERROR: not logged in!");
+
+		if3t.models.User loggedUser = userService.getUserByUsername(auth.getName());
+		if (loggedUser == null)
+			throw new NotLoggedInException("ERROR: not logged in!");
+
+		if (!loggedUser.isEnabled())
+			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
+
+		Channel channel = channelService.findByKeyword("facebook");
+   	    Authorization authorization_to_delete = authRepository.findByUserAndChannel(loggedUser, channel);
+		authService.deleteAuthorization(authorization_to_delete.getId());
+		return new Response("OK", 200);
+	}
 
 }

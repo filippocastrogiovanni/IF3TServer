@@ -11,6 +11,8 @@ public interface ChannelService {
 
 	public Channel readChannel(Long id);
 
+	public Channel findByKeyword(String keyword);
+	
 	public List<Channel> readUserChannels(Long userId);
 
 	public void unautorizeChannel(Long userId, Long channelId);

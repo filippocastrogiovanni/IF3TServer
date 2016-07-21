@@ -18,5 +18,16 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 	public Authorization getAuthorization(Long userId, Long channelId) {
 		return authRepository.findByUser_IdAndChannel_ChannelId(userId, channelId);
 	}
+	
+	public void deleteAuthorization(Long authId) {
+		authRepository.deleteById(authId);
+	}
+
+	@Override
+	public Authorization findByUser_IdAndChannel_ChannelId(Long id, Long channelId) {
+		authRepository.queryByUser_IdAndChannel_ChannelId(id, channelId);
+		return null;
+	}
+		
 
 }

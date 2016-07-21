@@ -70,7 +70,7 @@ public class ChannelServiceImpl implements ChannelService {
 	public List<Authorization> readExpiringAuthorizations(String channel, Long timestamp) {
 		
 		if(timestamp > 0) {
-			return authRepository.queryByExpireDateGreaterThanAndChannel_Keyword(timestamp, channel);
+			return authRepository.queryByExpireDateLessThanAndChannel_Keyword(timestamp, channel);
 		}
 		
 		return null;
@@ -81,4 +81,10 @@ public class ChannelServiceImpl implements ChannelService {
 		Authorization auth = authRepository.findByUser_IdAndChannel_ChannelId(userId, channel.getChannelId());
 		return auth.getAccessToken();
 	}
+
+	@Override
+	public Channel findByKeyword(String keyword) {
+		return channelRepository.findByKeyword(keyword);
+	}
+	
 }
