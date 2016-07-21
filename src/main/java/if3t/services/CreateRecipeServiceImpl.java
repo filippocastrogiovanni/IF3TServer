@@ -53,9 +53,21 @@ public class CreateRecipeServiceImpl implements CreateRecipeService {
 		return parametersTriggersRepository.findByChannel(channel);
 	}
 	
+	public List<ParametersTriggers> readChannelParametersTriggers(Long triggerId, Long channelId) {
+		Trigger trigger = triggerRepository.findOne(triggerId);
+		Channel channel = channelRepository.findOne(channelId);
+		return parametersTriggersRepository.findByTriggerAndChannel(trigger, channel);
+	}
+	
 	public List<ParametersActions> readChannelParametersActions(Long channelId) {
 		Channel channel = channelRepository.findOne(channelId);
 		return parametersActionsRepository.findByChannel(channel);
+	}
+	
+	public List<ParametersActions> readChannelParametersActions(Long actionId, Long channelId) {
+		Action action = actionRepository.findOne(actionId);
+		Channel channel = channelRepository.findOne(channelId);
+		return parametersActionsRepository.findByActionAndChannel(action, channel);
 	}
 
 	public ParametersTriggers readParameterTrigger(Long id) {

@@ -84,7 +84,7 @@ public class TriggerIngredient {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof TriggerIngredient))
 			return false;
 		TriggerIngredient other = (TriggerIngredient) obj;
 		if (param == null) {
@@ -104,7 +104,4 @@ public class TriggerIngredient {
 			return false;
 		return true;
 	}
-
-
-	
 }

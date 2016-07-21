@@ -47,7 +47,7 @@ public class CreateRecipeController {
 	}
 	
 	@RequestMapping(value="/parameters_triggers/{channelId}", method=RequestMethod.GET)
-	public List<ParametersTriggers> getChannelParametersTriggers(@PathVariable Long channelId) {
+	public List<ParametersTriggers> getChannelParametersTriggersByChannelId(@PathVariable Long channelId) {
 		return createRecipeService.readChannelParametersTriggers(channelId);
 	}
 	

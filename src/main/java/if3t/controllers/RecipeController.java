@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,12 +24,15 @@ import if3t.exceptions.NoPermissionException;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Action;
 import if3t.models.ActionIngredient;
+import if3t.models.ActionPOJO;
 import if3t.models.ParametersActions;
 import if3t.models.ParametersTriggers;
 import if3t.models.Recipe;
+import if3t.models.RecipePOJO;
 import if3t.models.Response;
 import if3t.models.Trigger;
 import if3t.models.TriggerIngredient;
+import if3t.models.TriggerPOJO;
 import if3t.models.User;
 import if3t.services.ActionService;
 import if3t.services.CreateRecipeService;
@@ -75,18 +77,32 @@ public class RecipeController {
 	}
 	
 	@RequestMapping(value="/recipe/{id}", method=RequestMethod.GET)
-	public List<Recipe> readRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException {
+	public RecipePOJO readRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException 
+	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User loggedUser = null;
-		if (auth == null)
+		
+		if (auth == null) {
 			throw new NotLoggedInException("ERROR: not loggedIn");
+		}
 		
-		loggedUser = userService.getUserByUsername(auth.getName());
-		List<Recipe> recipeList  = recipeService.readRecipe(id, loggedUser);
+		User loggedUser = userService.getUserByUsername(auth.getName());
+		List<Recipe> recList = recipeService.readRecipe(id, loggedUser);
+		Trigger trig = recList.get(0).getTrigger();
+		List<ParametersTriggers> ptList = createRecipeService.readChannelParametersTriggers(trig.getId(), trig.getChannel().getChannelId());
+		TriggerPOJO trigPOJO = new TriggerPOJO(trig, ptList);
+		List<ActionPOJO> actPOJOList = new ArrayList<ActionPOJO>();
 		
-		return recipeList;
+		for (Recipe rec : recipeService.readRecipe(id, loggedUser))
+		{
+			Action act = rec.getAction();
+			List<ParametersActions> paList = createRecipeService.readChannelParametersActions(act.getId(), act.getChannel().getChannelId());
+			actPOJOList.add(new ActionPOJO(act, paList));
+		}		
+		
+		return new RecipePOJO(recipeService.readRecipe(id, loggedUser), trigPOJO, actPOJOList);
 	}
 	
+	//TODO aggiungere il tipo textarea nel db e il controllo qui
 	@RequestMapping(value="/add_recipe", method=RequestMethod.POST)
 	public void addRecipe(@RequestBody List<Recipe> recipe) throws NotLoggedInException, AddRecipeException {
 		//TODO controlli user
@@ -117,62 +133,18 @@ public class RecipeController {
 							){
 						System.out.println("ACTION AND TRIGGER ARE VALID");
 						for(TriggerIngredient ti : r.getTrigger_ingredients()){
-							String type = ti.getParam().getType();							
-							Object value = ti.getValue();
-							switch(type){
-								case "email" :  if(!is_email_type(value))
-													are_all_valid = false;
-												break;
-								case "text" :	if(!is_text_type(value))
-													are_all_valid = false;
-												break;
-								case "radio" :  if(!is_radio_type_triggers(value, ti))
-													are_all_valid = false;	
-												break;
-								case "time" :  if(!is_time_type(value))
-													are_all_valid = false;	
-												break;
-								case "date" :  if(!is_date_type(value))
-													are_all_valid = false;	
-												break;
-								case "number" :  if(!is_number_type(value))
-													are_all_valid = false;	
-												break;
-								case "checkbox" :  if(!is_checkbox_type_triggers(value, ti))
-														are_all_valid = false;	
-													break;
-							}
+							if(!validate_ingredient(ti))
+								are_all_valid = false;
+							
 							if(are_all_valid)
 								System.out.println("This trigger ingredient is valid");
 							else
 								System.out.println("This trigger ingredient is not valid");
 						}
 						for(ActionIngredient ai : r.getAction_ingredients()){
-							String type = ai.getParam().getType();							
-							Object value = ai.getValue();
-							switch(type){
-								case "email" :  if(!is_email_type(value))
-													are_all_valid = false;
-												break;
-								case "text" :	if(!is_text_type(value))
-													are_all_valid = false;
-												break;
-								case "radio" :  if(!is_radio_type_actions(value, ai))
-													are_all_valid = false;	
-												break;
-								case "time" :  if(!is_time_type(value))
-													are_all_valid = false;	
-												break;
-								case "date" :  if(!is_date_type(value))
-													are_all_valid = false;	
-												break;
-								case "number" :  if(!is_number_type(value))
-													are_all_valid = false;	
-												break;
-								case "checkbox" :  if(!is_checkbox_type_actions(value, ai))
-														are_all_valid = false;	
-													break;
-							}
+							if(!validate_ingredient(ai))
+								are_all_valid = false;
+									
 							if(are_all_valid)
 								System.out.println("This action ingredient is valid");
 							else
@@ -192,116 +164,99 @@ public class RecipeController {
 					}
 			}
 			else{
-				System.out.println("At leas one recipe sent misses a field");
-				throw new AddRecipeException("ERROR: At leas one recipe sent misses a field");
+				System.out.println("At least one recipe sent misses a field");
+				throw new AddRecipeException("ERROR: At least one recipe sent misses a field");
 			}
 		}
 	}
 	
-	private boolean is_number_type(Object value) {
-		try{
-			int i = (Integer) value;
-		}
-		catch(ClassCastException e){
-			return false;			
-		}
-		return true;
-	}
-
-	private boolean is_date_type(Object value) {
-		Date date = null;
-		try {
-		    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-		    date = sdf.parse((String) value);
-		    if (!value.equals(sdf.format(date))) {
-		        date = null;
-		    }
-		} catch (ParseException ex) {
-		    ex.printStackTrace();
-		}
-		if (date == null) {
-			return false;
-		} else {
-		    return true;
-		}
-	}
-
-	private boolean is_time_type(Object value) {
-		Date date = null;
-		try {
-		    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-		    date = sdf.parse((String) value);
-		    if (!value.equals(sdf.format(date))) {
-		        date = null;
-		    }
-		} catch (ParseException ex) {
-		    ex.printStackTrace();
-		}
-		if (date == null) {
-			return false;
-		} else {
-		    return true;
-		}
-	}
-	
-	private boolean is_radio_type_actions(Object value, ActionIngredient action_ingredient) {
-		//it must have a value that is prevented by the radio button possibilities
-		Long param_id = action_ingredient.getParam().getId();
-		ParametersActions real_pa = createRecipeService.readParameterAction(param_id);
-		String real_name = real_pa.getName();
-		if(((String)value).equals(real_name) || ((String)value).equals("unchecked_radio_button")){
-			return true;
-		}
-		return false;
-	}
-	
-	private boolean is_checkbox_type_actions(Object value, ActionIngredient action_ingredient) {
-		//it must have a value that is prevented by the radio button possibilities
-		Long param_id = action_ingredient.getParam().getId();
-		ParametersActions real_pa = createRecipeService.readParameterAction(param_id);
-		String real_name = real_pa.getName();
-		if(((String)value).equals(real_name) || ((String)value).equals("unchecked_radio_button")){
-			return true;
-		}
-		return false;
-	}
-
-	private boolean is_radio_type_triggers(Object value, TriggerIngredient trigger_ingredient) {
-		//it must have a value that is prevented by the radio button possibilities
-		Long param_id = trigger_ingredient.getParam().getId();
-		ParametersTriggers real_pt = createRecipeService.readParameterTrigger(param_id);
-		String real_name = real_pt.getName();
-		if(((String)value).equals(real_name) || ((String)value).equals("unchecked_radio_button")){
-			return true;
-		}
-		return false;
-	}
-	
-	private boolean is_checkbox_type_triggers(Object value, TriggerIngredient trigger_ingredient) {
-		//it must have a value that is prevented by the radio button possibilities
-		Long param_id = trigger_ingredient.getParam().getId();
-		ParametersTriggers real_pt = createRecipeService.readParameterTrigger(param_id);
-		String real_name = real_pt.getName();
-		if(((String)value).equals(real_name) || ((String)value).equals("unchecked_radio_button")){
-			return true;
-		}
-		return false;
-	}
-	
 	private boolean is_text_type(Object value) {
-		try{
-			String s = new String((String) value);
-		}
-		catch(ClassCastException e){
-			return false;			
-		}
-		return true;
+		return value instanceof String;
+	}
+	
+	private boolean is_number_type(Object value) {
+		return value instanceof Integer;
 	}
 
-	private boolean is_email_type(Object value) {
-		Pattern pattern = Pattern.compile(EMAIL_PATTERN);
-		Matcher matcher = pattern.matcher((String)value);
-		return matcher.matches();	
+	private boolean is_date_time_type(Object value, String format)
+	{
+		if (value instanceof String)
+		{
+			Date date = null;
+			SimpleDateFormat sdf = new SimpleDateFormat(format);
+			
+			try 
+			{
+			    date = sdf.parse((String) value);
+			    
+			    if (!((String) value).equals(sdf.format(date))) {
+			        date = null;
+			    }
+			} 
+			catch (ParseException ex) 
+			{
+			    ex.printStackTrace();
+			    return false;
+			}
+			
+			return (date != null) ? true : false;
+		}
+		
+		return false;
+	}
+	
+	private boolean is_radio_type_or_checkbox_valid(Object value, Object ingredient)
+	{
+		Long param_id;
+		String real_name;
+		
+		if (ingredient instanceof ActionIngredient)
+		{
+			param_id = ((ActionIngredient) ingredient).getParam().getId();
+			ParametersActions real_pa = createRecipeService.readParameterAction(param_id);
+			real_name = real_pa.getName();
+			
+		}
+		else if (ingredient instanceof TriggerIngredient)
+		{
+			param_id = ((TriggerIngredient) ingredient).getParam().getId();
+			ParametersTriggers real_pt = createRecipeService.readParameterTrigger(param_id);
+			real_name = real_pt.getName();
+		}
+		else
+		{
+			return false;
+		}
+		
+		return (((String) value).equals(real_name) || ((String) value).equals("unchecked_radio_button")) ? true : false;
+	}
+	
+	private boolean validate_ingredient(Object ing)
+	{
+		String type = (ing instanceof ActionIngredient) ? ((ActionIngredient) ing).getParam().getType() : ((TriggerIngredient) ing).getParam().getType();		
+		Object value = (ing instanceof ActionIngredient) ? ((ActionIngredient) ing).getValue() : ((TriggerIngredient) ing).getValue();
+		
+		switch (type)
+		{
+			case "email":	return is_email_type(value);
+			case "text":	return is_text_type(value);					
+			case "time":	return is_date_time_type(value, "HH:mm");
+			case "date":  	return is_date_time_type(value, "dd/MM/yyyy");
+			case "number":  return is_number_type(value);
+			default: 		return is_radio_type_or_checkbox_valid(value, ing); 
+		}
+	}
+
+	private boolean is_email_type(Object value) 
+	{
+		if (value instanceof String)
+		{
+			Pattern pattern = Pattern.compile(EMAIL_PATTERN);
+			Matcher matcher = pattern.matcher((String) value);
+			return matcher.matches();	
+		}
+		
+		return false;
 	}
 
 	@RequestMapping(value="/remove_recipe/{id}", method=RequestMethod.POST)
