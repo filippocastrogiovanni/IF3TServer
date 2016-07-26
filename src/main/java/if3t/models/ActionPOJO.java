@@ -2,6 +2,7 @@ package if3t.models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ActionPOJO 
 {
@@ -13,7 +14,7 @@ public class ActionPOJO
 	
 	public ActionPOJO() {}
 	
-	public ActionPOJO(Action act, List<ParametersActions> paList)
+	public ActionPOJO(Action act, List<ParametersActions> paList, Map<Long, ActionIngredient> aiMap)
 	{
 		this.id = act.getId();
 		this.channel_image_url = act.getChannel().getImage_url();
@@ -23,7 +24,7 @@ public class ActionPOJO
 
 		for (ParametersActions pa : paList)
 		{
-			this.parameters.add(new ParametersPOJO(pa));
+			this.parameters.add(new ParametersPOJO(pa, aiMap.get(pa.getId())));
 		}
 	}
 

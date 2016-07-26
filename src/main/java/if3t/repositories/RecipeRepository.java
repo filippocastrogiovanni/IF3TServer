@@ -16,5 +16,6 @@ public interface RecipeRepository extends Repository<Recipe, Long> {
 	public List<Recipe> findByUser_Id(Long userId);
 	public List<Recipe> findByIsPublic(Boolean isPublic);
 	public Recipe save(Recipe booking);
+	//FIXME forse il parametro per cancellare è l'id
 	public void delete(Recipe booking);
 }

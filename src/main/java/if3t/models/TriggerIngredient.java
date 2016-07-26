@@ -30,6 +30,7 @@ public class TriggerIngredient {
 	
 	@NotNull
 	@ManyToOne
+	@JsonBackReference(value="triggeringredient-param")
 	@JoinColumn(name="id_param")
 	private ParametersTriggers param;
 	
@@ -103,5 +104,10 @@ public class TriggerIngredient {
 		} else if (!value.equals(other.value))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "TriggerIngredient [id=" + id + ", recipe=" + recipe + ", param=" + param + ", value=" + value + "]";
 	}
 }

@@ -30,6 +30,7 @@ public class ActionIngredient {
 	
 	@NotNull
 	@ManyToOne
+	@JsonBackReference(value="actioningredient-param")
 	@JoinColumn(name="id_param")
 	private ParametersActions param;
 	
@@ -104,7 +105,9 @@ public class ActionIngredient {
 			return false;
 		return true;
 	}
-	
 
-	
+	@Override
+	public String toString() {
+		return "ActionIngredient [id=" + id + ", recipe=" + recipe + ", param=" + param + ", value=" + value + "]";
+	}
 }

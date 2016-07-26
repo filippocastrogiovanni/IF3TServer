@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,9 +35,11 @@ import if3t.models.Trigger;
 import if3t.models.TriggerIngredient;
 import if3t.models.TriggerPOJO;
 import if3t.models.User;
+import if3t.services.ActionIngredientService;
 import if3t.services.ActionService;
 import if3t.services.CreateRecipeService;
 import if3t.services.RecipeService;
+import if3t.services.TriggerIngredientService;
 import if3t.services.TriggerService;
 import if3t.services.UserService;
 
@@ -54,6 +57,10 @@ public class RecipeController {
 	private TriggerService triggerService;
 	@Autowired
 	private CreateRecipeService createRecipeService;
+	@Autowired
+	private TriggerIngredientService triggerIngrService;
+	@Autowired
+	private ActionIngredientService actionIngrService;
 	
 	private static final String EMAIL_PATTERN = 
 			"^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
@@ -61,14 +68,15 @@ public class RecipeController {
 
 	
 	@RequestMapping(value="/user_recipes", method=RequestMethod.GET)
-	public List<Recipe> getUserRecipes() throws NotLoggedInException {
+	public List<Recipe> getUserRecipes() throws NotLoggedInException 
+	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User user = null;
-		if (auth == null)
-			throw new NotLoggedInException("ERROR: not loggedIn");
 		
-		user = userService.getUserByUsername(auth.getName());
-		return recipeService.readUserRecipes(user.getId());
+		if (auth == null) {
+			throw new NotLoggedInException("ERROR: not loggedIn");
+		}
+		
+		return recipeService.readUserRecipes(userService.getUserByUsername(auth.getName()).getId());
 	}
 	
 	@RequestMapping(value="/public_recipes", method=RequestMethod.GET)
@@ -89,84 +97,117 @@ public class RecipeController {
 		List<Recipe> recList = recipeService.readRecipe(id, loggedUser);
 		Trigger trig = recList.get(0).getTrigger();
 		List<ParametersTriggers> ptList = createRecipeService.readChannelParametersTriggers(trig.getId(), trig.getChannel().getChannelId());
-		TriggerPOJO trigPOJO = new TriggerPOJO(trig, ptList);
+		Map<Long, TriggerIngredient> tiMap = triggerIngrService.getRecipeTriggerIngredientsMap(id);
+		TriggerPOJO trigPOJO = new TriggerPOJO(trig, ptList, tiMap);
 		List<ActionPOJO> actPOJOList = new ArrayList<ActionPOJO>();
 		
 		for (Recipe rec : recipeService.readRecipe(id, loggedUser))
 		{
 			Action act = rec.getAction();
 			List<ParametersActions> paList = createRecipeService.readChannelParametersActions(act.getId(), act.getChannel().getChannelId());
-			actPOJOList.add(new ActionPOJO(act, paList));
+			Map<Long, ActionIngredient> aiMap = actionIngrService.getRecipeActionIngredientsMap(rec.getId());
+			actPOJOList.add(new ActionPOJO(act, paList, aiMap));
 		}		
 		
 		return new RecipePOJO(recipeService.readRecipe(id, loggedUser), trigPOJO, actPOJOList);
 	}
 	
 	//TODO aggiungere il tipo textarea nel db e il controllo qui
+	//TODO pare non salvi gli ingredienti
+	//TODO togliere il try catch alla fine quando è stabile
 	@RequestMapping(value="/add_recipe", method=RequestMethod.POST)
-	public void addRecipe(@RequestBody List<Recipe> recipe) throws NotLoggedInException, AddRecipeException {
-		//TODO controlli user
-		System.out.println("ADDING RECIPE, CONTROLLING THE RECIPE LIST");
-		//checks on recipes
-		for(Recipe r : recipe){
-			System.out.println("CONTROLLING A RECIPE");
-			if(r.getAction()!=null && r.getAction_ingredients()!=null && r.getTrigger()!=null && r.getTrigger_ingredients()!=null && r.getDescription()!=null){
-				System.out.println("ALL FIELDS ARE DIFFERENT FROM NULL");
-				//check if parameters are valid
-				boolean are_all_instances = true;
-				boolean are_all_valid = true;
-				if(r.getAction()instanceof Action && r.getTrigger()instanceof Trigger && r.getDescription()instanceof String)
-					for(ActionIngredient ai : r.getAction_ingredients()){
-						if(!(ai instanceof ActionIngredient)){
-							are_all_instances = false;
-							break;
+	public void addRecipe(@RequestBody List<Recipe> recipe) throws NotLoggedInException, AddRecipeException 
+	{		
+		try
+		{
+			//TODO controlli user ???
+			System.out.println("ADDING RECIPE, CONTROLLING THE RECIPE LIST");
+			//checks on recipes
+			for (Recipe r : recipe)
+			{
+				System.out.println("CONTROLLING A RECIPE");
+				if (r.getAction() != null && r.getAction_ingredients() != null && r.getTrigger() != null && r.getTrigger_ingredients() != null && r.getDescription() != null)
+				{
+					System.out.println("ALL FIELDS ARE DIFFERENT FROM NULL");
+					//check if parameters are valid
+					boolean are_all_instances = true;
+					boolean are_all_valid = true;
+					//TODO aggiunte le parentesi a questo if che non sono certo mancassero per scelta considerando l'indentazione sotto
+					if (r.getAction() instanceof Action && r.getTrigger() instanceof Trigger && r.getDescription() instanceof String)
+					{
+						for (ActionIngredient ai : r.getAction_ingredients())
+						{
+							if (!(ai instanceof ActionIngredient))
+							{
+								are_all_instances = false;
+								break;
+							}
 						}
-					}
-					for(TriggerIngredient ti : r.getTrigger_ingredients()){
-						if(!(ti instanceof TriggerIngredient)){
-							are_all_instances = false;
-							break;
+					
+						for (TriggerIngredient ti : r.getTrigger_ingredients())
+						{
+							if (!(ti instanceof TriggerIngredient))
+							{
+								are_all_instances = false;
+								break;
+							}
 						}
-					}
-					if(actionService.findById(r.getAction().getId())!=null
-							&& triggerService.findById(r.getTrigger().getId())!=null
-							){
-						System.out.println("ACTION AND TRIGGER ARE VALID");
-						for(TriggerIngredient ti : r.getTrigger_ingredients()){
-							if(!validate_ingredient(ti))
-								are_all_valid = false;
+						
+						if (actionService.findById(r.getAction().getId()) != null && triggerService.findById(r.getTrigger().getId()) != null)
+						{
+							System.out.println("ACTION AND TRIGGER ARE VALID");
 							
-							if(are_all_valid)
-								System.out.println("This trigger ingredient is valid");
-							else
-								System.out.println("This trigger ingredient is not valid");
+							for (TriggerIngredient ti : r.getTrigger_ingredients())
+							{
+								if (!validate_ingredient(ti)) {
+									are_all_valid = false;
+								}
+								
+								if (are_all_valid) {
+									System.out.println("This trigger ingredient is valid");
+								}
+								else {
+									System.err.println(ti);
+									System.err.println("This trigger ingredient is not valid");
+								}
+							}
+							
+							for (ActionIngredient ai : r.getAction_ingredients())
+							{
+								if (!validate_ingredient(ai)) {
+									are_all_valid = false;
+								}
+								
+								if (are_all_valid) {
+									System.out.println("This action ingredient is valid");
+								}
+								else {
+									System.err.println(ai);
+									System.err.println("This action ingredient is not valid");
+								}
+							}
 						}
-						for(ActionIngredient ai : r.getAction_ingredients()){
-							if(!validate_ingredient(ai))
-								are_all_valid = false;
-									
-							if(are_all_valid)
-								System.out.println("This action ingredient is valid");
-							else
-								System.out.println("This action ingredient is not valid");
+						
+						if (!are_all_instances || !are_all_valid)
+						{
+							System.out.println("Invalid data in recipe sent");
+							throw new AddRecipeException("ERROR: Invalid data in recipe sent");
 						}
 					}
-					if(are_all_instances && are_all_valid){
-						System.out.println("Saving recipe");
-						//check id parameters exist
-						r.setIsEnabled(false);
-						r.setIsPublic(false);		
-						recipeService.addRecipe(recipe);
-					}
-					else{
-						System.out.println("Invalid data in recipe sent");
-						throw new AddRecipeException("ERROR: Invalid data in recipe sent");
-					}
+				}
+				else
+				{
+					System.out.println("At least one recipe sent misses a field");
+					throw new AddRecipeException("ERROR: At least one recipe sent misses a field");
+				}
 			}
-			else{
-				System.out.println("At least one recipe sent misses a field");
-				throw new AddRecipeException("ERROR: At least one recipe sent misses a field");
-			}
+			
+			System.out.println("Saving recipe");
+			recipeService.addRecipe(recipe);
+		}
+		catch (Throwable t)
+		{
+			t.printStackTrace();
 		}
 	}
 	
@@ -238,12 +279,18 @@ public class RecipeController {
 		
 		switch (type)
 		{
-			case "email":	return is_email_type(value);
-			case "text":	return is_text_type(value);					
-			case "time":	return is_date_time_type(value, "HH:mm");
-			case "date":  	return is_date_time_type(value, "dd/MM/yyyy");
-			case "number":  return is_number_type(value);
-			default: 		return is_radio_type_or_checkbox_valid(value, ing); 
+			case "email":	
+				return is_email_type(value);
+			case "text": case "textarea":	
+				return is_text_type(value);					
+			case "time":	
+				return is_date_time_type(value, "HH:mm");
+			case "date":  	
+				return is_date_time_type(value, "dd/MM/yyyy");
+			case "number":  
+				return is_number_type(value);
+			default: 		
+				return is_radio_type_or_checkbox_valid(value, ing); 
 		}
 	}
 
@@ -260,14 +307,14 @@ public class RecipeController {
 	}
 
 	@RequestMapping(value="/remove_recipe/{id}", method=RequestMethod.POST)
-	public void delRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException {
+	public void delRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException 
+	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User loggedUser = null;
+		
 		if (auth == null)
 			throw new NotLoggedInException("ERROR: not loggedIn");
 		
-		loggedUser = userService.getUserByUsername(auth.getName());
-		recipeService.deleteRecipe(id, loggedUser);
+		recipeService.deleteRecipe(id, userService.getUserByUsername(auth.getName()));
 	}
 	
 	@RequestMapping(value="/publish_recipe/", method=RequestMethod.PUT)
@@ -295,7 +342,7 @@ public class RecipeController {
 		return new Response("Successful", 200);
 	}
 	
-	@RequestMapping(value="/enable_recipe", method=RequestMethod.PUT)
+	@RequestMapping(value="/enable_recipe/", method=RequestMethod.PUT)
 	public Response enableRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, ChannelNotAuthorizedException, NoPermissionException 
 	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -312,10 +359,7 @@ public class RecipeController {
 			throw new NoPermissionException();
 		}
 		
-		for (Recipe rec : recipeList)
-		{
-			recipeService.toggleIsEnabledRecipe(rec, user);
-		}
+		recipeService.toggleIsEnabledRecipe(recipeList, user);
 		
 		return new Response("Successful", 200);
 	}

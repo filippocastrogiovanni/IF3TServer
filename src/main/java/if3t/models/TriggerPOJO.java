@@ -2,6 +2,7 @@ package if3t.models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class TriggerPOJO 
 {
@@ -13,7 +14,7 @@ public class TriggerPOJO
 	
 	public TriggerPOJO() {}
 	
-	public TriggerPOJO(Trigger trig, List<ParametersTriggers> ptList)
+	public TriggerPOJO(Trigger trig, List<ParametersTriggers> ptList, Map<Long, TriggerIngredient> tiMap)
 	{
 		this.id = trig.getId();
 		this.channel_image_url = trig.getChannel().getImage_url();
@@ -23,7 +24,7 @@ public class TriggerPOJO
 
 		for (ParametersTriggers pt : ptList)
 		{
-			this.parameters.add(new ParametersPOJO(pt));
+			this.parameters.add(new ParametersPOJO(pt, tiMap.get(pt.getId())));
 		}
 	}
 

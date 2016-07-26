@@ -17,8 +17,8 @@ import if3t.repositories.TriggerRepository;
 
 @Service
 @Transactional
-public class CreateRecipeServiceImpl implements CreateRecipeService {
-
+public class CreateRecipeServiceImpl implements CreateRecipeService 
+{
 	@Autowired
 	private ChannelRepository channelRepository;
 	@Autowired
@@ -77,5 +77,4 @@ public class CreateRecipeServiceImpl implements CreateRecipeService {
 	public ParametersActions readParameterAction(Long id) {
 		return parametersActionsRepository.findOne(id);
 	}
-
 }

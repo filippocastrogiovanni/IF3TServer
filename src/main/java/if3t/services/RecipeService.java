@@ -17,5 +17,5 @@ public interface RecipeService {
 	public void deleteRecipe(Long id, User loggedUser) throws NoPermissionException;
 	public void addRecipe(List<Recipe> recipe) throws NotLoggedInException;
 	public void toggleIsPublicRecipe(Recipe recipe);
-	public void toggleIsEnabledRecipe(Recipe recipe, User user) throws ChannelNotAuthorizedException;
+	public void toggleIsEnabledRecipe(List<Recipe> recipes, User user) throws ChannelNotAuthorizedException;
 }

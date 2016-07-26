@@ -1,6 +1,8 @@
 package if3t.services;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +15,15 @@ import org.springframework.transaction.annotation.Transactional;
 import if3t.exceptions.ChannelNotAuthorizedException;
 import if3t.exceptions.NoPermissionException;
 import if3t.exceptions.NotLoggedInException;
+import if3t.models.ActionIngredient;
 import if3t.models.Channel;
 import if3t.models.Recipe;
+import if3t.models.TriggerIngredient;
 import if3t.models.User;
+import if3t.repositories.ActionIngredientRepository;
 import if3t.repositories.AuthorizationRepository;
 import if3t.repositories.RecipeRepository;
+import if3t.repositories.TriggerIngredientRepository;
 
 @Service
 @Transactional
@@ -29,8 +35,12 @@ public class RecipeServiceImpl implements RecipeService {
 	private UserService userService;
 	@Autowired
 	private AuthorizationRepository authRepository;
+	@Autowired
+	private TriggerIngredientRepository triggerIngRepo;
+	@Autowired
+	private ActionIngredientRepository actionIngRepo;
 	
-	//TODO controllare se quest'annotazione serve anche in altri service
+	//TODO controllare se quest'annotazione serve anche in altri services
 	@PreAuthorize("hasRole('USER')")
 	public List<Recipe> readUserRecipes(Long userId) {
 		return recipeRepository.findByUser_Id(userId);
@@ -41,38 +51,68 @@ public class RecipeServiceImpl implements RecipeService {
 	}
 
 	@PreAuthorize("hasRole('USER')")
-	public List<Recipe> readRecipe(Long id, User loggedUser) throws NoPermissionException {
-		Recipe targetRecipe = recipeRepository.findOne(id);
-		String groupId = targetRecipe.getGroupId();
-		
+	public List<Recipe> readRecipe(Long id, User loggedUser) throws NoPermissionException 
+	{
+		String groupId = recipeRepository.findOne(id).getGroupId();
 		List<Recipe> recipeList = recipeRepository.findByGroupId(groupId);
-		for(Recipe recipe: recipeList){
-			if(!recipe.getUser().equals(loggedUser))
+		
+		for (Recipe recipe: recipeList)
+		{
+			if (!recipe.getUser().equals(loggedUser)) {
 				throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
+			}
 		}
 		
 		return recipeList;
 	}
 
 	@PreAuthorize("hasRole('USER')")
-	public void deleteRecipe(Long id, User loggedUser) throws NoPermissionException {
+	public void deleteRecipe(Long id, User loggedUser) throws NoPermissionException 
+	{
 		Recipe recipe = recipeRepository.findOne(id);
-		if(!recipe.getUser().getId().equals(loggedUser.getId()))
+		
+		if (!recipe.getUser().getId().equals(loggedUser.getId())) {
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
-		recipeRepository.delete(recipe);
+		}
+		
+		for (Recipe rec : recipeRepository.findByGroupId(recipe.getGroupId()))
+		{
+			recipeRepository.delete(rec);
+		}
 	}
 
 	@PreAuthorize("hasRole('USER')")
-	public void addRecipe(List<Recipe> recipe) throws NotLoggedInException {
+	public void addRecipe(List<Recipe> recipe) throws NotLoggedInException 
+	{
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		
+		if (auth == null) {
+			throw new NotLoggedInException("ERROR: not logged in!");
+		}
+		
 		UUID groupId = UUID.randomUUID();
-		for(Recipe r: recipe){
-			r.setGroupId(groupId.toString());
-			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-			if (auth == null)
-				throw new NotLoggedInException("ERROR: not logged in!");
-			User loggedUser = userService.getUserByUsername(auth.getName());
+		User loggedUser = userService.getUserByUsername(auth.getName());
+		
+		for (Recipe r : recipe)
+		{
+			r.setIsEnabled(false);
+			r.setIsPublic(false);
+			r.setGroupId(groupId.toString());	
 			r.setUser(loggedUser);
 			recipeRepository.save(r);
+			
+			//Il salvataggio degli ingredienti va fatto qui (e non nel controller) per garantire la transazionalità
+			for (TriggerIngredient ti : r.getTrigger_ingredients())
+			{
+				ti.setRecipe(r);
+				triggerIngRepo.save(ti);
+			}
+			
+			for (ActionIngredient ai : r.getAction_ingredients())
+			{
+				ai.setRecipe(r);
+				actionIngRepo.save(ai);
+			}
 		}
 	}
 
@@ -84,24 +124,42 @@ public class RecipeServiceImpl implements RecipeService {
 	}
 
 	@PreAuthorize("hasRole('USER')")
-	public void toggleIsEnabledRecipe(Recipe recipe, User user) throws ChannelNotAuthorizedException 
+	public void toggleIsEnabledRecipe(List<Recipe> recipes, User user) throws ChannelNotAuthorizedException 
 	{		
 		Long userId = user.getId();
-		Channel triggerChannel = recipe.getTrigger().getChannel();
-		Channel actionChannel = recipe.getAction().getChannel();
+		Channel triggerChannel = recipes.get(0).getTrigger().getChannel();
 		
-		if (authRepository.findByUser_IdAndChannel_ChannelId(userId, triggerChannel.getChannelId()) == null)
+		if (authRepository.findByUser_IdAndChannel_ChannelId(userId, triggerChannel.getChannelId()) == null) {
 			throw new ChannelNotAuthorizedException("Trigger channel (" + triggerChannel.getName() + ") not authorized!");
+		}
 		
-		if (authRepository.findByUser_IdAndChannel_ChannelId(userId, actionChannel.getChannelId()) == null)
-			throw new ChannelNotAuthorizedException("Action channel (" + actionChannel.getName() + ") not authorized!");
+		Channel actionChannel;
+		Set<Long> checkedActChannelIds = new HashSet<Long>();
 		
-		recipe.setIsEnabled(!recipe.getIsEnabled());
-		recipeRepository.save(recipe);
+		for (Recipe rec : recipes)
+		{
+			actionChannel = rec.getAction().getChannel();
+			
+			if (!checkedActChannelIds.contains(actionChannel.getChannelId())) 
+			{
+				if (authRepository.findByUser_IdAndChannel_ChannelId(userId, actionChannel.getChannelId()) == null) {
+					throw new ChannelNotAuthorizedException("Action channel (" + actionChannel.getName() + ") not authorized!");
+				}
+				
+				checkedActChannelIds.add(actionChannel.getChannelId());
+			}
+		}
+		
+		//Solo se tutti i canali sono autorizzati vanno fatte le modifiche alle ricette altrimenti si potrebbero avere modifiche parziali
+		for (Recipe rec : recipes)
+		{
+			rec.setIsEnabled(!rec.getIsEnabled());
+			recipeRepository.save(rec);
+		}
 	}
 
+	//TODO capire se serve a qualcosa
 	public List<Recipe> getRecipeByTriggerChannel(String channelKeyword) {
 		return recipeRepository.findByIsEnabledAndTrigger_Channel_Keyword(true, channelKeyword);
 	}
-
 }

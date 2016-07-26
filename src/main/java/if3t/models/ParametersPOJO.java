@@ -2,21 +2,35 @@ package if3t.models;
 
 public class ParametersPOJO 
 {
+	private Long id;
 	private String name;
 	private String type;
+	private String value;
 	
 	public ParametersPOJO() {}
 	
-	public ParametersPOJO(ParametersTriggers pt) 
+	public ParametersPOJO(ParametersTriggers pt, TriggerIngredient ti) 
 	{
+		this.id = pt.getId();
 		this.name = pt.getName();
 		this.type = pt.getType();
+		this.value = (ti != null) ? ti.getValue() : "";
 	}
 	
-	public ParametersPOJO(ParametersActions pa) 
+	public ParametersPOJO(ParametersActions pa, ActionIngredient ai) 
 	{
+		this.id = pa.getId();
 		this.name = pa.getName();
 		this.type = pa.getType();
+		this.value = (ai != null) ? ai.getValue() : "";
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getName() {
@@ -33,5 +47,13 @@ public class ParametersPOJO
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
 	}
 }
