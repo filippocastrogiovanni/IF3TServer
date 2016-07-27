@@ -118,8 +118,10 @@ public class RecipeController {
 	@RequestMapping(value="/add_recipe", method=RequestMethod.POST)
 	public void addRecipe(@RequestBody List<Recipe> recipe) throws NotLoggedInException, AddRecipeException 
 	{		
+		/*
 		try
 		{
+		*/
 			//TODO controlli user ???
 			System.out.println("ADDING RECIPE, CONTROLLING THE RECIPE LIST");
 			//checks on recipes
@@ -204,11 +206,13 @@ public class RecipeController {
 			
 			System.out.println("Saving recipe");
 			recipeService.addRecipe(recipe);
+		/*
 		}
 		catch (Throwable t)
 		{
 			t.printStackTrace();
 		}
+		*/
 	}
 	
 	private boolean is_text_type(Object value) {
@@ -269,7 +273,7 @@ public class RecipeController {
 			return false;
 		}
 		
-		return (((String) value).equals(real_name) || ((String) value).equals("unchecked_radio_button")) ? true : false;
+		return (((String) value).equals(real_name) || ((String) value).equals("unchecked_radio_button") || ((String) value).equals("unchecked_checkbox_button")) ? true : false;
 	}
 	
 	private boolean validate_ingredient(Object ing)
