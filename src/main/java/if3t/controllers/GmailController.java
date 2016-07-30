@@ -85,7 +85,7 @@ public class GmailController {
 
 		GoogleAuthRequest req = new GoogleAuthRequest(loggedUser);
 		authRequests.put(req.getState(), loggedUser.getUsername());
-		return new Response(req.toString(), 200);
+		return new Response(req.toString(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 
 	@RequestMapping(value = "/gmail/authresponse", method = RequestMethod.GET)

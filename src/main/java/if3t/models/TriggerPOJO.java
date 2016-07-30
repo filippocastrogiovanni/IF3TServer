@@ -4,12 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.constraints.NotNull;
+
+import if3t.annotations.Parameters;
+import if3t.annotations.Parameters.ValidationMode;
+
 public class TriggerPOJO 
 {
+	@NotNull(message = "error.trigger.id.null")
 	private Long id;
 	private String channel_image_url;
 	private String header;
 	private String paragraph;
+	@Parameters(mode = ValidationMode.TRIGGER)
+	@NotNull(message = "error.trigger.parameters.null")
 	private List<ParametersPOJO> parameters;
 	
 	public TriggerPOJO() {}
@@ -66,5 +74,11 @@ public class TriggerPOJO
 
 	public void setParameters(List<ParametersPOJO> parameters) {
 		this.parameters = parameters;
+	}
+
+	@Override
+	public String toString() {
+		return "TriggerPOJO [id=" + id + ", channel_image_url=" + channel_image_url + ", header=" + header
+				+ ", paragraph=" + paragraph + ", parameters=" + parameters + "]";
 	}
 }

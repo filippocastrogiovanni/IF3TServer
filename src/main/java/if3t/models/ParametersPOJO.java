@@ -56,4 +56,9 @@ public class ParametersPOJO
 	public void setValue(String value) {
 		this.value = value;
 	}
+
+	@Override
+	public String toString() {
+		return "ParametersPOJO [id=" + id + ", name=" + name + ", type=" + type + ", value=" + value + "]";
+	}
 }

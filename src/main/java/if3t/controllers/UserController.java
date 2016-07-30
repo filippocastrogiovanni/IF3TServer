@@ -3,6 +3,7 @@ package if3t.controllers;
 import javax.naming.NoPermissionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -71,7 +72,7 @@ public class UserController {
 		u.setEnabled(true);
 		u.setRole(Role.USER);
 		userService.addUser(u);
-		return new Response("Successful", 200);
+		return new Response("Successful", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 
 	@RequestMapping(value = "/userinfo", method = RequestMethod.PUT)
@@ -122,7 +123,8 @@ public class UserController {
 		if (update) {
 			userService.updateUser(curUser);
 		}
-		return new Response("Successful", 200);
+		
+		return new Response("Successful", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 
 	@RequestMapping(value = "/userpassword", method = RequestMethod.PUT)
@@ -153,7 +155,6 @@ public class UserController {
 		
 		loggedUser.setPassword(new BCryptPasswordEncoder().encode(passwordReq.getNewPassword()));
 		userService.updateUser(loggedUser);
-		return new Response("Successful", 200);
+		return new Response("Successful", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
-
 }

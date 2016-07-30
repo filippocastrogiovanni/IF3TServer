@@ -1,17 +1,14 @@
 package if3t.controllers;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,11 +33,9 @@ import if3t.models.TriggerIngredient;
 import if3t.models.TriggerPOJO;
 import if3t.models.User;
 import if3t.services.ActionIngredientService;
-import if3t.services.ActionService;
 import if3t.services.CreateRecipeService;
 import if3t.services.RecipeService;
 import if3t.services.TriggerIngredientService;
-import if3t.services.TriggerService;
 import if3t.services.UserService;
 
 @RestController
@@ -52,20 +47,11 @@ public class RecipeController {
 	@Autowired
 	private UserService userService;
 	@Autowired
-	private ActionService actionService;	
-	@Autowired
-	private TriggerService triggerService;
-	@Autowired
 	private CreateRecipeService createRecipeService;
 	@Autowired
 	private TriggerIngredientService triggerIngrService;
 	@Autowired
 	private ActionIngredientService actionIngrService;
-	
-	private static final String EMAIL_PATTERN = 
-			"^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
-			+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
-
 	
 	@RequestMapping(value="/user_recipes", method=RequestMethod.GET)
 	public List<Recipe> getUserRecipes() throws NotLoggedInException 
@@ -112,202 +98,17 @@ public class RecipeController {
 		return new RecipePOJO(recipeService.readRecipe(id, loggedUser), trigPOJO, actPOJOList);
 	}
 	
-	//TODO aggiungere il tipo textarea nel db e il controllo qui
-	//TODO pare non salvi gli ingredienti
-	//TODO togliere il try catch alla fine quando è stabile
 	@RequestMapping(value="/add_recipe", method=RequestMethod.POST)
-	public void addRecipe(@RequestBody List<Recipe> recipe) throws NotLoggedInException, AddRecipeException 
+	public Response addRecipe(@RequestBody List<Recipe> recipes) throws NotLoggedInException, AddRecipeException 
 	{		
-		/*
-		try
-		{
-		*/
-			//TODO controlli user ???
-			System.out.println("ADDING RECIPE, CONTROLLING THE RECIPE LIST");
-			//checks on recipes
-			for (Recipe r : recipe)
-			{
-				System.out.println("CONTROLLING A RECIPE");
-				if (r.getAction() != null && r.getAction_ingredients() != null && r.getTrigger() != null && r.getTrigger_ingredients() != null && r.getDescription() != null)
-				{
-					System.out.println("ALL FIELDS ARE DIFFERENT FROM NULL");
-					//check if parameters are valid
-					boolean are_all_instances = true;
-					boolean are_all_valid = true;
-					//TODO aggiunte le parentesi a questo if che non sono certo mancassero per scelta considerando l'indentazione sotto
-					if (r.getAction() instanceof Action && r.getTrigger() instanceof Trigger && r.getDescription() instanceof String)
-					{
-						for (ActionIngredient ai : r.getAction_ingredients())
-						{
-							if (!(ai instanceof ActionIngredient))
-							{
-								are_all_instances = false;
-								break;
-							}
-						}
-					
-						for (TriggerIngredient ti : r.getTrigger_ingredients())
-						{
-							if (!(ti instanceof TriggerIngredient))
-							{
-								are_all_instances = false;
-								break;
-							}
-						}
-						
-						if (actionService.findById(r.getAction().getId()) != null && triggerService.findById(r.getTrigger().getId()) != null)
-						{
-							System.out.println("ACTION AND TRIGGER ARE VALID");
-							
-							for (TriggerIngredient ti : r.getTrigger_ingredients())
-							{
-								if (!validate_ingredient(ti)) {
-									are_all_valid = false;
-								}
-								
-								if (are_all_valid) {
-									System.out.println("This trigger ingredient is valid");
-								}
-								else {
-									System.err.println(ti);
-									System.err.println("This trigger ingredient is not valid");
-								}
-							}
-							
-							for (ActionIngredient ai : r.getAction_ingredients())
-							{
-								if (!validate_ingredient(ai)) {
-									are_all_valid = false;
-								}
-								
-								if (are_all_valid) {
-									System.out.println("This action ingredient is valid");
-								}
-								else {
-									System.err.println(ai);
-									System.err.println("This action ingredient is not valid");
-								}
-							}
-						}
-						
-						if (!are_all_instances || !are_all_valid)
-						{
-							System.out.println("Invalid data in recipe sent");
-							throw new AddRecipeException("ERROR: Invalid data in recipe sent");
-						}
-					}
-				}
-				else
-				{
-					System.out.println("At least one recipe sent misses a field");
-					throw new AddRecipeException("ERROR: At least one recipe sent misses a field");
-				}
-			}
-			
-			System.out.println("Saving recipe");
-			recipeService.addRecipe(recipe);
-		/*
-		}
-		catch (Throwable t)
-		{
-			t.printStackTrace();
-		}
-		*/
-	}
-	
-	private boolean is_text_type(Object value) {
-		return value instanceof String;
-	}
-	
-	private boolean is_number_type(Object value) {
-		return value instanceof Integer;
-	}
-
-	private boolean is_date_time_type(Object value, String format)
-	{
-		if (value instanceof String)
-		{
-			Date date = null;
-			SimpleDateFormat sdf = new SimpleDateFormat(format);
-			
-			try 
-			{
-			    date = sdf.parse((String) value);
-			    
-			    if (!((String) value).equals(sdf.format(date))) {
-			        date = null;
-			    }
-			} 
-			catch (ParseException ex) 
-			{
-			    ex.printStackTrace();
-			    return false;
-			}
-			
-			return (date != null) ? true : false;
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		
+		if (auth == null) {
+			throw new NotLoggedInException("ERROR: not logged in!");
 		}
 		
-		return false;
-	}
-	
-	private boolean is_radio_type_or_checkbox_valid(Object value, Object ingredient)
-	{
-		Long param_id;
-		String real_name;
-		
-		if (ingredient instanceof ActionIngredient)
-		{
-			param_id = ((ActionIngredient) ingredient).getParam().getId();
-			ParametersActions real_pa = createRecipeService.readParameterAction(param_id);
-			real_name = real_pa.getName();
-			
-		}
-		else if (ingredient instanceof TriggerIngredient)
-		{
-			param_id = ((TriggerIngredient) ingredient).getParam().getId();
-			ParametersTriggers real_pt = createRecipeService.readParameterTrigger(param_id);
-			real_name = real_pt.getName();
-		}
-		else
-		{
-			return false;
-		}
-		
-		return (((String) value).equals(real_name) || ((String) value).equals("unchecked_radio_button") || ((String) value).equals("unchecked_checkbox_button")) ? true : false;
-	}
-	
-	private boolean validate_ingredient(Object ing)
-	{
-		String type = (ing instanceof ActionIngredient) ? ((ActionIngredient) ing).getParam().getType() : ((TriggerIngredient) ing).getParam().getType();		
-		Object value = (ing instanceof ActionIngredient) ? ((ActionIngredient) ing).getValue() : ((TriggerIngredient) ing).getValue();
-		
-		switch (type)
-		{
-			case "email":	
-				return is_email_type(value);
-			case "text": case "textarea":	
-				return is_text_type(value);					
-			case "time":	
-				return is_date_time_type(value, "HH:mm");
-			case "date":  	
-				return is_date_time_type(value, "dd/MM/yyyy");
-			case "number":  
-				return is_number_type(value);
-			default: 		
-				return is_radio_type_or_checkbox_valid(value, ing); 
-		}
-	}
-
-	private boolean is_email_type(Object value) 
-	{
-		if (value instanceof String)
-		{
-			Pattern pattern = Pattern.compile(EMAIL_PATTERN);
-			Matcher matcher = pattern.matcher((String) value);
-			return matcher.matches();	
-		}
-		
-		return false;
+		recipeService.addRecipe(recipes, userService.getUserByUsername(auth.getName()));
+		return new Response("The recipe has been created successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 
 	@RequestMapping(value="/remove_recipe/{id}", method=RequestMethod.POST)
@@ -315,8 +116,9 @@ public class RecipeController {
 	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
-		if (auth == null)
+		if (auth == null) {
 			throw new NotLoggedInException("ERROR: not loggedIn");
+		}
 		
 		recipeService.deleteRecipe(id, userService.getUserByUsername(auth.getName()));
 	}
@@ -343,7 +145,8 @@ public class RecipeController {
 			recipeService.toggleIsPublicRecipe(rec);
 		}
 				
-		return new Response("Successful", 200);
+		String state = recipeList.get(0).getIsPublic() ? "published" : "unpublished";
+		return new Response("The recipe has been " + state + " successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 	
 	@RequestMapping(value="/enable_recipe/", method=RequestMethod.PUT)
@@ -364,7 +167,24 @@ public class RecipeController {
 		}
 		
 		recipeService.toggleIsEnabledRecipe(recipeList, user);
-		
-		return new Response("Successful", 200);
+		String state = recipeList.get(0).getIsEnabled() ? "enabled" : "disabled";
+		return new Response("The recipe has been " + state + " successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+	}
+	
+	@RequestMapping(value="/update_recipe/", method=RequestMethod.PUT)
+	public Response updateRecipe(@Validated @RequestBody RecipePOJO recipe) throws NotLoggedInException, NoPermissionException, AddRecipeException
+	{
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			
+		if (auth == null) {
+			throw new NotLoggedInException("ERROR: not loggedIn");
+		}
+			
+		if (!recipe.getUsername().equals(auth.getName())) {
+			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
+		}
+			
+		recipeService.updateRecipe(recipe);		
+		return new Response("The recipe has been updated successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 }

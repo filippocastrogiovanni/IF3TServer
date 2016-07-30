@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.RequestEntity.BodyBuilder;
@@ -84,7 +85,7 @@ public class FacebookController {
 
 		FacebookAuthRequest req = new FacebookAuthRequest(loggedUser);
 		authRequests.put(req.getState(), loggedUser.getUsername());
-		return new Response(req.toString(), 200);
+		return new Response(req.toString(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 	
 	@RequestMapping(value = "/facebook/authresponse", method = RequestMethod.GET)
@@ -175,7 +176,7 @@ public class FacebookController {
 		Channel channel = channelService.findByKeyword("facebook");
    	    Authorization authorization_to_delete = authRepository.findByUserAndChannel(loggedUser, channel);
 		authService.deleteAuthorization(authorization_to_delete.getId());
-		return new Response("OK", 200);
+		return new Response("OK", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 
 }

@@ -15,6 +15,7 @@ import javax.servlet.ServletContextListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,7 +29,7 @@ import com.mysql.cj.jdbc.AbandonedConnectionCleanupThread;
 @RestController
 public class Application {
 	
-	 private final Logger log = LoggerFactory.getLogger(Application.class);
+	private final Logger log = LoggerFactory.getLogger(Application.class);
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
@@ -94,5 +95,15 @@ public class Application {
             }
         };
     }
+	
+	@Bean(name = "messageSource")
+	public ReloadableResourceBundleMessageSource messageSource() 
+	{
+	    ReloadableResourceBundleMessageSource messageBundle = new ReloadableResourceBundleMessageSource();
+	    messageBundle.setBasename("classpath:messages/messages");
+	    messageBundle.setDefaultEncoding("UTF-8");
+	    
+	    return messageBundle;
+	}
 	
 }

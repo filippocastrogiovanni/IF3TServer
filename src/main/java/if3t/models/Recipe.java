@@ -53,7 +53,7 @@ public class Recipe {
 	
 	@Column(name = "is_enabled", nullable = false)
 	private Boolean isEnabled;
-
+	
 	/**
 	 * @return the id
 	 */

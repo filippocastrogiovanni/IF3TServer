@@ -4,12 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.constraints.NotNull;
+
+import if3t.annotations.Parameters;
+import if3t.annotations.Parameters.ValidationMode;
+
 public class ActionPOJO 
 {
+	@NotNull(message = "error.action.id.null")
 	private Long id;
 	private String channel_image_url;
 	private String header;
 	private String paragraph;
+	@Parameters(mode = ValidationMode.ACTION)
+	@NotNull(message = "error.action.parameters.null")
 	private List<ParametersPOJO> parameters;
 	
 	public ActionPOJO() {}
@@ -66,5 +74,11 @@ public class ActionPOJO
 
 	public void setParameters(List<ParametersPOJO> parameters) {
 		this.parameters = parameters;
+	}
+
+	@Override
+	public String toString() {
+		return "ActionPOJO [id=" + id + ", channel_image_url=" + channel_image_url + ", header=" + header
+				+ ", paragraph=" + paragraph + ", parameters=" + parameters + "]";
 	}
 }
