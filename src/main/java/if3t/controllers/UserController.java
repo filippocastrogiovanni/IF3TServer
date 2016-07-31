@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import if3t.exceptions.InvalidParametersException;
@@ -35,6 +36,7 @@ public class UserController {
 	String usernameRegex = "^[a-zA-Z0-9]{6,30}$";
 	String passwordRegex = "^[a-zA-Z0-9,!?.£%&;:-=]{6,30}$";
 
+	@ResponseStatus(value = HttpStatus.CREATED)
 	@RequestMapping(value = "/signup", method = RequestMethod.POST)
 	public Response createUser(@RequestBody User u) throws InvalidParametersException {
 		User checkUser = null;
@@ -72,9 +74,10 @@ public class UserController {
 		u.setEnabled(true);
 		u.setRole(Role.USER);
 		userService.addUser(u);
-		return new Response("Successful", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+		return new Response("Successful", HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
 	}
 
+	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value = "/userinfo", method = RequestMethod.PUT)
 	public Response updateInfo(@RequestBody User u)
 			throws NotLoggedInException, NoPermissionException, InvalidParametersException {
@@ -127,6 +130,7 @@ public class UserController {
 		return new Response("Successful", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 
+	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value = "/userpassword", method = RequestMethod.PUT)
 	public Response changePassword(@RequestBody RequestPassword passwordReq)
 			throws NotLoggedInException, WrongPasswordException, NoPermissionException, InvalidParametersException {

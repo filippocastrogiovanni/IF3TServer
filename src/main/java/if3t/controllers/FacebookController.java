@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -68,6 +69,7 @@ public class FacebookController {
 	
 	private ConcurrentHashMap<String, String> authRequests = new ConcurrentHashMap<String, String>();
 
+	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value = "/facebook/auth", method = RequestMethod.GET)
 	public Response facebookAuth() throws NotLoggedInException, NoPermissionException {
 		System.out.println("Server has received a token request");
@@ -88,6 +90,7 @@ public class FacebookController {
 		return new Response(req.toString(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 	
+	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value = "/facebook/authresponse", method = RequestMethod.GET)
 	//public Response facebookAuth() throws NotLoggedInException, NoPermissionException {
 	public String facebookAuthResponse(@RequestParam(value = "state", required = false) String state, 
@@ -158,6 +161,7 @@ public class FacebookController {
 		}
 	}
 		
+	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value = "/facebook/revokeauth", method = RequestMethod.GET)
 	public Response facebookRevokeAuth() throws NotLoggedInException, NoPermissionException {
 		System.out.println("Server has received a token revocation request");
@@ -178,5 +182,4 @@ public class FacebookController {
 		authService.deleteAuthorization(authorization_to_delete.getId());
 		return new Response("OK", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
-
 }

@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -70,6 +71,7 @@ public class GmailController {
 
 	private ConcurrentHashMap<String, String> authRequests = new ConcurrentHashMap<String, String>();
 
+	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value = "/gmail/auth", method = RequestMethod.GET)
 	public Response gmailAuth() throws NotLoggedInException, NoPermissionException {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -88,6 +90,7 @@ public class GmailController {
 		return new Response(req.toString(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 
+	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value = "/gmail/authresponse", method = RequestMethod.GET)
 	public String gmailAuthResponse(@RequestParam(value = "state", required = false) String state,
 			@RequestParam(value = "code", required = false) String code,
@@ -135,5 +138,4 @@ public class GmailController {
 
 		return "<script>window.close();</script>";
 	}
-
 }

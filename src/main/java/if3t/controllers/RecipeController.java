@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import if3t.exceptions.AddRecipeException;
@@ -53,6 +54,7 @@ public class RecipeController {
 	@Autowired
 	private ActionIngredientService actionIngrService;
 	
+	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value="/user_recipes", method=RequestMethod.GET)
 	public List<Recipe> getUserRecipes() throws NotLoggedInException 
 	{
@@ -65,11 +67,13 @@ public class RecipeController {
 		return recipeService.readUserRecipes(userService.getUserByUsername(auth.getName()).getId());
 	}
 	
+	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value="/public_recipes", method=RequestMethod.GET)
 	public List<Recipe> getPublicRecipes() {
 		return recipeService.readPublicRecipes();
 	}
 	
+	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value="/recipe/{id}", method=RequestMethod.GET)
 	public RecipePOJO readRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException 
 	{
@@ -98,6 +102,7 @@ public class RecipeController {
 		return new RecipePOJO(recipeService.readRecipe(id, loggedUser), trigPOJO, actPOJOList);
 	}
 	
+	@ResponseStatus(value = HttpStatus.CREATED)
 	@RequestMapping(value="/add_recipe", method=RequestMethod.POST)
 	public Response addRecipe(@RequestBody List<Recipe> recipes) throws NotLoggedInException, AddRecipeException 
 	{		
@@ -108,11 +113,12 @@ public class RecipeController {
 		}
 		
 		recipeService.addRecipe(recipes, userService.getUserByUsername(auth.getName()));
-		return new Response("The recipe has been created successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+		return new Response("The recipe has been created successfully", HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
 	}
 
-	@RequestMapping(value="/remove_recipe/{id}", method=RequestMethod.POST)
-	public void delRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException 
+	@ResponseStatus(value = HttpStatus.OK)
+	@RequestMapping(value="/delete_recipe/{id}", method=RequestMethod.DELETE)
+	public Response deleteRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException 
 	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
@@ -121,8 +127,10 @@ public class RecipeController {
 		}
 		
 		recipeService.deleteRecipe(id, userService.getUserByUsername(auth.getName()));
+		return new Response("The recipe has been deleted successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 	
+	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value="/publish_recipe/", method=RequestMethod.PUT)
 	public Response publishRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, NoPermissionException 
 	{
@@ -149,6 +157,7 @@ public class RecipeController {
 		return new Response("The recipe has been " + state + " successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 	
+	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value="/enable_recipe/", method=RequestMethod.PUT)
 	public Response enableRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, ChannelNotAuthorizedException, NoPermissionException 
 	{
@@ -171,6 +180,7 @@ public class RecipeController {
 		return new Response("The recipe has been " + state + " successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 	
+	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value="/update_recipe/", method=RequestMethod.PUT)
 	public Response updateRecipe(@Validated @RequestBody RecipePOJO recipe) throws NotLoggedInException, NoPermissionException, AddRecipeException
 	{
