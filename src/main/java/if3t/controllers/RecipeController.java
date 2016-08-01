@@ -106,7 +106,7 @@ public class RecipeController
 	
 	@ResponseStatus(value = HttpStatus.CREATED)
 	@RequestMapping(value="/add_recipe", method=RequestMethod.POST)
-	public Response addRecipe(@Validated @RequestBody List<Recipe> recipes) throws NotLoggedInException, AddRecipeException 
+	public Response addRecipe(@RequestBody List<Recipe> recipes) throws NotLoggedInException, AddRecipeException 
 	{		
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
