@@ -17,7 +17,9 @@ import javax.validation.Payload;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import if3t.models.ParametersActions;
 import if3t.models.ParametersPOJO;
+import if3t.models.ParametersTriggers;
 import if3t.services.CreateRecipeService;
 
 @Target(ElementType.FIELD)
@@ -37,6 +39,8 @@ public @interface Parameters
 		@Autowired
 		private CreateRecipeService crService;
 		private ValidationMode mode;
+		private static final String UNKNOWN_RADIO = "unknown_radio_button";
+		private static final String UNKNOWN_CHECKBOX = "unknown_checkbox_button";
 		private static final String UNCHEKED_RADIO = "unchecked_radio_button";
 		private static final String UNCHEKED_CHECKBOX = "unchecked_checkbox_button";
 		private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
@@ -53,6 +57,8 @@ public @interface Parameters
 		public boolean isValid(List<ParametersPOJO> params, ConstraintValidatorContext context) 
 		{		
 			String realName;
+			ParametersTriggers pt;
+			ParametersActions pa;
 			int numRadioOptions = 0;
 			int numChoosenRadio = 0;
 			int numCheckboxes = 0;
@@ -93,7 +99,23 @@ public @interface Parameters
 				{
 					case "radio":
 					{
-						realName = (mode == ValidationMode.TRIGGER) ? crService.readParameterTrigger(par.getId()).getName() : crService.readParameterAction(par.getId()).getName();
+						if (mode == ValidationMode.TRIGGER)
+						{
+							pt = crService.readParameterTrigger(par.getId());
+							realName = (pt != null) ? pt.getName() : UNKNOWN_RADIO;
+						}
+						else
+						{
+							pa = crService.readParameterAction(par.getId());
+							realName = (pa != null) ? pa.getName() : UNKNOWN_RADIO;
+						}
+						
+						if (!par.getName().equals(realName) && !par.getName().equals(UNKNOWN_RADIO))
+						{
+							context.disableDefaultConstraintViolation();
+					        context.buildConstraintViolationWithTemplate("error." + mode.toString().toLowerCase() + ".parameters.radio.unknown").addConstraintViolation();
+					        return false;
+						}
 						
 						if (!par.getName().equals(realName) && !par.getName().equals(UNCHEKED_RADIO))
 						{
@@ -112,7 +134,23 @@ public @interface Parameters
 					}
 					case "checkbox":
 					{
-						realName = (mode == ValidationMode.TRIGGER) ? crService.readParameterTrigger(par.getId()).getName() : crService.readParameterAction(par.getId()).getName();
+						if (mode == ValidationMode.TRIGGER)
+						{
+							pt = crService.readParameterTrigger(par.getId());
+							realName = (pt != null) ? pt.getName() : UNKNOWN_CHECKBOX;
+						}
+						else
+						{
+							pa = crService.readParameterAction(par.getId());
+							realName = (pa != null) ? pa.getName() : UNKNOWN_CHECKBOX;
+						}
+						
+						if (!par.getName().equals(realName) && !par.getName().equals(UNKNOWN_CHECKBOX))
+						{
+							context.disableDefaultConstraintViolation();
+					        context.buildConstraintViolationWithTemplate("error." + mode.toString().toLowerCase() + ".parameters.checkbox.unknown").addConstraintViolation();
+					        return false;
+						}
 						
 						if (!par.getName().equals(realName) && !par.getName().equals(UNCHEKED_CHECKBOX))
 						{

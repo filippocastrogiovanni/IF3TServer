@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import if3t.exceptions.AddRecipeException;
 import if3t.exceptions.ChannelNotAuthorizedException;
 import if3t.exceptions.NoPermissionException;
+import if3t.exceptions.NotFoundRecipeException;
+import if3t.exceptions.PartialUpdateException;
 import if3t.models.Action;
 import if3t.models.ActionIngredient;
 import if3t.models.ActionPOJO;
@@ -66,10 +68,15 @@ public class RecipeServiceImpl implements RecipeService {
 	}
 
 	@PreAuthorize("hasRole('USER')")
-	public List<Recipe> readRecipe(Long id, User loggedUser) throws NoPermissionException 
+	public List<Recipe> readRecipe(Long id, User loggedUser) throws NoPermissionException, NotFoundRecipeException 
 	{
-		String groupId = recipeRepository.findOne(id).getGroupId();
-		List<Recipe> recipeList = recipeRepository.findByGroupId(groupId);
+		Recipe rec = recipeRepository.findOne(id);
+		
+		if (rec == null) {
+			throw new NotFoundRecipeException("The requested recipe was not found");
+		}		
+		
+		List<Recipe> recipeList = recipeRepository.findByGroupId(rec.getGroupId());
 		
 		for (Recipe recipe: recipeList)
 		{
@@ -82,9 +89,13 @@ public class RecipeServiceImpl implements RecipeService {
 	}
 
 	@PreAuthorize("hasRole('USER')")
-	public void deleteRecipe(Long id, User loggedUser) throws NoPermissionException 
+	public void deleteRecipe(Long id, User loggedUser) throws NoPermissionException, NotFoundRecipeException 
 	{
 		Recipe recipe = recipeRepository.findOne(id);
+		
+		if (recipe == null) {
+			throw new NotFoundRecipeException("The requested recipe was not found");
+		}		
 		
 		if (!recipe.getUser().getId().equals(loggedUser.getId())) {
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
@@ -92,6 +103,16 @@ public class RecipeServiceImpl implements RecipeService {
 		
 		for (Recipe rec : recipeRepository.findByGroupId(recipe.getGroupId()))
 		{
+			for (TriggerIngredient ti : rec.getTrigger_ingredients())
+			{
+				triggerIngRepo.delete(ti);
+			}
+			
+			for (ActionIngredient ai : rec.getAction_ingredients())
+			{
+				actionIngRepo.delete(ai);
+			}
+			
 			recipeRepository.delete(rec);
 		}
 	}
@@ -173,20 +194,32 @@ public class RecipeServiceImpl implements RecipeService {
 		return recipeRepository.findByIsEnabledAndTrigger_Channel_Keyword(true, channelKeyword);
 	}
 
+	//FIXME println to remove
 	@Override
-	public void updateRecipe(RecipePOJO recipe) throws AddRecipeException 
+	public void updateRecipe(RecipePOJO recipe) throws NotFoundRecipeException, PartialUpdateException 
 	{
-		String groupId = recipeRepository.findOne(recipe.getId()).getGroupId();
-		List<Recipe> recipeList = recipeRepository.findByGroupId(groupId);
+		Recipe r = recipeRepository.findOne(recipe.getId());
 		
-		for (Recipe rec : recipeList)
+		if (r == null) {
+			throw new NotFoundRecipeException("The requested recipe was not found");
+		}	
+		
+//		System.out.println("---------------------------------");
+		
+		for (Recipe rec : recipeRepository.findByGroupId(r.getGroupId()))
 		{
+			int matchedTriParams = 0;
+			int matchedActParams = 0;
+			int totTriParams = rec.getTrigger_ingredients().size();
+			int totActParams = rec.getAction_ingredients().size();
+			
 			for (TriggerIngredient ti : rec.getTrigger_ingredients())
 			{
 				for (ParametersPOJO param : recipe.getTrigger().getParameters())
 				{
 					if (ti.getParam().getId().equals(param.getId())) 
 					{
+						matchedTriParams++;
 						ti.setValue(param.getValue());
 						break;
 					}
@@ -203,6 +236,7 @@ public class RecipeServiceImpl implements RecipeService {
 						{
 							if (ai.getParam().getId().equals(param.getId()))
 							{
+								matchedActParams++;
 								ai.setValue(param.getValue());
 								break;
 							}
@@ -213,7 +247,23 @@ public class RecipeServiceImpl implements RecipeService {
 				}
 			}
 			
+//			System.out.println("id: " + rec.getId() + " - tot_tri: " + totTriParams + " - match_tri: " + matchedTriParams);
+//			System.out.println("id: " + rec.getId() + " - tot_act: " + totActParams + " - match_act: " + matchedActParams);
+			
 			rec.setDescription(recipe.getDescription());
+			
+			if (matchedTriParams == 0 && matchedActParams == 0) {
+				throw new PartialUpdateException("The update has not been successful because of all unknown parameter ids");
+			}
+			
+			if (matchedTriParams < totTriParams) {
+				throw new PartialUpdateException("The update has been partial because of some unknown trigger parameter ids");
+			}
+			
+			if (matchedActParams < totActParams) {
+				throw new PartialUpdateException("The update has been partial because of some unknown action parameter ids");
+			}
+			
 			recipeRepository.save(rec);
 		}
 	}

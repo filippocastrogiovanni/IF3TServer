@@ -10,13 +10,17 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import if3t.models.Recipe;
 import if3t.models.TriggerIngredient;
+import if3t.repositories.RecipeRepository;
 import if3t.repositories.TriggerIngredientRepository;
 
 @Service
 @Transactional
 public class TriggerIngredientServiceImpl implements TriggerIngredientService
 {
+	@Autowired
+	private RecipeRepository recipeRepository;
 	@Autowired
 	private TriggerIngredientRepository triggerIngredientRepo;
 	
@@ -44,13 +48,16 @@ public class TriggerIngredientServiceImpl implements TriggerIngredientService
 	}
 
 	@Override
-	public Map<Long, TriggerIngredient> getRecipeTriggerIngredientsMap(Long recipeId) 
+	public Map<Long, TriggerIngredient> getRecipeTriggerIngredientsMap(String groupId) 
 	{
 		Map<Long, TriggerIngredient> map = new HashMap<Long, TriggerIngredient>();
 		
-		for (TriggerIngredient ti : triggerIngredientRepo.findByRecipe_Id(recipeId))
+		for (Recipe rec : recipeRepository.findByGroupId(groupId))
 		{
-			map.putIfAbsent(ti.getParam().getId(), ti);
+			for (TriggerIngredient ti : triggerIngredientRepo.findByRecipe_Id(rec.getId()))
+			{
+				map.putIfAbsent(ti.getParam().getId(), ti);
+			}
 		}
 		
 		return map;

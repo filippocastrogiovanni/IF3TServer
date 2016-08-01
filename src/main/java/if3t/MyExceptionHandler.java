@@ -19,7 +19,9 @@ import if3t.exceptions.AddRecipeException;
 import if3t.exceptions.ChannelNotAuthorizedException;
 import if3t.exceptions.InvalidParametersException;
 import if3t.exceptions.NoPermissionException;
+import if3t.exceptions.NotFoundRecipeException;
 import if3t.exceptions.NotLoggedInException;
+import if3t.exceptions.PartialUpdateException;
 import if3t.exceptions.WrongPasswordException;
 import if3t.models.Response;
 
@@ -67,6 +69,18 @@ public class MyExceptionHandler
     @ExceptionHandler(value = NoPermissionException.class)  
     public Response handleNoPermissionException(NoPermissionException e) {
     	return new Response(e.getMessage(), HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN.getReasonPhrase());
+    }
+    
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)  
+    @ExceptionHandler(value = NotFoundRecipeException.class)  
+    public Response handleNotFoundRecipeException(NotFoundRecipeException e) {
+    	return new Response(e.getMessage(), HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase());
+    }
+    
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)  
+    @ExceptionHandler(value = PartialUpdateException.class)  
+    public Response handlePartialUpdateException(PartialUpdateException e) {
+    	return new Response(e.getMessage(), HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
     }
   
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)  

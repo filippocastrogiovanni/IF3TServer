@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import if3t.exceptions.AddRecipeException;
 import if3t.exceptions.ChannelNotAuthorizedException;
 import if3t.exceptions.NoPermissionException;
+import if3t.exceptions.NotFoundRecipeException;
 import if3t.exceptions.NotLoggedInException;
+import if3t.exceptions.PartialUpdateException;
 import if3t.models.Action;
 import if3t.models.ActionIngredient;
 import if3t.models.ActionPOJO;
@@ -41,8 +43,8 @@ import if3t.services.UserService;
 
 @RestController
 @CrossOrigin
-public class RecipeController {
-
+public class RecipeController 
+{
 	@Autowired
 	private RecipeService recipeService;
 	@Autowired
@@ -75,7 +77,7 @@ public class RecipeController {
 	
 	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value="/recipe/{id}", method=RequestMethod.GET)
-	public RecipePOJO readRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException 
+	public RecipePOJO readRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException, NotFoundRecipeException 
 	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
@@ -87,7 +89,7 @@ public class RecipeController {
 		List<Recipe> recList = recipeService.readRecipe(id, loggedUser);
 		Trigger trig = recList.get(0).getTrigger();
 		List<ParametersTriggers> ptList = createRecipeService.readChannelParametersTriggers(trig.getId(), trig.getChannel().getChannelId());
-		Map<Long, TriggerIngredient> tiMap = triggerIngrService.getRecipeTriggerIngredientsMap(id);
+		Map<Long, TriggerIngredient> tiMap = triggerIngrService.getRecipeTriggerIngredientsMap(recList.get(0).getGroupId());
 		TriggerPOJO trigPOJO = new TriggerPOJO(trig, ptList, tiMap);
 		List<ActionPOJO> actPOJOList = new ArrayList<ActionPOJO>();
 		
@@ -104,7 +106,7 @@ public class RecipeController {
 	
 	@ResponseStatus(value = HttpStatus.CREATED)
 	@RequestMapping(value="/add_recipe", method=RequestMethod.POST)
-	public Response addRecipe(@RequestBody List<Recipe> recipes) throws NotLoggedInException, AddRecipeException 
+	public Response addRecipe(@Validated @RequestBody List<Recipe> recipes) throws NotLoggedInException, AddRecipeException 
 	{		
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
@@ -118,7 +120,7 @@ public class RecipeController {
 
 	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value="/delete_recipe/{id}", method=RequestMethod.DELETE)
-	public Response deleteRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException 
+	public Response deleteRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException, NotFoundRecipeException 
 	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
@@ -132,7 +134,7 @@ public class RecipeController {
 	
 	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value="/publish_recipe/", method=RequestMethod.PUT)
-	public Response publishRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, NoPermissionException 
+	public Response publishRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, NoPermissionException, NotFoundRecipeException 
 	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
@@ -157,9 +159,10 @@ public class RecipeController {
 		return new Response("The recipe has been " + state + " successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 	
+	//TODO da testare con canali abilitati
 	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value="/enable_recipe/", method=RequestMethod.PUT)
-	public Response enableRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, ChannelNotAuthorizedException, NoPermissionException 
+	public Response enableRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, ChannelNotAuthorizedException, NoPermissionException, NotFoundRecipeException 
 	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
@@ -182,7 +185,7 @@ public class RecipeController {
 	
 	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value="/update_recipe/", method=RequestMethod.PUT)
-	public Response updateRecipe(@Validated @RequestBody RecipePOJO recipe) throws NotLoggedInException, NoPermissionException, AddRecipeException
+	public Response updateRecipe(@Validated @RequestBody RecipePOJO recipe) throws NotLoggedInException, NoPermissionException, NotFoundRecipeException, PartialUpdateException
 	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			
