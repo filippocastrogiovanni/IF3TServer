@@ -42,8 +42,8 @@ public class ChannelServiceImpl implements ChannelService {
 		return channelRepository.findByAuthorizations_User_Id(userId);
 	}
 
-	public void unautorizeChannel(Long userId, Long channelId) {
-		authRepository.deleteByUser_IdAndChannel_ChannelId(userId, channelId);
+	public void unautorizeChannel(Long userId, String channelKey) {
+		authRepository.deleteByUser_IdAndChannel_ChannelId(userId, channelRepository.findByKeyword(channelKey).getChannelId());
 	}
 
 	public void authorizeChannel(Long userId, String channel, 
@@ -74,5 +74,10 @@ public class ChannelServiceImpl implements ChannelService {
 		}
 		
 		return null;
+	}
+	
+	public Authorization getChannelAuthorization(Long userId, String channelKey) {
+		Channel channel = channelRepository.findByKeyword(channelKey);
+		return authRepository.findByUser_IdAndChannel_ChannelId(userId, channel.getChannelId());
 	}
 }
