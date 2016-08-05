@@ -10,6 +10,8 @@ public interface ChannelService {
 	public List<Channel> readChannels();
 
 	public Channel readChannel(Long id);
+	
+	public Channel findByKeyword(String keyword);
 
 	public List<Channel> readUserChannels(Long userId);
 

@@ -80,4 +80,9 @@ public class ChannelServiceImpl implements ChannelService {
 		Channel channel = channelRepository.findByKeyword(channelKey);
 		return authRepository.findByUser_IdAndChannel_ChannelId(userId, channel.getChannelId());
 	}
+	
+	@Override
+	public Channel findByKeyword(String keyword) {
+		return channelRepository.findByKeyword(keyword);
+	}
 }
