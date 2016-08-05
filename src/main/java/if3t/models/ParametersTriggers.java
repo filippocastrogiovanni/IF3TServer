@@ -1,11 +1,14 @@
 package if3t.models;
 
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.persistence.Id;
@@ -36,6 +39,11 @@ public class ParametersTriggers {
 	@NotNull
 	@Column(name = "param_type", nullable = false)
 	private String type;
+	
+	private String keyword;
+	
+	@OneToMany(mappedBy = "param")
+	private Set<TriggerIngredient> trigger_ingredients;
 
 	public Long getId() {
 		return id;
@@ -43,6 +51,20 @@ public class ParametersTriggers {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	/**
+	 * @return the keyword
+	 */
+	public String getKeyword() {
+		return keyword;
+	}
+
+	/**
+	 * @param keyword the keyword to set
+	 */
+	public void setKeyword(String keyword) {
+		this.keyword = keyword;
 	}
 
 	public Channel getChannel() {
@@ -75,6 +97,14 @@ public class ParametersTriggers {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+	
+	public Set<TriggerIngredient> getTrigger_ingredients() {
+		return trigger_ingredients;
+	}
+
+	public void setTrigger_ingredients(Set<TriggerIngredient> trigger_ingredients) {
+		this.trigger_ingredients = trigger_ingredients;
 	}
 
 	@Override

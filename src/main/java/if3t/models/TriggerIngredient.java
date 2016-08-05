@@ -30,6 +30,7 @@ public class TriggerIngredient {
 	
 	@NotNull
 	@ManyToOne
+	@JsonBackReference(value="triggeringredient-param")
 	@JoinColumn(name="id_param")
 	private ParametersTriggers param;
 	
@@ -84,7 +85,7 @@ public class TriggerIngredient {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof TriggerIngredient))
 			return false;
 		TriggerIngredient other = (TriggerIngredient) obj;
 		if (param == null) {
@@ -105,6 +106,8 @@ public class TriggerIngredient {
 		return true;
 	}
 
-
-	
+	@Override
+	public String toString() {
+		return "TriggerIngredient [id=" + id + ", recipe=" + recipe + ", param=" + param + ", value=" + value + "]";
+	}
 }

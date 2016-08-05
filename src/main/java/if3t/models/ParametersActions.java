@@ -1,11 +1,14 @@
 package if3t.models;
 
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.persistence.Id;
@@ -36,6 +39,11 @@ public class ParametersActions {
 	@ManyToOne
 	@JoinColumn(name = "id_action", nullable = false)
 	private Action action;
+	
+	private String keyword;
+	
+	@OneToMany(mappedBy = "param")
+	private Set<ActionIngredient> action_ingredients;
 
 	public Long getId() {
 		return id;
@@ -78,17 +86,45 @@ public class ParametersActions {
 	public void setAction(Action action) {
 		this.action = action;
 	}
+	
+	/**
+	 * @return the keyword
+	 */
+	public String getKeyword() {
+		return keyword;
+	}
 
+	/**
+	 * @param keyword the keyword to set
+	 */
+	public void setKeyword(String keyword) {
+		this.keyword = keyword;
+	}
+	
+	public Set<ActionIngredient> getAction_ingredients() {
+		return action_ingredients;
+	}
+
+	public void setAction_ingredients(Set<ActionIngredient> action_ingredients) {
+		this.action_ingredients = action_ingredients;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((action == null) ? 0 : action.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + ((channel == null) ? 0 : channel.hashCode());
+		result = prime * result + ((keyword == null) ? 0 : keyword.hashCode());
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -103,16 +139,16 @@ public class ParametersActions {
 				return false;
 		} else if (!action.equals(other.action))
 			return false;
-		if (name == null) {
-			if (other.name != null)
+		if (channel == null) {
+			if (other.channel != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!channel.equals(other.channel))
 			return false;
-		if (type == null) {
-			if (other.type != null)
+		if (keyword == null) {
+			if (other.keyword != null)
 				return false;
-		} else if (!type.equals(other.type))
+		} else if (!keyword.equals(other.keyword))
 			return false;
 		return true;
-	}	
+	}
 }
