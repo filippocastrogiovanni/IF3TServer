@@ -42,8 +42,8 @@ public class ChannelServiceImpl implements ChannelService {
 		return channelRepository.findByAuthorizations_User_Id(userId);
 	}
 
-	public void unautorizeChannel(Long userId, String channelKey) {
-		authRepository.deleteByUser_IdAndChannel_ChannelId(userId, channelRepository.findByKeyword(channelKey).getChannelId());
+	public void unautorizeChannel(Long userId, Long channelId) {
+		authRepository.deleteByUser_IdAndChannel_ChannelId(userId, channelId);
 	}
 
 	public void authorizeChannel(Long userId, String channel, 
@@ -70,7 +70,7 @@ public class ChannelServiceImpl implements ChannelService {
 	public List<Authorization> readExpiringAuthorizations(String channel, Long timestamp) {
 		
 		if(timestamp > 0) {
-			return authRepository.queryByExpireDateGreaterThanAndChannel_Keyword(timestamp, channel);
+			return authRepository.queryByExpireDateLessThanAndChannel_Keyword(timestamp, channel);
 		}
 		
 		return null;

@@ -12,4 +12,5 @@ public interface ChannelRepository extends Repository<Channel, Long> {
 	public Channel findOne(Long id);
 	public List<Channel> findByAuthorizations_User_Id(Long userId);
 	public Channel findByKeyword(String keyword);
+	public Long findIdByKeyword(String keyword);
 }
