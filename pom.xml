@@ -96,5 +96,10 @@
   		<artifactId>javax.mail</artifactId>
   		<version>1.5.5</version>
   	</dependency>
+  	<!--dependency>
+    	<groupId>net.oauth.core</groupId>
+	    <artifactId>oauth</artifactId>
+	    <version>20100527</version>
+	</dependency-->
   </dependencies>
 </project>

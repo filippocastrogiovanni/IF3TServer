@@ -25,11 +25,14 @@ public class ChannelServiceImpl implements ChannelService {
 	@Autowired
 	private UserRepository userRepository;
 	
-	public List<Channel> readChannels() {
+	public List<Channel> readChannels() 
+	{
 		List<Channel> channels = new ArrayList<Channel>();
 		
-		for(Channel channel: channelRepository.findAll())
+		for (Channel channel: channelRepository.findAll())
+		{
 			channels.add(channel);
+		}
 		
 		return channels;
 	}
@@ -46,37 +49,38 @@ public class ChannelServiceImpl implements ChannelService {
 		authRepository.deleteByUser_IdAndChannel_ChannelId(userId, channelId);
 	}
 
-	public void authorizeChannel(Long userId, String channel, 
-			String access_token, 
-			String refresh_token,
-			String token_type,
-			Long expires_date){
+	public void authorizeChannel(Long userId, String channel, String access_token, String refresh_token, String token_type, Long expires_date)
+	{
+		Channel chan = channelRepository.findByKeyword(channel);
 		
-		Authorization auth = new Authorization();
-		auth.setChannel(channelRepository.findByKeyword(channel));
-		auth.setUser(userRepository.findOne(userId));
-		auth.setAccessToken(access_token);
-		auth.setRefreshToken(refresh_token);
-		auth.setTokenType(token_type);
-		auth.setExpireDate(expires_date);
-		authRepository.save(auth);
-
+		if (authRepository.queryByUser_IdAndChannel_ChannelId(userId, chan.getChannelId()) == null)
+		{
+			Authorization auth = new Authorization();
+			auth.setChannel(chan);
+			auth.setUser(userRepository.findOne(userId));
+			auth.setAccessToken(access_token);
+			auth.setRefreshToken(refresh_token);
+			auth.setTokenType(token_type);
+			auth.setExpireDate(expires_date);
+			authRepository.save(auth);
+		}
 	}
 	
-	public void refreshChannelAuthorization(Authorization auth){
+	public void refreshChannelAuthorization(Authorization auth) {
 		authRepository.save(auth);
 	}
 	
 	public List<Authorization> readExpiringAuthorizations(String channel, Long timestamp) {
 		
-		if(timestamp > 0) {
+		if (timestamp > 0) {
 			return authRepository.queryByExpireDateLessThanAndChannel_Keyword(timestamp, channel);
 		}
 		
 		return null;
 	}
 	
-	public Authorization getChannelAuthorization(Long userId, String channelKey) {
+	public Authorization getChannelAuthorization(Long userId, String channelKey) 
+	{
 		Channel channel = channelRepository.findByKeyword(channelKey);
 		return authRepository.findByUser_IdAndChannel_ChannelId(userId, channel.getChannelId());
 	}

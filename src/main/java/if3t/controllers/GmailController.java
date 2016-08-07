@@ -68,7 +68,7 @@ public class GmailController {
 
 	@Autowired
 	private ChannelService channelService;
-
+	//FIXME si dovrebbe eliminare ciò che si inserisce altrimenti si rischia di saturare la memoria teoricamente
 	private ConcurrentHashMap<String, String> authRequests = new ConcurrentHashMap<String, String>();
 
 	@ResponseStatus(value = HttpStatus.OK)
@@ -132,6 +132,8 @@ public class GmailController {
 
 		if(!googleRS.isValid())
 			return "ERROR";
+		
+		// Ho cambiato questo metodo: ora il salvataggio avviene solo se non esiste già una riga per la coppia userId-channelId
 		channelService.authorizeChannel(loggedUser.getId(), "gmail", googleRS.getAccess_token(), googleRS.getRefresh_token(),
 				googleRS.getToken_type(), googleRS.getExpiration_date());
 

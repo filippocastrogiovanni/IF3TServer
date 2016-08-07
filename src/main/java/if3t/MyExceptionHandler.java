@@ -13,6 +13,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.google.api.client.http.HttpResponseException;
+
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import if3t.exceptions.AddRecipeException;
@@ -81,6 +84,12 @@ public class MyExceptionHandler
     @ExceptionHandler(value = PartialUpdateException.class)  
     public Response handlePartialUpdateException(PartialUpdateException e) {
     	return new Response(e.getMessage(), HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
+    }
+    
+    @ResponseStatus(value = HttpStatus.UNAUTHORIZED)  
+    @ExceptionHandler(value = HttpResponseException.class)  
+    public Response handleHttpResponseException(HttpResponseException e) {
+    	return new Response(e.getMessage(), HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
     }
   
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)  
