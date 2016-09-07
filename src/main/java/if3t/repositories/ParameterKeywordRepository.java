@@ -2,9 +2,10 @@ package if3t.repositories;
 
 import java.util.List;
 
+import org.springframework.data.repository.Repository;
 import if3t.models.ParametersKeyword;
 
-public interface ParameterKeywordRepository {
+public interface ParameterKeywordRepository extends Repository<ParametersKeyword, Long>{
 
 	public Iterable<ParametersKeyword> findAll();
 	public ParametersKeyword findOne(Long id);

@@ -3,8 +3,10 @@ package if3t.services;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -25,6 +27,7 @@ import if3t.models.ActionIngredient;
 import if3t.models.ActionPOJO;
 import if3t.models.Channel;
 import if3t.models.ParametersActions;
+import if3t.models.ParametersKeyword;
 import if3t.models.ParametersPOJO;
 import if3t.models.ParametersTriggers;
 import if3t.models.Recipe;
@@ -34,6 +37,7 @@ import if3t.models.TriggerIngredient;
 import if3t.models.User;
 import if3t.repositories.ActionIngredientRepository;
 import if3t.repositories.AuthorizationRepository;
+import if3t.repositories.ParameterKeywordRepository;
 import if3t.repositories.RecipeRepository;
 import if3t.repositories.TriggerIngredientRepository;
 
@@ -53,6 +57,8 @@ public class RecipeServiceImpl implements RecipeService {
 	private ActionService actionService;	
 	@Autowired
 	private TriggerService triggerService;
+	@Autowired
+	private ParameterKeywordService parameterKeywordService;
 	@Autowired
 	private CreateRecipeService createRecipeService;
 	private static final String EMAIL_PATTERN = "^[-a-z0-9~!$%^&*_=+}{\'?]+(.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(.[-a-z0-9_]+)*.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}))(:[0-9]{1,5})?$";
@@ -129,7 +135,14 @@ public class RecipeServiceImpl implements RecipeService {
 			r.setIsPublic(false);
 			r.setGroupId(UUID.randomUUID().toString());	
 			r.setUser(loggedUser);
+
 			recipeRepository.save(r);
+
+			if(r.getParameters_keyword()!=null)
+				for(ParametersKeyword pk : r.getParameters_keyword()){
+					pk.setRecipe(r);
+					parameterKeywordService.addParametersKeyword(pk);
+				}
 			
 			//Il salvataggio degli ingredienti va fatto qui (e non nel controller) per garantire la transazionalità
 			for (TriggerIngredient ti : r.getTrigger_ingredients())
@@ -348,6 +361,23 @@ public class RecipeServiceImpl implements RecipeService {
 						{
 							System.out.println("Invalid data in recipe sent (2)");
 							throw new AddRecipeException("ERROR: Invalid data in recipe sent");
+						}
+						
+						//validate parameters_keyword
+						if(r.getParameters_keyword()!=null){
+							Map<String, String> map_name_value_real = new HashMap<String, String>();
+							Map<String, String> map_name_value_received = new HashMap<String, String>();
+							//get all real parameters ingredients
+							for(TriggerIngredient pt : r.getTrigger_ingredients()){
+								map_name_value_real.put(pt.getParam().getName(), pt.getValue());
+							}
+							for(ParametersKeyword pk : r.getParameters_keyword()){
+								map_name_value_received.put(pk.getName(), pk.getValue());
+							}
+							if(!map_name_value_real.equals(map_name_value_received)){
+								System.out.println("Parameters Keywords does not match trigger data received");
+								throw new AddRecipeException("ERROR: Parameters Keywords does not match trigger data received");								
+							}
 						}
 					}
 					else
