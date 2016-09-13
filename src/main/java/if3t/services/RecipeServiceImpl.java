@@ -37,7 +37,7 @@ import if3t.models.TriggerIngredient;
 import if3t.models.User;
 import if3t.repositories.ActionIngredientRepository;
 import if3t.repositories.AuthorizationRepository;
-import if3t.repositories.ParameterKeywordRepository;
+import if3t.repositories.ParametersKeywordsRepository;
 import if3t.repositories.RecipeRepository;
 import if3t.repositories.TriggerIngredientRepository;
 
