@@ -96,6 +96,11 @@
   		<artifactId>javax.mail</artifactId>
   		<version>1.5.5</version>
   	</dependency>
+  	<dependency>
+      	<groupId>org.twitter4j</groupId>
+        <artifactId>twitter4j-core</artifactId>
+        <version>4.0.4</version>
+    </dependency>
   	<!--dependency>
     	<groupId>net.oauth.core</groupId>
 	    <artifactId>oauth</artifactId>
