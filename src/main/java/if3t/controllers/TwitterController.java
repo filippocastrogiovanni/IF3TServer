@@ -24,6 +24,7 @@ import com.google.api.client.auth.oauth.OAuthHmacSigner;
 import com.google.api.client.http.javanet.NetHttpTransport;
 
 import if3t.apis.TwitterTemporaryToken;
+import if3t.apis.TwitterUtil;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Response;
 import if3t.models.User;
@@ -69,17 +70,16 @@ public class TwitterController
     	
     	OAuthCredentialsResponse tempTokenResponse = temporaryToken.execute();
     	
-    	if (tempTokenResponse.callbackConfirmed) 
-    	{
-    		// Step 2: User grants access
-        	OAuthAuthorizeTemporaryTokenUrl authorizeUrl = new OAuthAuthorizeTemporaryTokenUrl(AUTHORIZE_URL);
-        	authorizeUrl.temporaryToken = tempTokenResponse.token;
-        	tempTokens.put(loggedUser.getUsername(), new TwitterTemporaryToken(tempTokenResponse.token, tempTokenResponse.tokenSecret));
-        	
-        	return new Response(authorizeUrl.build(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+    	if (!tempTokenResponse.callbackConfirmed) {
+    		throw new RuntimeException();
     	}
-      
-    	throw new RuntimeException();	
+      	
+    	// Step 2: User grants access
+    	OAuthAuthorizeTemporaryTokenUrl authorizeUrl = new OAuthAuthorizeTemporaryTokenUrl(AUTHORIZE_URL);
+    	authorizeUrl.temporaryToken = tempTokenResponse.token;
+    	tempTokens.put(loggedUser.getUsername(), new TwitterTemporaryToken(tempTokenResponse.token, tempTokenResponse.tokenSecret));
+    	
+    	return new Response(authorizeUrl.build(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 	
 	@ResponseStatus(value = HttpStatus.OK)
@@ -122,6 +122,25 @@ public class TwitterController
     	// Step 4: Save the access token into DB
     	// WARNING: refresh token doesn't exist in Twitter, so the saved string is the token secret, that is necessary for the signer
     	channelService.authorizeChannel(loggedUser.getId(), "twitter", accTokenResponse.token, accTokenResponse.tokenSecret, "Access", null);
-		return "<script>window.close();</script>";
+    	
+    	//TwitterUtil.postTweet(loggedUser.getId(), accTokenResponse, "prova riuscita [" + System.currentTimeMillis() + "]", null);
+		new TwitterUtil().printStatuses(loggedUser.getId(), accTokenResponse);
+    	
+    	return "<script>window.close();</script>";
+	}
+	
+	@ResponseStatus(value = HttpStatus.OK)
+	@RequestMapping(value = "/twitter/revokeauth", method = RequestMethod.GET)
+	public Response twitterRevokeAuth() throws NotLoggedInException, NoPermissionException 
+	{
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		
+		if (auth == null) {
+			throw new NotLoggedInException("ERROR: not logged in!");
+		}
+		
+		//TODO manca l'implementazione
+		
+		return new Response("Channel has been disconnected successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 }
