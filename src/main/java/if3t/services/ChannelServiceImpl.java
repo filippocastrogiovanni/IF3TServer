@@ -16,8 +16,8 @@ import if3t.repositories.UserRepository;
 
 @Service
 @Transactional
-public class ChannelServiceImpl implements ChannelService {
-
+public class ChannelServiceImpl implements ChannelService 
+{
 	@Autowired
 	private ChannelRepository channelRepository;
 	@Autowired
@@ -25,6 +25,7 @@ public class ChannelServiceImpl implements ChannelService {
 	@Autowired
 	private UserRepository userRepository;
 	
+	@Override
 	public List<Channel> readChannels() 
 	{
 		List<Channel> channels = new ArrayList<Channel>();
@@ -37,23 +38,28 @@ public class ChannelServiceImpl implements ChannelService {
 		return channels;
 	}
 	
+	@Override
 	public Channel readChannel(Long id) {
 		return channelRepository.findOne(id);
 	}
 
+	@Override
 	public List<Channel> readUserChannels(Long userId) {
 		return channelRepository.findByAuthorizations_User_Id(userId);
 	}
 
+	@Override
 	public void unautorizeChannel(Long userId, Long channelId) {
 		authRepository.deleteByUser_IdAndChannel_ChannelId(userId, channelId);
 	}
 
+	//TODO forse serve considerare il caso in cui l'attuale token è invalido. Allo stato attuale non verrebbe sovrascritto dal nuovo
+	@Override
 	public void authorizeChannel(Long userId, String channel, String access_token, String refresh_token, String token_type, Long expires_date)
 	{
 		Channel chan = channelRepository.findByKeyword(channel);
 		
-		if (authRepository.queryByUser_IdAndChannel_ChannelId(userId, chan.getChannelId()) == null)
+		if (authRepository.findByUser_IdAndChannel_ChannelId(userId, chan.getChannelId()) == null)
 		{
 			Authorization auth = new Authorization();
 			auth.setChannel(chan);
@@ -66,10 +72,12 @@ public class ChannelServiceImpl implements ChannelService {
 		}
 	}
 	
+	@Override
 	public void refreshChannelAuthorization(Authorization auth) {
 		authRepository.save(auth);
 	}
 	
+	@Override
 	public List<Authorization> readExpiringAuthorizations(String channel, Long timestamp) {
 		
 		if (timestamp > 0) {
@@ -79,11 +87,12 @@ public class ChannelServiceImpl implements ChannelService {
 		return null;
 	}
 	
-	public Authorization getChannelAuthorization(Long userId, String channelKey) 
-	{
-		Channel channel = channelRepository.findByKeyword(channelKey);
-		return authRepository.findByUser_IdAndChannel_ChannelId(userId, channel.getChannelId());
-	}
+//	@Override
+//	public Authorization getChannelAuthorization(Long userId, String channelKey) 
+//	{
+//		Channel channel = channelRepository.findByKeyword(channelKey);
+//		return authRepository.findByUser_IdAndChannel_ChannelId(userId, channel.getChannelId());
+//	}
 	
 	@Override
 	public Channel findByKeyword(String keyword) {

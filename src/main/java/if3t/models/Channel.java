@@ -36,6 +36,10 @@ public class Channel {
 	@OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
 	@JsonBackReference(value="channel-authorizations")
 	private Set<Authorization> authorizations;
+	
+	@OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
+	@JsonBackReference(value="channel-channels_statuses")
+	private Set<ChannelStatus> channels_statuses;
 	 
 	/**
 	 * @return the channelId
@@ -99,6 +103,14 @@ public class Channel {
 	 */
 	public void setAuthorizations(Set<Authorization> autorizations) {
 		this.authorizations = autorizations;
+	}
+
+	public Set<ChannelStatus> getChannels_statuses() {
+		return channels_statuses;
+	}
+
+	public void setChannels_statuses(Set<ChannelStatus> channels_statuses) {
+		this.channels_statuses = channels_statuses;
 	}
 
 	/* (non-Javadoc)

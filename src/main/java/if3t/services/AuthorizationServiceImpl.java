@@ -10,24 +10,18 @@ import if3t.repositories.AuthorizationRepository;
 
 @Service
 @Transactional
-public class AuthorizationServiceImpl implements AuthorizationService {
-
+public class AuthorizationServiceImpl implements AuthorizationService 
+{
 	@Autowired
 	private AuthorizationRepository authRepository;
 	
+	@Override
 	public Authorization getAuthorization(Long userId, Long channelId) {
 		return authRepository.findByUser_IdAndChannel_ChannelId(userId, channelId);
 	}
 	
+	@Override
 	public void deleteAuthorization(Long authId) {
 		authRepository.deleteById(authId);
 	}
-
-	@Override
-	public Authorization findByUser_IdAndChannel_ChannelId(Long id, Long channelId) {
-		authRepository.queryByUser_IdAndChannel_ChannelId(id, channelId);
-		return null;
-	}
-		
-
 }

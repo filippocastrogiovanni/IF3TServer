@@ -124,7 +124,7 @@ public class TwitterController
     	channelService.authorizeChannel(loggedUser.getId(), "twitter", accTokenResponse.token, accTokenResponse.tokenSecret, "Access", null);
     	
     	//TwitterUtil.postTweet(loggedUser.getId(), accTokenResponse, "prova riuscita [" + System.currentTimeMillis() + "]", null);
-		//new TwitterUtil().printStatuses(loggedUser.getId(), accTokenResponse);
+		new TwitterUtil().printStatuses(loggedUser.getId(), accTokenResponse);
     	
     	return "<script>window.close();</script>";
 	}

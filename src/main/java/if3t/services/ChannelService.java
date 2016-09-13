@@ -15,4 +15,5 @@ public interface ChannelService
 	public void authorizeChannel(Long userId, String channel, String access_token, String refresh_token, String token_type, Long expires_date);
 	public List<Authorization> readExpiringAuthorizations(String channel, Long timestamp);
 	public void refreshChannelAuthorization(Authorization auth);
+//	public Authorization getChannelAuthorization(Long userId, String channelKey);
 }

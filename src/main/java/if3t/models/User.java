@@ -40,14 +40,18 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
     
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-	@JsonBackReference(value="user-authorizations")
-	private Set<Authorization> authorizations;
-    
 	@NotNull
 	@ManyToOne
 	@JoinColumn(name="id_timezone")
 	private Timezone timezone;
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	@JsonBackReference(value="user-authorizations")
+	private Set<Authorization> authorizations;
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	@JsonBackReference(value="user-channels_statuses")
+	private Set<ChannelStatus> channels_statuses;
 
 	public Long getId() {
 		return id;
@@ -112,6 +116,14 @@ public class User {
 	public void setRole(Role role) {
 		this.role = role;
 	}
+	
+	public Timezone getTimezone() {
+		return timezone;
+	}
+
+	public void setTimezone(Timezone timezone) {
+		this.timezone = timezone;
+	}
 
 	/**
 	 * @return the authorizations
@@ -127,12 +139,12 @@ public class User {
 		this.authorizations = authorizations;
 	}
 
-	public Timezone getTimezone() {
-		return timezone;
+	public Set<ChannelStatus> getChannels_statuses() {
+		return channels_statuses;
 	}
 
-	public void setTimezone(Timezone timezone) {
-		this.timezone = timezone;
+	public void setChannels_statuses(Set<ChannelStatus> channels_statuses) {
+		this.channels_statuses = channels_statuses;
 	}
 
 	@Override
