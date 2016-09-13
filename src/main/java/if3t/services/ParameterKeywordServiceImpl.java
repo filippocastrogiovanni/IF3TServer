@@ -11,15 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import if3t.models.ParametersKeyword;
-import if3t.repositories.ParameterKeywordRepository;
-import if3t.repositories.ParameterKeywordRepository;
+import if3t.repositories.ParametersKeywordsRepository;
+import if3t.repositories.ParametersKeywordsRepository;
 
 @Service
 @Transactional
 public class ParameterKeywordServiceImpl implements ParameterKeywordService
 {
 	@Autowired
-	private ParameterKeywordRepository parameterKeywordRepo;
+	private ParametersKeywordsRepository parameterKeywordRepo;
 	
 	@Override
 	public ParametersKeyword readParameterKeyword(Long id) {
