@@ -25,6 +25,7 @@ import if3t.apis.GoogleTokenResponse;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Response;
 import if3t.models.User;
+import if3t.services.AuthorizationService;
 import if3t.services.ChannelService;
 import if3t.services.UserService;
 
@@ -37,6 +38,10 @@ public class GmailController {
 
 	@Autowired
 	private ChannelService channelService;
+	
+	@Autowired
+	private AuthorizationService authService;
+	
 	//FIXME si dovrebbe eliminare ciò che si inserisce altrimenti si rischia di saturare la memoria teoricamente
 	private ConcurrentHashMap<String, String> authRequests = new ConcurrentHashMap<String, String>();
 
@@ -54,6 +59,7 @@ public class GmailController {
 		if (!loggedUser.isEnabled())
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
+		authService.getAuthorization(loggedUser.getId(), "gmail");
 		GoogleAuthRequest req = new GoogleAuthRequest(loggedUser);
 		authRequests.put(req.getState(), loggedUser.getUsername());
 		return new Response(req.toString(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());

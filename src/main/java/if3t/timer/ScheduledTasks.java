@@ -128,7 +128,7 @@ public class ScheduledTasks {
        for(Recipe recipe: gmailTriggerRecipes){
     	   User user = recipe.getUser();
     	   Channel triggerChannel = recipe.getTrigger().getChannel();
-    	   Authorization auth = authService.getAuthorization(user.getId(), triggerChannel.getChannelId());
+    	   Authorization auth = authService.getAuthorization(user.getId(), triggerChannel.getKeyword());
     	   
     	   HttpHeaders headers = new HttpHeaders();
     	   headers.set("Authorization", auth.getTokenType() + " " + auth.getAccessToken());
@@ -173,7 +173,7 @@ public class ScheduledTasks {
     			   		case "calendar" :
     			   			break;
     			   		case "facebook" :
-    			   			Authorization FBAuth = authService.getAuthorization(user.getId(), recipe.getAction().getChannel().getChannelId());
+    			   			Authorization FBAuth = authService.getAuthorization(user.getId(), recipe.getAction().getChannel().getKeyword());
     			   			String message = "";
     			   			for(ActionIngredient actionIngredient: actionIngredients){
     			   				ParametersActions param = actionIngredient.getParam();
