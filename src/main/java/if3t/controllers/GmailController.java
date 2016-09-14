@@ -93,7 +93,6 @@ public class GmailController {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getForObject(rev.getRevokeUrl(), String.class);
 		
-		
 		authService.deleteAuthorization(authorization.getId());
 		return new Response("OK", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 		/*
