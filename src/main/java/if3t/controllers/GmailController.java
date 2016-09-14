@@ -91,9 +91,9 @@ public class GmailController {
 		GoogleAuthRevoke rev = new GoogleAuthRevoke(authorization.getAccessToken());
 		
 		RestTemplate restTemplate = new RestTemplate();
-		String result = restTemplate.getForObject(rev.getRevokeUrl(), String.class);
+		restTemplate.getForObject(rev.getRevokeUrl(), String.class);
 		
-		System.out.println(result);
+		authService.deleteAuthorization(authorization.getId());
 		return new Response("OK", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 		/*
 		if(authorization == null){
