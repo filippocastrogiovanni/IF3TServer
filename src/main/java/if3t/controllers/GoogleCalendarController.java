@@ -20,11 +20,15 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import if3t.apis.GCalendarAuthRequest;
+import if3t.apis.GoogleAuthRequest;
+import if3t.apis.GoogleAuthRevoke;
 import if3t.apis.GoogleTokenRequest;
 import if3t.apis.GoogleTokenResponse;
 import if3t.exceptions.NotLoggedInException;
+import if3t.models.Authorization;
 import if3t.models.Response;
 import if3t.models.User;
+import if3t.services.AuthorizationService;
 import if3t.services.ChannelService;
 import if3t.services.UserService;
 
@@ -37,6 +41,10 @@ public class GoogleCalendarController {
 
 	@Autowired
 	private ChannelService channelService;
+	
+	@Autowired
+	private AuthorizationService authService;
+	
 	//FIXME si dovrebbe eliminare ciò che si inserisce altrimenti si rischia di saturare la memoria teoricamente
 	private ConcurrentHashMap<String, String> authRequests = new ConcurrentHashMap<String, String>();
 
@@ -54,9 +62,17 @@ public class GoogleCalendarController {
 		if (!loggedUser.isEnabled())
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
-		GCalendarAuthRequest req = new GCalendarAuthRequest(loggedUser);
-		authRequests.put(req.getState(), loggedUser.getUsername());
-		return new Response(req.toString(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+		Authorization authorization = authService.getAuthorization(loggedUser.getId(), "gcalendar");
+		if(authorization == null){
+			GCalendarAuthRequest req = new GCalendarAuthRequest(loggedUser);
+			authRequests.put(req.getState(), loggedUser.getUsername());
+			return new Response(req.toString(), HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
+		}
+		else{
+			GoogleAuthRevoke rev = new GoogleAuthRevoke(authorization.getAccessToken());
+			return new Response(rev.getRevokeUrl(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+		}
+		
 	}
 
 	@ResponseStatus(value = HttpStatus.OK)
