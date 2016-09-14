@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Properties;
 
 import javax.mail.MessagingException;
@@ -20,10 +21,14 @@ import org.springframework.web.client.RestTemplate;
 import com.google.api.client.repackaged.org.apache.commons.codec.binary.Base64;
 import com.google.api.services.gmail.model.Message;
 
+import if3t.models.ActionIngredient;
+import if3t.models.Authorization;
+import if3t.models.ParametersActions;
+
 
 public class GmailUtil {
 
-	public static Message createEmail(String to, String from, String subject, String bodyText) throws MessagingException, IOException {
+	private static Message createEmail(String to, String from, String subject, String bodyText) throws MessagingException, IOException {
 		Properties props = new Properties();
 		Session session = Session.getDefaultInstance(props, null);
 		
@@ -43,21 +48,37 @@ public class GmailUtil {
         return message;
 	}
 
-	public static String sendEmail(String to, String subject, String bodyText, String tokenType, String accessToken) throws MessagingException, IOException, URISyntaxException{
+	public static String sendEmail(List<ActionIngredient> actionIngredients, Authorization auth) throws MessagingException, IOException, URISyntaxException{
 		RestTemplate restTemplate = new RestTemplate();
+		
+		String to = "";
+		String subject = "";
+		String bodyText = "";
+		
+		for(ActionIngredient actionIngredient: actionIngredients){
+			ParametersActions param = actionIngredient.getParam();
+
+			if(param.getKeyword().equals("to"))
+				to = actionIngredient.getValue();
+			if(param.getKeyword().equals("subject"))
+				subject = actionIngredient.getValue();
+			if(param.getKeyword().equals("body"))
+				bodyText = actionIngredient.getValue();
+		}
+
 		Message email = GmailUtil.createEmail(to, "", subject, bodyText);
-		   
-	   String body = "{\"raw\":\"" + email.getRaw() +"\"}";
-	   MediaType mediaType = new MediaType("application", "json");
-	   
-	   RequestEntity<String> request = RequestEntity
-			   	.post(new URI("https://www.googleapis.com/gmail/v1/users/me/messages/send"))
+
+		String body = "{\"raw\":\"" + email.getRaw() +"\"}";
+		MediaType mediaType = new MediaType("application", "json");
+
+		RequestEntity<String> request = RequestEntity
+				.post(new URI("https://www.googleapis.com/gmail/v1/users/me/messages/send"))
 				.contentLength(email.getRaw().getBytes().length)
 				.contentType(mediaType)
-				.header("Authorization", tokenType + " " + accessToken)
+				.header("Authorization", auth.getTokenType() + " " + auth.getAccessToken())
 				.body(body);
-	   
-	   ResponseEntity<String> messageResponse = restTemplate.exchange(request, String.class);
-	   return messageResponse.getBody();
+
+		ResponseEntity<String> messageResponse = restTemplate.exchange(request, String.class);
+		return messageResponse.getBody();
 	}
 }

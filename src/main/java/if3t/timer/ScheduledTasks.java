@@ -117,8 +117,9 @@ public class ScheduledTasks {
 			e.printStackTrace();
 		}	 
     }    
-   
-      @Scheduled(fixedRate = 1000*60*5)
+   */
+     
+	@Scheduled(fixedRate = 1000*60*5)
     public void gmailScheduler() {	 
     	
 	   RestTemplate restTemplate = new RestTemplate();
@@ -153,35 +154,41 @@ public class ScheduledTasks {
     	   JSONObject obj = new JSONObject(response.getBody());
     	   try{
     		   int result = obj.getInt("resultSizeEstimate");
-    		   if(result > 0){
-    			   JSONArray messages = obj.getJSONArray("messages");
-	    		   for(int i=0; i< messages.length(); i++){
-	    			   JSONObject message = messages.getJSONObject(i);
-	    			   String messageId = message.getString("id");
-	    			   String messageUrl = "https://www.googleapis.com/gmail/v1/users/me/messages/" + messageId;
-	    			   
-	    			   HttpEntity<String> messageResponse = restTemplate.exchange(messageUrl, HttpMethod.GET, entity, String.class);
-	    			   System.out.println(messageResponse.getBody());
-	    		   }
-	    		      		   
+    		   if(result > 0){  		      		   
     			   List<ActionIngredient> actionIngredients = actionIngredientService.getRecipeActionIngredients(recipe.getId());
-    			   if(recipe.getAction().getChannel().getKeyword().equals("gmail")){
-    				   String to = "";
-    	    		   String subject = "";
-    	    		   String body = "";
-	    	    	   for(ActionIngredient actionIngredient: actionIngredients){
-	    	    		   ParametersActions param = actionIngredient.getParam();
-	    	    		  
-	    	    		   if(param.getKeyword().equals("to"))
-	    	    			   to = actionIngredient.getValue();
-	    	    		   if(param.getKeyword().equals("subject"))
-	    	    			   subject = actionIngredient.getValue();
-	    	    		   if(param.getKeyword().equals("body"))
-	    	    			   body = actionIngredient.getValue();
-	    	    	   }
-	    	    	   
-	    	    	   GmailUtil.sendEmail(to, subject, body, auth.getTokenType(), auth.getAccessToken());
+    			   switch(recipe.getAction().getChannel().getKeyword()){
+    			   		case "gmail" :
+    			   			JSONArray messages = obj.getJSONArray("messages");
+    			   			for(int i=0; i< messages.length(); i++){
+    			   				JSONObject message = messages.getJSONObject(i);
+    			   				String messageId = message.getString("id");
+    			   				String messageUrl = "https://www.googleapis.com/gmail/v1/users/me/messages/" + messageId;
+
+    			   				HttpEntity<String> messageResponse = restTemplate.exchange(messageUrl, HttpMethod.GET, entity, String.class);
+    			   				
+    			   				GmailUtil.sendEmail(actionIngredients, auth);
+    			   				//System.out.println(messageResponse.getBody());
+    			   			}
+    			   			break;
+    			   		case "calendar" :
+    			   			break;
+    			   		case "facebook" :
+    			   			Authorization FBAuth = authService.getAuthorization(user.getId(), recipe.getAction().getChannel().getChannelId());
+    			   			String message = "";
+    			   			for(ActionIngredient actionIngredient: actionIngredients){
+    			   				ParametersActions param = actionIngredient.getParam();
+
+    			   				if(param.getKeyword().equals("post"))
+    			   					message = actionIngredient.getValue();
+    			   			}
+    			   			FacebookUtil.publish_new_post(message, FBAuth.getAccessToken());
+    			   			break;
+    			   		case "twitter" :
+    			   			break;
     			   }
+    			   /*if(recipe.getAction().getChannel().getKeyword().equals("gmail")){
+	    	    	   GmailUtil.sendEmail(actionIngredients, auth);
+    			   }*/
     		   }
     	   }catch (Exception e){
     		   e.printStackTrace();
@@ -189,7 +196,6 @@ public class ScheduledTasks {
        }
        
     }
-   */
 	
 	
 }

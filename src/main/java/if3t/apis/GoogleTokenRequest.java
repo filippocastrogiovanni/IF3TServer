@@ -12,14 +12,14 @@ public class GoogleTokenRequest implements Serializable {
 	private String redirect_uri; 	// One of the redirect URIs listed for this project in the API Console.
 	private String grant_type; 		// As defined in the OAuth 2.0 specification, this field must contain a value of authorization_code.
 
-	public GoogleTokenRequest(String code) {
+	public GoogleTokenRequest(String code, String redirectURI) {
 		super();
 		this.code = code;
 		this.token_uri = "https://accounts.google.com/o/oauth2/token";
 		this.client_id = "205247608184-qn9jd5afpqai7n8n6hbhb2qgvad7mih8.apps.googleusercontent.com";
 		this.client_secret = "DPPiyrVcd-uqUMw7ponxFKv1";
 		this.grant_type = "authorization_code";
-		this.redirect_uri = "http://localhost:8181/gmail/authresponse";
+		this.redirect_uri = redirectURI;
 	}
 
 	public String getToken_uri() {

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-import if3t.apis.GoogleAuthRequest;
+import if3t.apis.GCalendarAuthRequest;
 import if3t.apis.GoogleTokenRequest;
 import if3t.apis.GoogleTokenResponse;
 import if3t.exceptions.NotLoggedInException;
@@ -30,7 +30,7 @@ import if3t.services.UserService;
 
 @RestController
 @CrossOrigin
-public class GmailController {
+public class GoogleCalendarController {
 
 	@Autowired
 	private UserService userService;
@@ -41,7 +41,7 @@ public class GmailController {
 	private ConcurrentHashMap<String, String> authRequests = new ConcurrentHashMap<String, String>();
 
 	@ResponseStatus(value = HttpStatus.OK)
-	@RequestMapping(value = "/gmail/auth", method = RequestMethod.GET)
+	@RequestMapping(value = "/gcalendar/auth", method = RequestMethod.GET)
 	public Response gmailAuth() throws NotLoggedInException, NoPermissionException {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth == null)
@@ -54,14 +54,14 @@ public class GmailController {
 		if (!loggedUser.isEnabled())
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
-		GoogleAuthRequest req = new GoogleAuthRequest(loggedUser);
+		GCalendarAuthRequest req = new GCalendarAuthRequest(loggedUser);
 		authRequests.put(req.getState(), loggedUser.getUsername());
 		return new Response(req.toString(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 
 	@ResponseStatus(value = HttpStatus.OK)
-	@RequestMapping(value = "/gmail/authresponse", method = RequestMethod.GET)
-	public String gmailAuthResponse(@RequestParam(value = "state", required = false) String state,
+	@RequestMapping(value = "/gcalendar/authresponse", method = RequestMethod.GET)
+	public String gCalendarAuthResponse(@RequestParam(value = "state", required = false) String state,
 			@RequestParam(value = "code", required = false) String code,
 			@RequestParam(value = "error", required = false) String error)
 			throws NotLoggedInException, NoPermissionException, URISyntaxException {
@@ -89,7 +89,7 @@ public class GmailController {
 		if (code == null)
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
-		GoogleTokenRequest googleRQ = new GoogleTokenRequest(code, "http://localhost:8181/gmail/authresponse");
+		GoogleTokenRequest googleRQ = new GoogleTokenRequest(code, "http://localhost:8181/gcalendar/authresponse");
 		RestTemplate restTemplate = new RestTemplate();
 		MediaType mediaType = new MediaType("application", "x-www-form-urlencoded", Charset.forName("UTF-8"));
 		RequestEntity<String> request = RequestEntity.post(new URI(googleRQ.getToken_uri()))
@@ -103,7 +103,7 @@ public class GmailController {
 			return "ERROR";
 		
 		// Ho cambiato questo metodo: ora il salvataggio avviene solo se non esiste già una riga per la coppia userId-channelId
-		channelService.authorizeChannel(loggedUser.getId(), "gmail", googleRS.getAccess_token(), googleRS.getRefresh_token(),
+		channelService.authorizeChannel(loggedUser.getId(), "gcalendar", googleRS.getAccess_token(), googleRS.getRefresh_token(),
 				googleRS.getToken_type(), googleRS.getExpiration_date());
 
 
