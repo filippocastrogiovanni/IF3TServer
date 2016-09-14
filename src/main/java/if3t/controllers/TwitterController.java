@@ -84,10 +84,10 @@ public class TwitterController
     	tempTokens.put(loggedUser.getUsername(), new TwitterTemporaryToken(tempTokenResponse.token, tempTokenResponse.tokenSecret));
     	
     	if (authorizationService.getAuthorization(loggedUser.getId(), "twitter") != null) {
-    		return new Response("Twitter has already connected", HttpStatus.ACCEPTED.value(), HttpStatus.ACCEPTED.getReasonPhrase());
+    		return new Response("/twitter/revokeauth", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
     	}
     	
-    	return new Response(authorizeUrl.build(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+    	return new Response(authorizeUrl.build(), HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
 	}
 	
 	@ResponseStatus(value = HttpStatus.OK)

@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.api.client.auth.oauth.OAuthCredentialsResponse;
 
+import if3t.models.Authorization;
+import if3t.models.ChannelStatus;
 import if3t.services.AuthorizationService;
 import if3t.services.ChannelStatusService;
 import twitter4j.Paging;
@@ -26,18 +28,19 @@ public class TwitterUtil
 	
 	//TODO probabilmente c'è da scontrarsi con il fatto che l'istanza twitter non è singleton così
 	//FIXME settare io debug a false
-	public Twitter getTwitterInstance(Long userId, OAuthCredentialsResponse resp)
+	public Twitter getTwitterInstance(Long userId)
 	{
 		ConfigurationBuilder conf = new ConfigurationBuilder();
 		conf.setDebugEnabled(true).setOAuthConsumerKey("rLWBxF1x5DwCgMhtFzGckQytZ").
 		setOAuthConsumerSecret("HYAWanoKCvBHTdw7hSjMj8LPvpbwJ2MPCADgTEuhubbgTXGDW2");
 			
-		return new TwitterFactory(conf.build()).getInstance(new AccessToken(resp.token, resp.tokenSecret, userId));
+		Authorization auth = authorizationService.getAuthorization(userId, "twitter");
+		return new TwitterFactory(conf.build()).getInstance(new AccessToken(auth.getAccessToken(), auth.getRefreshToken(), userId));
 	}
 	
-	public boolean postTweet(Long userId, OAuthCredentialsResponse resp, String tweet, List<String> hashtags)
+	public boolean postTweet(Long userId, String tweet, List<String> hashtags)
 	{
-		Twitter twitter = getTwitterInstance(userId, resp);
+		Twitter twitter = getTwitterInstance(userId);
 		
 		if (hashtags != null && hashtags.size() > 0)
 		{
@@ -72,14 +75,19 @@ public class TwitterUtil
 		}
 	}
 	
-//	public boolean isNewTweetPosted(Long userId, OAuthCredentialsResponse resp)
+//	public boolean isNewTweetPosted(Long userId)
 //	{
-//		Twitter twitter = getTwitterInstance(userId, resp);
-//		Long sinceRef = channelStatusService.readChannelStatus(userId, "twitter").getSinceRef();
+//		Twitter twitter = getTwitterInstance(userId);
+//		ChannelStatus twitterStatus = channelStatusService.readChannelStatus(userId, "twitter");
+//		
+//		if (twitterStatus != null)
+//		{
+//			
+//		}
 //		
 //		try 
 //		{
-//            Paging page = new Paging(1, 100, 773024743066927104L);
+//            Paging page = new Paging(1, 200, sinceRef);
 //            ResponseList<Status> statuses = twitter.getHomeTimeline(page);
 //            
 //            while (statuses.size() > 0)
