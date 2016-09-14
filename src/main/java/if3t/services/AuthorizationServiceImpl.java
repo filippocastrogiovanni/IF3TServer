@@ -21,7 +21,7 @@ public class AuthorizationServiceImpl implements AuthorizationService
 	
 	@Override
 	public Authorization getAuthorization(Long userId, String channelKeyword) {
-		return authRepository.findByUser_IdAndChannel_ChannelId(userId, channelRepository.findIdByKeyword(channelKeyword));
+		return authRepository.findByUser_IdAndChannel_ChannelId(userId, channelRepository.findByKeyword(channelKeyword).getChannelId());
 	}
 	
 	@Override

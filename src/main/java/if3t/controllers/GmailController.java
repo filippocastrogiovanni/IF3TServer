@@ -20,9 +20,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import if3t.apis.GoogleAuthRequest;
+import if3t.apis.GoogleAuthRevoke;
 import if3t.apis.GoogleTokenRequest;
 import if3t.apis.GoogleTokenResponse;
 import if3t.exceptions.NotLoggedInException;
+import if3t.models.Authorization;
 import if3t.models.Response;
 import if3t.models.User;
 import if3t.services.AuthorizationService;
@@ -59,10 +61,17 @@ public class GmailController {
 		if (!loggedUser.isEnabled())
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
-		authService.getAuthorization(loggedUser.getId(), "gmail");
-		GoogleAuthRequest req = new GoogleAuthRequest(loggedUser);
-		authRequests.put(req.getState(), loggedUser.getUsername());
-		return new Response(req.toString(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+		Authorization authorization = authService.getAuthorization(loggedUser.getId(), "gmail");
+		if(authorization == null){
+			GoogleAuthRequest req = new GoogleAuthRequest(loggedUser);
+			authRequests.put(req.getState(), loggedUser.getUsername());
+			return new Response(req.toString(), HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
+		}
+		else{
+			GoogleAuthRevoke rev = new GoogleAuthRevoke(authorization.getAccessToken());
+			return new Response(rev.getRevokeUrl(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+		}
+		
 	}
 
 	@ResponseStatus(value = HttpStatus.OK)
