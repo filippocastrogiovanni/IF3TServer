@@ -4,7 +4,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.concurrent.ConcurrentHashMap;
+
 import javax.naming.NoPermissionException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,8 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+
 import if3t.apis.GCalendarAuthRequest;
-import if3t.apis.GoogleAuthRequest;
 import if3t.apis.GoogleAuthRevoke;
 import if3t.apis.GoogleTokenRequest;
 import if3t.apis.GoogleTokenResponse;
@@ -45,7 +47,6 @@ public class GoogleCalendarController {
 	@Autowired
 	private AuthorizationService authService;
 	
-	//FIXME si dovrebbe eliminare ciò che si inserisce altrimenti si rischia di saturare la memoria teoricamente
 	private ConcurrentHashMap<String, String> authRequests = new ConcurrentHashMap<String, String>();
 
 	@ResponseStatus(value = HttpStatus.OK)
@@ -105,6 +106,8 @@ public class GoogleCalendarController {
 		if (code == null)
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
+		authRequests.remove(state);
+		
 		GoogleTokenRequest googleRQ = new GoogleTokenRequest(code, "http://localhost:8181/gcalendar/authresponse");
 		RestTemplate restTemplate = new RestTemplate();
 		MediaType mediaType = new MediaType("application", "x-www-form-urlencoded", Charset.forName("UTF-8"));

@@ -44,7 +44,6 @@ public class GmailController {
 	@Autowired
 	private AuthorizationService authService;
 	
-	//FIXME si dovrebbe eliminare ciò che si inserisce altrimenti si rischia di saturare la memoria teoricamente
 	private ConcurrentHashMap<String, String> authRequests = new ConcurrentHashMap<String, String>();
 
 	@ResponseStatus(value = HttpStatus.OK)
@@ -68,9 +67,44 @@ public class GmailController {
 			return new Response(req.toString(), HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
 		}
 		else{
-			GoogleAuthRevoke rev = new GoogleAuthRevoke(authorization.getAccessToken());
-			return new Response(rev.getRevokeUrl(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+			//GoogleAuthRevoke rev = new GoogleAuthRevoke(authorization.getAccessToken());
+			return new Response("/gmail/revoke", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 		}
+		
+	}
+	
+	@ResponseStatus(value = HttpStatus.OK)
+	@RequestMapping(value = "/gmail/revoke", method = RequestMethod.GET)
+	public Response gmailRevoke() throws NotLoggedInException, NoPermissionException {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth == null)
+			throw new NotLoggedInException("ERROR: not logged in!");
+
+		User loggedUser = userService.getUserByUsername(auth.getName());
+		if (loggedUser == null)
+			throw new NotLoggedInException("ERROR: not logged in!");
+
+		if (!loggedUser.isEnabled())
+			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
+
+		Authorization authorization = authService.getAuthorization(loggedUser.getId(), "gmail");
+		GoogleAuthRevoke rev = new GoogleAuthRevoke(authorization.getAccessToken());
+		
+		RestTemplate restTemplate = new RestTemplate();
+		String result = restTemplate.getForObject(rev.getRevokeUrl(), String.class);
+		
+		System.out.println(result);
+		return new Response("OK", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+		/*
+		if(authorization == null){
+			GoogleAuthRequest req = new GoogleAuthRequest(loggedUser);
+			authRequests.put(req.getState(), loggedUser.getUsername());
+			return new Response(req.toString(), HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
+		}
+		else{
+			//GoogleAuthRevoke rev = new GoogleAuthRevoke(authorization.getAccessToken());
+			return new Response("/gmail/revoke", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+		}*/
 		
 	}
 
@@ -104,6 +138,8 @@ public class GmailController {
 		if (code == null)
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
+		authRequests.remove(state);
+		
 		GoogleTokenRequest googleRQ = new GoogleTokenRequest(code, "http://localhost:8181/gmail/authresponse");
 		RestTemplate restTemplate = new RestTemplate();
 		MediaType mediaType = new MediaType("application", "x-www-form-urlencoded", Charset.forName("UTF-8"));
