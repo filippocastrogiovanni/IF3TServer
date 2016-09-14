@@ -30,11 +30,8 @@ public class ChannelStatus
 	@JsonBackReference(value = "channels_statuses-channel")
 	private Channel channel;
 	
-	@Column(name = "since_id")
-	private Long sinceId;
-	
-	@Column(name = "max_id")
-	private Long maxId;
+	@Column(name = "since_ref")
+	private Long sinceRef;
 
 	public Long getId() {
 		return id;
@@ -60,20 +57,12 @@ public class ChannelStatus
 		this.channel = channel;
 	}
 
-	public Long getSinceId() {
-		return sinceId;
+	public Long getSinceRef() {
+		return sinceRef;
 	}
 
-	public void setSinceId(Long sinceId) {
-		this.sinceId = sinceId;
-	}
-
-	public Long getMaxId() {
-		return maxId;
-	}
-
-	public void setMaxId(Long maxId) {
-		this.maxId = maxId;
+	public void setSinceRef(Long sinceRef) {
+		this.sinceRef = sinceRef;
 	}
 
 	@Override

@@ -28,6 +28,7 @@ import if3t.apis.TwitterUtil;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Response;
 import if3t.models.User;
+import if3t.services.AuthorizationService;
 import if3t.services.ChannelService;
 import if3t.services.UserService;
 
@@ -39,6 +40,9 @@ public class TwitterController
 	private UserService userService;
 	@Autowired
 	private ChannelService channelService;
+	@Autowired
+	private AuthorizationService authorizationService;
+	
 	private static final String CONSUMER_KEY = "rLWBxF1x5DwCgMhtFzGckQytZ";
     private static final String CONSUMER_SECRET = "HYAWanoKCvBHTdw7hSjMj8LPvpbwJ2MPCADgTEuhubbgTXGDW2";
     private static final String REQUEST_TOKEN_URL = "https://api.twitter.com/oauth/request_token";
@@ -78,6 +82,10 @@ public class TwitterController
     	OAuthAuthorizeTemporaryTokenUrl authorizeUrl = new OAuthAuthorizeTemporaryTokenUrl(AUTHORIZE_URL);
     	authorizeUrl.temporaryToken = tempTokenResponse.token;
     	tempTokens.put(loggedUser.getUsername(), new TwitterTemporaryToken(tempTokenResponse.token, tempTokenResponse.tokenSecret));
+    	
+    	if (authorizationService.getAuthorization(loggedUser.getId(), "twitter") != null) {
+    		return new Response("Twitter has already connected", HttpStatus.ACCEPTED.value(), HttpStatus.ACCEPTED.getReasonPhrase());
+    	}
     	
     	return new Response(authorizeUrl.build(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
@@ -124,7 +132,7 @@ public class TwitterController
     	channelService.authorizeChannel(loggedUser.getId(), "twitter", accTokenResponse.token, accTokenResponse.tokenSecret, "Access", null);
     	
     	//TwitterUtil.postTweet(loggedUser.getId(), accTokenResponse, "prova riuscita [" + System.currentTimeMillis() + "]", null);
-		new TwitterUtil().printStatuses(loggedUser.getId(), accTokenResponse);
+		//new TwitterUtil().printStatuses(loggedUser.getId(), accTokenResponse);
     	
     	return "<script>window.close();</script>";
 	}
@@ -141,6 +149,6 @@ public class TwitterController
 		
 		//TODO manca l'implementazione
 		
-		return new Response("Channel has been disconnected successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+		return new Response("Twitter has been disconnected successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 }

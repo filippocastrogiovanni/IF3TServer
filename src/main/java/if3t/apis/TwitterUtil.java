@@ -2,8 +2,12 @@ package if3t.apis;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.api.client.auth.oauth.OAuthCredentialsResponse;
 
+import if3t.services.AuthorizationService;
+import if3t.services.ChannelStatusService;
 import twitter4j.Paging;
 import twitter4j.ResponseList;
 import twitter4j.Status;
@@ -15,7 +19,13 @@ import twitter4j.conf.ConfigurationBuilder;
 
 public class TwitterUtil 
 {	
+	@Autowired
+	private ChannelStatusService channelStatusService;
+	@Autowired
+	private AuthorizationService authorizationService;
+	
 	//TODO probabilmente c'è da scontrarsi con il fatto che l'istanza twitter non è singleton così
+	//FIXME settare io debug a false
 	public Twitter getTwitterInstance(Long userId, OAuthCredentialsResponse resp)
 	{
 		ConfigurationBuilder conf = new ConfigurationBuilder();
@@ -62,57 +72,57 @@ public class TwitterUtil
 		}
 	}
 	
-	public void printStatuses(Long userId, OAuthCredentialsResponse resp)
-	{
-		Long sinceId = null, maxId = null;
-		Twitter twitter = getTwitterInstance(userId, resp);
-		
-		try 
-		{
-            Paging page = new Paging(1, 100, 773024743066927104L);
-            ResponseList<Status> statuses = twitter.getHomeTimeline(page);
-            
-            while (statuses.size() > 0)
-            {
-//                System.out.println(statuses.getRateLimitStatus().getLimit());
-                System.out.println(statuses.getRateLimitStatus().getRemaining());
-//                System.out.println(statuses.getRateLimitStatus().getResetTimeInSeconds());
-                System.out.println(statuses.getRateLimitStatus().getSecondsUntilReset());
-                
-                for (Status status : statuses) 
-                {
-                    System.out.println("page " + page.getPage() + " - Id " + status.getId() + " - @" + status.getUser().getScreenName() + " - " + status.getText());
-                }
-                
-                //TODO potrebbe esplodere quello fuori dal while, ma se il controllo viene fatto ogni 15 minuti non dovrebbe accadere
-                if (statuses.getRateLimitStatus().getRemaining() > 0)
-                {
-	                page.setPage(page.getPage() + 1);
-	                statuses = twitter.getHomeTimeline(page);
-                }
-                else
-                {
-                	//TODO salvare sinceId e maxId
-                	System.out.println("Limite raggiunto");
-                	break;
-                }  
-            } 
-            
-            System.out.println("done.");
-        } 
-		catch (TwitterException te) 
-		{
-            System.err.println("Failed to list statuses: " + te.getMessage());
-            System.err.println("---------------------------------------------------------------");
-            te.printStackTrace();
-        }
-		catch (Throwable t)
-		{
-			t.printStackTrace();
-		}
-		finally
-		{
-			//TODO se sinceId e maxId sono != null occorre salvarli nel db
-		}
-	}
+//	public boolean isNewTweetPosted(Long userId, OAuthCredentialsResponse resp)
+//	{
+//		Twitter twitter = getTwitterInstance(userId, resp);
+//		Long sinceRef = channelStatusService.readChannelStatus(userId, "twitter").getSinceRef();
+//		
+//		try 
+//		{
+//            Paging page = new Paging(1, 100, 773024743066927104L);
+//            ResponseList<Status> statuses = twitter.getHomeTimeline(page);
+//            
+//            while (statuses.size() > 0)
+//            {
+////                System.out.println(statuses.getRateLimitStatus().getLimit());
+//                System.out.println(statuses.getRateLimitStatus().getRemaining());
+////                System.out.println(statuses.getRateLimitStatus().getResetTimeInSeconds());
+//                System.out.println(statuses.getRateLimitStatus().getSecondsUntilReset());
+//                
+//                for (Status status : statuses) 
+//                {
+//                    System.out.println("page " + page.getPage() + " - Id " + status.getId() + " - @" + status.getUser().getScreenName() + " - " + status.getText());
+//                }
+//                
+//                //TODO potrebbe esplodere quello fuori dal while, ma se il controllo viene fatto ogni 15 minuti non dovrebbe accadere
+//                if (statuses.getRateLimitStatus().getRemaining() > 0)
+//                {
+//	                page.setPage(page.getPage() + 1);
+//	                statuses = twitter.getHomeTimeline(page);
+//                }
+//                else
+//                {
+//                	//TODO salvare sinceId e maxId
+//                	System.out.println("Limite raggiunto");
+//                	break;
+//                }  
+//            } 
+//            
+//            System.out.println("done.");
+//        } 
+//		catch (TwitterException te) 
+//		{
+//            System.err.println("Failed to list statuses: " + te.getMessage());
+//            System.err.println("---------------------------------------------------------------");
+//            te.printStackTrace();
+//        }
+//		catch (Throwable t)
+//		{
+//			t.printStackTrace();
+//		}
+//		finally
+//		{
+//			//TODO se sinceId e maxId sono != null occorre salvarli nel db
+//		}
+//	}
 }
