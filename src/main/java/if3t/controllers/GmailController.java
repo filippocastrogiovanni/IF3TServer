@@ -67,7 +67,6 @@ public class GmailController {
 			return new Response(req.toString(), HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
 		}
 		else{
-			//GoogleAuthRevoke rev = new GoogleAuthRevoke(authorization.getAccessToken());
 			return new Response("/gmail/revoke", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 		}
 		
@@ -95,17 +94,6 @@ public class GmailController {
 		
 		authService.deleteAuthorization(authorization.getId());
 		return new Response("OK", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
-		/*
-		if(authorization == null){
-			GoogleAuthRequest req = new GoogleAuthRequest(loggedUser);
-			authRequests.put(req.getState(), loggedUser.getUsername());
-			return new Response(req.toString(), HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
-		}
-		else{
-			//GoogleAuthRevoke rev = new GoogleAuthRevoke(authorization.getAccessToken());
-			return new Response("/gmail/revoke", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
-		}*/
-		
 	}
 
 	@ResponseStatus(value = HttpStatus.OK)

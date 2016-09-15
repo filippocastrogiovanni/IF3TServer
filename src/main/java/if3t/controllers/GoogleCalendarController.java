@@ -51,7 +51,7 @@ public class GoogleCalendarController {
 
 	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value = "/gcalendar/auth", method = RequestMethod.GET)
-	public Response gmailAuth() throws NotLoggedInException, NoPermissionException {
+	public Response gCalendarAuth() throws NotLoggedInException, NoPermissionException {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth == null)
 			throw new NotLoggedInException("ERROR: not logged in!");
@@ -70,10 +70,33 @@ public class GoogleCalendarController {
 			return new Response(req.toString(), HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
 		}
 		else{
-			GoogleAuthRevoke rev = new GoogleAuthRevoke(authorization.getAccessToken());
-			return new Response(rev.getRevokeUrl(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+			return new Response("/gcalendar/revoke", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 		}
 		
+	}
+	
+	@ResponseStatus(value = HttpStatus.OK)
+	@RequestMapping(value = "/gcalendar/revoke", method = RequestMethod.GET)
+	public Response gCalendarRevoke() throws NotLoggedInException, NoPermissionException {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth == null)
+			throw new NotLoggedInException("ERROR: not logged in!");
+
+		User loggedUser = userService.getUserByUsername(auth.getName());
+		if (loggedUser == null)
+			throw new NotLoggedInException("ERROR: not logged in!");
+
+		if (!loggedUser.isEnabled())
+			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
+
+		Authorization authorization = authService.getAuthorization(loggedUser.getId(), "gmail");
+		GoogleAuthRevoke rev = new GoogleAuthRevoke(authorization.getAccessToken());
+		
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.getForObject(rev.getRevokeUrl(), String.class);
+		
+		authService.deleteAuthorization(authorization.getId());
+		return new Response("OK", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 
 	@ResponseStatus(value = HttpStatus.OK)

@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONArray;
@@ -23,7 +24,9 @@ import org.springframework.web.client.RestTemplate;
 
 import if3t.apis.FacebookUtil;
 import if3t.apis.GmailUtil;
+import if3t.apis.GoogleCalendarUtil;
 import if3t.apis.GoogleTokenResponse;
+import if3t.exceptions.InvalidParametersException;
 import if3t.models.ActionIngredient;
 import if3t.models.Authorization;
 import if3t.models.Channel;
@@ -37,6 +40,7 @@ import if3t.services.AuthorizationService;
 import if3t.services.RecipeService;
 import if3t.services.TriggerIngredientService;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
@@ -118,84 +122,97 @@ public class ScheduledTasks {
 		}	 
     }    
    */
-     
+
 	@Scheduled(fixedRate = 1000*60*5)
-    public void gmailScheduler() {	 
-    	
-	   RestTemplate restTemplate = new RestTemplate();
-	   
-       List<Recipe> gmailTriggerRecipes = recipeService.getRecipeByTriggerChannel("gmail");
-       for(Recipe recipe: gmailTriggerRecipes){
-    	   User user = recipe.getUser();
-    	   Channel triggerChannel = recipe.getTrigger().getChannel();
-    	   Authorization auth = authService.getAuthorization(user.getId(), triggerChannel.getKeyword());
-    	   
-    	   HttpHeaders headers = new HttpHeaders();
-    	   headers.set("Authorization", auth.getTokenType() + " " + auth.getAccessToken());
-    	   HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
-    	   
-    	   String url = "https://www.googleapis.com/gmail/v1/users/"
-     				+ "me/messages?"
-     				+ "q=";
-    	   
-    	   
-    	   List<TriggerIngredient> triggerIngredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
-    	   for(TriggerIngredient triggerIngredient: triggerIngredients){
-    		   ParametersTriggers param = triggerIngredient.getParam();
-    		   
-    		   url += param.getKeyword() + ":" + triggerIngredient.getValue();
-    	   }
-    	   Long timestamp = Calendar.getInstance().getTimeInMillis() - (1000*60*5);
-    	   
-    	   url += " after:" + timestamp/1000;
-    	   
-    	   HttpEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-    	   
-    	   JSONObject obj = new JSONObject(response.getBody());
-    	   try{
-    		   int result = obj.getInt("resultSizeEstimate");
-    		   if(result > 0){  		      		   
-    			   List<ActionIngredient> actionIngredients = actionIngredientService.getRecipeActionIngredients(recipe.getId());
-    			   switch(recipe.getAction().getChannel().getKeyword()){
-    			   		case "gmail" :
-    			   			JSONArray messages = obj.getJSONArray("messages");
-    			   			for(int i=0; i< messages.length(); i++){
-    			   				JSONObject message = messages.getJSONObject(i);
-    			   				String messageId = message.getString("id");
-    			   				String messageUrl = "https://www.googleapis.com/gmail/v1/users/me/messages/" + messageId;
+	public void gmailScheduler(){
+		/*TimeZone zone = TimeZone.getTimeZone("GMT-3");
+		Calendar c = Calendar.getInstance();
+		c.setTimeInMillis(1473863892389l);
+		c.setTimeZone(zone);
+		System.out.println(c.get(Calendar.ZONE_OFFSET));
+		try {
+			GoogleCalendarUtil.createEvent(c, c, "PRova", "ciao ciao", "Torino");
+		} catch (JsonProcessingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (InvalidParametersException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}*/
+		RestTemplate restTemplate = new RestTemplate();
 
-    			   				HttpEntity<String> messageResponse = restTemplate.exchange(messageUrl, HttpMethod.GET, entity, String.class);
-    			   				
-    			   				GmailUtil.sendEmail(actionIngredients, auth);
-    			   				//System.out.println(messageResponse.getBody());
-    			   			}
-    			   			break;
-    			   		case "calendar" :
-    			   			break;
-    			   		case "facebook" :
-    			   			Authorization FBAuth = authService.getAuthorization(user.getId(), recipe.getAction().getChannel().getKeyword());
-    			   			String message = "";
-    			   			for(ActionIngredient actionIngredient: actionIngredients){
-    			   				ParametersActions param = actionIngredient.getParam();
+		List<Recipe> gmailTriggerRecipes = recipeService.getRecipeByTriggerChannel("gmail");
+		for(Recipe recipe: gmailTriggerRecipes){
+			User user = recipe.getUser();
+			Channel triggerChannel = recipe.getTrigger().getChannel();
+			Authorization auth = authService.getAuthorization(user.getId(), triggerChannel.getKeyword());
 
-    			   				if(param.getKeyword().equals("post"))
-    			   					message = actionIngredient.getValue();
-    			   			}
-    			   			FacebookUtil.publish_new_post(message, FBAuth.getAccessToken());
-    			   			break;
-    			   		case "twitter" :
-    			   			break;
-    			   }
-    			   /*if(recipe.getAction().getChannel().getKeyword().equals("gmail")){
+			HttpHeaders headers = new HttpHeaders();
+			headers.set("Authorization", auth.getTokenType() + " " + auth.getAccessToken());
+			HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
+
+			String url = "https://www.googleapis.com/gmail/v1/users/"
+					+ "me/messages?"
+					+ "q=";
+
+
+			List<TriggerIngredient> triggerIngredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
+			for(TriggerIngredient triggerIngredient: triggerIngredients){
+				ParametersTriggers param = triggerIngredient.getParam();
+
+				url += param.getKeyword() + ":" + triggerIngredient.getValue();
+			}
+			Long timestamp = Calendar.getInstance().getTimeInMillis() - (1000*60*5);
+
+			url += " after:" + timestamp/1000;
+
+			HttpEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+			JSONObject obj = new JSONObject(response.getBody());
+			try{
+				int result = obj.getInt("resultSizeEstimate");
+				if(result > 0){  		      		   
+					List<ActionIngredient> actionIngredients = actionIngredientService.getRecipeActionIngredients(recipe.getId());
+					switch(recipe.getAction().getChannel().getKeyword()){
+						case "gmail" :
+							JSONArray messages = obj.getJSONArray("messages");
+							for(int i=0; i< messages.length(); i++){
+								JSONObject message = messages.getJSONObject(i);
+								String messageId = message.getString("id");
+								String messageUrl = "https://www.googleapis.com/gmail/v1/users/me/messages/" + messageId;
+	
+								HttpEntity<String> messageResponse = restTemplate.exchange(messageUrl, HttpMethod.GET, entity, String.class);
+	
+								GmailUtil.sendEmail(actionIngredients, auth);
+								//System.out.println(messageResponse.getBody());
+							}
+							break;
+						case "calendar" :
+							break;
+						case "facebook" :
+							Authorization FBAuth = authService.getAuthorization(user.getId(), recipe.getAction().getChannel().getKeyword());
+							String message = "";
+							for(ActionIngredient actionIngredient: actionIngredients){
+								ParametersActions param = actionIngredient.getParam();
+	
+								if(param.getKeyword().equals("post"))
+									message = actionIngredient.getValue();
+							}
+							FacebookUtil.publish_new_post(message, FBAuth.getAccessToken());
+							break;
+						case "twitter" :
+							break;
+					}
+					/*if(recipe.getAction().getChannel().getKeyword().equals("gmail")){
 	    	    	   GmailUtil.sendEmail(actionIngredients, auth);
     			   }*/
-    		   }
-    	   }catch (Exception e){
-    		   e.printStackTrace();
-    	   }
-       }
-       
-    }
+				}
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+
+	}
 	
 	
 }
