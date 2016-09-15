@@ -54,6 +54,7 @@ public class ChannelServiceImpl implements ChannelService
 	}
 
 	//TODO forse serve considerare il caso in cui l'attuale token è invalido. Allo stato attuale non verrebbe sovrascritto dal nuovo
+	//TODO in seguito all'implementazione della revoca questo metodo va rivisto
 	@Override
 	public void authorizeChannel(Long userId, String channel, String access_token, String refresh_token, String token_type, Long expires_date)
 	{

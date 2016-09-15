@@ -24,7 +24,6 @@ import com.google.api.client.auth.oauth.OAuthHmacSigner;
 import com.google.api.client.http.javanet.NetHttpTransport;
 
 import if3t.apis.TwitterTemporaryToken;
-import if3t.apis.TwitterUtil;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Response;
 import if3t.models.User;
@@ -81,7 +80,7 @@ public class TwitterController
     	// Step 2: User grants access
     	OAuthAuthorizeTemporaryTokenUrl authorizeUrl = new OAuthAuthorizeTemporaryTokenUrl(AUTHORIZE_URL);
     	authorizeUrl.temporaryToken = tempTokenResponse.token;
-    	tempTokens.put(loggedUser.getUsername(), new TwitterTemporaryToken(tempTokenResponse.token, tempTokenResponse.tokenSecret));
+    	tempTokens.put(loggedUser.getUsername(), new TwitterTemporaryToken(tempTokenResponse.token, tempTokenResponse.tokenSecret));    	    	
     	
     	if (authorizationService.getAuthorization(loggedUser.getId(), "twitter") != null) {
     		return new Response("/twitter/revokeauth", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
@@ -129,11 +128,7 @@ public class TwitterController
     	
     	// Step 4: Save the access token into DB
     	// WARNING: refresh token doesn't exist in Twitter, so the saved string is the token secret, that is necessary for the signer
-    	channelService.authorizeChannel(loggedUser.getId(), "twitter", accTokenResponse.token, accTokenResponse.tokenSecret, "Access", null);
-    	
-    	//TwitterUtil.postTweet(loggedUser.getId(), accTokenResponse, "prova riuscita [" + System.currentTimeMillis() + "]", null);
-		//new TwitterUtil().printStatuses(loggedUser.getId(), accTokenResponse);
-    	
+    	channelService.authorizeChannel(loggedUser.getId(), "twitter", accTokenResponse.token, accTokenResponse.tokenSecret, "Access", null); 	
     	return "<script>window.close();</script>";
 	}
 	
@@ -147,8 +142,7 @@ public class TwitterController
 			throw new NotLoggedInException("ERROR: not logged in!");
 		}
 		
-		//TODO manca l'implementazione
-		
+		authorizationService.deleteAuthorization(userService.getUserByUsername(auth.getName()).getId(), "twitter");
 		return new Response("Twitter has been disconnected successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 }

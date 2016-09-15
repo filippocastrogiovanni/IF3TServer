@@ -6,4 +6,5 @@ public interface AuthorizationService
 {
 	public Authorization getAuthorization(Long userId, String channelKeyword);
 	public void deleteAuthorization(Long authId);
+	public void deleteAuthorization(Long userId, String channelKeyword);
 }

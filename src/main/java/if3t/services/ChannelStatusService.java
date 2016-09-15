@@ -5,4 +5,5 @@ import if3t.models.ChannelStatus;
 public interface ChannelStatusService 
 {
 	public ChannelStatus readChannelStatus(Long userId, String keyword);
+	public void updateChannelStatus(Long statusId, Long sinceRef);
 }

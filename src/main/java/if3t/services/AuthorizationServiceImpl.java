@@ -28,4 +28,9 @@ public class AuthorizationServiceImpl implements AuthorizationService
 	public void deleteAuthorization(Long authId) {
 		authRepository.deleteById(authId);
 	}
+
+	@Override
+	public void deleteAuthorization(Long userId, String channelKeyword) {
+		authRepository.deleteByUser_IdAndChannel_Keyword(userId, channelKeyword);
+	}
 }
