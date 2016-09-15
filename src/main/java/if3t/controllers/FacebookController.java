@@ -1,23 +1,16 @@
 package if3t.controllers;
 
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.naming.NoPermissionException;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.RequestEntity.BodyBuilder;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -29,23 +22,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.restfb.Connection;
-import com.restfb.DefaultFacebookClient;
-import com.restfb.FacebookClient;
-import com.restfb.FacebookClient.AccessToken;
-import com.restfb.types.Post;
-import com.restfb.types.User;
-
 import if3t.apis.FacebookAuthRequest;
 import if3t.apis.FacebookTokenRequest;
 import if3t.apis.FacebookTokenResponse;
-import if3t.apis.GoogleAuthRequest;
-import if3t.apis.GoogleTokenRequest;
-import if3t.apis.GoogleTokenResponse;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Authorization;
 import if3t.models.Channel;
 import if3t.models.Response;
+import if3t.models.User;
 import if3t.repositories.AuthorizationRepository;
 import if3t.services.AuthorizationService;
 import if3t.services.ChannelService;
@@ -78,16 +62,23 @@ public class FacebookController {
 		if (auth == null)
 			throw new NotLoggedInException("ERROR: not logged in!");
 
-		if3t.models.User loggedUser = userService.getUserByUsername(auth.getName());
+		User loggedUser = userService.getUserByUsername(auth.getName());
 		if (loggedUser == null)
 			throw new NotLoggedInException("ERROR: not logged in!");
 
 		if (!loggedUser.isEnabled())
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
-		FacebookAuthRequest req = new FacebookAuthRequest(loggedUser);
-		authRequests.put(req.getState(), loggedUser.getUsername());
-		return new Response(req.toString(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+		Authorization authorization = authService.getAuthorization(loggedUser.getId(), "facebook");
+		if(authorization == null){
+			FacebookAuthRequest req = new FacebookAuthRequest(loggedUser);
+			authRequests.put(req.getState(), loggedUser.getUsername());
+			return new Response(req.toString(), HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
+		}
+		else{
+			return new Response("/facebook/revoke", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+		}
+		
 	}
 	
 	@ResponseStatus(value = HttpStatus.OK)
@@ -113,7 +104,7 @@ public class FacebookController {
 
 		String username = authRequests.get(state);
 
-		if3t.models.User loggedUser = userService.getUserByUsername(username);
+		User loggedUser = userService.getUserByUsername(username);
 		if (loggedUser == null)
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
@@ -162,15 +153,15 @@ public class FacebookController {
 	}
 		
 	@ResponseStatus(value = HttpStatus.OK)
-	@RequestMapping(value = "/facebook/revokeauth", method = RequestMethod.GET)
+	@RequestMapping(value = "/facebook/revoke", method = RequestMethod.GET)
 	public Response facebookRevokeAuth() throws NotLoggedInException, NoPermissionException {
-		System.out.println("Server has received a token revocation request");
+		//System.out.println("Server has received a token revocation request");
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth == null)
 			throw new NotLoggedInException("ERROR: not logged in!");
 
-		if3t.models.User loggedUser = userService.getUserByUsername(auth.getName());
+		User loggedUser = userService.getUserByUsername(auth.getName());
 		if (loggedUser == null)
 			throw new NotLoggedInException("ERROR: not logged in!");
 
