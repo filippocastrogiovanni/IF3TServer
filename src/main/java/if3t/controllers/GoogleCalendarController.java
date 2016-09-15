@@ -89,7 +89,7 @@ public class GoogleCalendarController {
 		if (!loggedUser.isEnabled())
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
-		Authorization authorization = authService.getAuthorization(loggedUser.getId(), "gmail");
+		Authorization authorization = authService.getAuthorization(loggedUser.getId(), "gcalendar");
 		GoogleAuthRevoke rev = new GoogleAuthRevoke(authorization.getAccessToken());
 		
 		RestTemplate restTemplate = new RestTemplate();
