@@ -53,6 +53,11 @@ public class ChannelServiceImpl implements ChannelService
 		authRepository.deleteByUser_IdAndChannel_ChannelId(userId, channelId);
 	}
 
+<<<<<<< HEAD
+=======
+	//TODO forse serve considerare il caso in cui l'attuale token è invalido. Allo stato attuale non verrebbe sovrascritto dal nuovo
+	//TODO in seguito all'implementazione della revoca questo metodo va rivisto
+>>>>>>> branch 'master' of https://github.com/filippocastrogiovanni/IF3Tserver.git
 	@Override
 	public void authorizeChannel(Long userId, String channelKeyword, String accessToken, String refreshToken, String tokenType, Long expiresDate){
 		Channel channel = channelRepository.findByKeyword(channelKeyword);

@@ -1,15 +1,17 @@
 package if3t.apis;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.api.client.auth.oauth.OAuthCredentialsResponse;
+import org.springframework.stereotype.Component;
 
 import if3t.models.Authorization;
 import if3t.models.ChannelStatus;
 import if3t.services.AuthorizationService;
 import if3t.services.ChannelStatusService;
+import twitter4j.HashtagEntity;
 import twitter4j.Paging;
 import twitter4j.ResponseList;
 import twitter4j.Status;
@@ -19,6 +21,7 @@ import twitter4j.TwitterFactory;
 import twitter4j.auth.AccessToken;
 import twitter4j.conf.ConfigurationBuilder;
 
+@Component
 public class TwitterUtil 
 {	
 	@Autowired
@@ -26,14 +29,13 @@ public class TwitterUtil
 	@Autowired
 	private AuthorizationService authorizationService;
 	
-	//TODO probabilmente c'è da scontrarsi con il fatto che l'istanza twitter non è singleton così
-	//FIXME settare io debug a false
-	public Twitter getTwitterInstance(Long userId)
+	//FIXME settare il debug a false alla fine
+	private Twitter getTwitterInstance(Long userId)
 	{
 		ConfigurationBuilder conf = new ConfigurationBuilder();
 		conf.setDebugEnabled(true).setOAuthConsumerKey("rLWBxF1x5DwCgMhtFzGckQytZ").
 		setOAuthConsumerSecret("HYAWanoKCvBHTdw7hSjMj8LPvpbwJ2MPCADgTEuhubbgTXGDW2");
-			
+		
 		Authorization auth = authorizationService.getAuthorization(userId, "twitter");
 		return new TwitterFactory(conf.build()).getInstance(new AccessToken(auth.getAccessToken(), auth.getRefreshToken(), userId));
 	}
@@ -64,8 +66,6 @@ public class TwitterUtil
 		catch (TwitterException te) 
 		{
 			System.err.println("Failed to update the status of the user");
-			System.err.println("---------------------------------------------------------------");
-            te.printStackTrace();
 			return false;
 		}
 		catch (Throwable t)
@@ -75,62 +75,68 @@ public class TwitterUtil
 		}
 	}
 	
-//	public boolean isNewTweetPosted(Long userId)
-//	{
-//		Twitter twitter = getTwitterInstance(userId);
-//		ChannelStatus twitterStatus = channelStatusService.readChannelStatus(userId, "twitter");
-//		
-//		if (twitterStatus != null)
-//		{
-//			
-//		}
-//		
-//		try 
-//		{
-//            Paging page = new Paging(1, 200, sinceRef);
-//            ResponseList<Status> statuses = twitter.getHomeTimeline(page);
-//            
-//            while (statuses.size() > 0)
-//            {
-////                System.out.println(statuses.getRateLimitStatus().getLimit());
-//                System.out.println(statuses.getRateLimitStatus().getRemaining());
-////                System.out.println(statuses.getRateLimitStatus().getResetTimeInSeconds());
-//                System.out.println(statuses.getRateLimitStatus().getSecondsUntilReset());
-//                
-//                for (Status status : statuses) 
-//                {
-//                    System.out.println("page " + page.getPage() + " - Id " + status.getId() + " - @" + status.getUser().getScreenName() + " - " + status.getText());
-//                }
-//                
-//                //TODO potrebbe esplodere quello fuori dal while, ma se il controllo viene fatto ogni 15 minuti non dovrebbe accadere
-//                if (statuses.getRateLimitStatus().getRemaining() > 0)
-//                {
-//	                page.setPage(page.getPage() + 1);
-//	                statuses = twitter.getHomeTimeline(page);
-//                }
-//                else
-//                {
-//                	//TODO salvare sinceId e maxId
-//                	System.out.println("Limite raggiunto");
-//                	break;
-//                }  
-//            } 
-//            
-//            System.out.println("done.");
-//        } 
-//		catch (TwitterException te) 
-//		{
-//            System.err.println("Failed to list statuses: " + te.getMessage());
-//            System.err.println("---------------------------------------------------------------");
-//            te.printStackTrace();
-//        }
-//		catch (Throwable t)
-//		{
-//			t.printStackTrace();
-//		}
-//		finally
-//		{
-//			//TODO se sinceId e maxId sono != null occorre salvarli nel db
-//		}
-//	}
+	//TODO assicurarsi che venga richiamata ogni 15+ minuti per la storia
+	public List<Status> getNewUsefulTweets(Long userId, String hashtag)
+	{
+		Twitter twitter = getTwitterInstance(userId);
+		long lastProcessedTweetId = Long.MIN_VALUE;
+		List<Status> tweetList = new ArrayList<Status>();
+		ChannelStatus twitterStatus = channelStatusService.readChannelStatus(userId, "twitter");
+		
+		try 
+		{
+            Paging page = new Paging(1, 200, (twitterStatus != null) ? twitterStatus.getSinceRef() : 1);
+            ResponseList<Status> statuses = twitter.getHomeTimeline(page);
+            
+            if (statuses.size() == 0) {
+            	System.out.println("Twitter: there are no new tweets to process.");
+            }
+            
+            for (Status status : statuses) 
+            {
+            	if (hashtag != null && hashtag.length() > 0)
+            	{
+            		if (hashtag.startsWith("#")) {
+            			hashtag = hashtag.substring(1);
+            		}
+            		
+            		for (HashtagEntity hte : status.getHashtagEntities())
+                    {
+                    	if (hashtag.equalsIgnoreCase(hte.getText())) 
+                    	{
+                    		tweetList.add(status);
+                    		break;
+                    	}
+                    }
+            	}
+            	else
+            	{
+            		tweetList.add(status);
+            	}
+            	           	
+            	//FIXME togliere alla fine
+                System.out.println("Id " + status.getId() + " - @" + status.getUser().getScreenName() + " - " + status.getText());
+                
+                if (status.getId() > lastProcessedTweetId) {
+            		lastProcessedTweetId = status.getId();
+            	}
+            }
+         
+            if (lastProcessedTweetId > Long.MIN_VALUE) {
+            	channelStatusService.updateChannelStatus(twitterStatus.getId(), lastProcessedTweetId);
+            }
+
+            return tweetList;
+        } 
+		catch (TwitterException te) 
+		{
+            System.err.println("Failed to list statuses: " + te.getMessage());
+            return Collections.emptyList();
+        }
+		catch (Throwable t)
+		{
+			t.printStackTrace();
+			return Collections.emptyList();
+		}
+	}
 }
