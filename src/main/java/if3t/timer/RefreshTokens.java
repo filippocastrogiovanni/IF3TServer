@@ -87,7 +87,7 @@ public class RefreshTokens {
 	
 	@Scheduled(fixedRate = 5 * 60 * 1000)
 	public void facebookTokensRefresh() {
-		log.info("Faceook refresh: start check");
+		log.info("Facebook refresh: start check");
 
 		Long margin = 5L;// is the number of minutes (the same used in the
 		// annotations)

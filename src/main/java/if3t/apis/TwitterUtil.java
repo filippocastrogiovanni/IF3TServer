@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +30,7 @@ public class TwitterUtil
 	private ChannelStatusService channelStatusService;
 	@Autowired
 	private AuthorizationService authorizationService;
+	private final Logger logger = LoggerFactory.getLogger(TwitterUtil.class.getCanonicalName());
 	
 	//FIXME settare il debug a false alla fine
 	private Twitter getTwitterInstance(Long userId)
@@ -59,23 +62,18 @@ public class TwitterUtil
 		    
 		try 
 		{
-			Status status = twitter.updateStatus(tweet);
-			System.out.println("@" + status.getUser().getScreenName() + " - Successfully updated the status to [" + status.getText() + "].");
+			twitter.updateStatus(tweet);
+			logger.info("Successfully updated the status of the user @" + twitter.getScreenName());
 			return true;
 		} 
-		catch (TwitterException te) 
-		{
-			System.err.println("Failed to update the status of the user");
-			return false;
-		}
 		catch (Throwable t)
 		{
-			t.printStackTrace();
+			logger.error("Failed to update the status of the user", t);
 			return false;
 		}
 	}
 	
-	//TODO assicurarsi che venga richiamata ogni 15+ minuti per la storia
+	//TODO assicurarsi che venga rispettato il limit rate
 	public List<Status> getNewUsefulTweets(Long userId, String hashtag)
 	{
 		Twitter twitter = getTwitterInstance(userId);
@@ -89,7 +87,7 @@ public class TwitterUtil
             ResponseList<Status> statuses = twitter.getHomeTimeline(page);
             
             if (statuses.size() == 0) {
-            	System.out.println("Twitter: there are no new tweets to process.");
+            	logger.info("There are no new tweets to process of the user @" + twitter.getScreenName());
             }
             
             for (Status status : statuses) 
@@ -128,14 +126,9 @@ public class TwitterUtil
 
             return tweetList;
         } 
-		catch (TwitterException te) 
-		{
-            System.err.println("Failed to list statuses: " + te.getMessage());
-            return Collections.emptyList();
-        }
 		catch (Throwable t)
 		{
-			t.printStackTrace();
+			logger.error("Failed to inspect new tweets", t);
 			return Collections.emptyList();
 		}
 	}
