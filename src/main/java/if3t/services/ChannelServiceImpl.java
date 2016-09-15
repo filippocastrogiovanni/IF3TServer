@@ -53,25 +53,30 @@ public class ChannelServiceImpl implements ChannelService
 		authRepository.deleteByUser_IdAndChannel_ChannelId(userId, channelId);
 	}
 
-	//TODO forse serve considerare il caso in cui l'attuale token è invalido. Allo stato attuale non verrebbe sovrascritto dal nuovo
 	@Override
-	public void authorizeChannel(Long userId, String channel, String access_token, String refresh_token, String token_type, Long expires_date)
-	{
-		Channel chan = channelRepository.findByKeyword(channel);
-		
-		if (authRepository.findByUser_IdAndChannel_ChannelId(userId, chan.getChannelId()) == null)
-		{
+	public void authorizeChannel(Long userId, String channelKeyword, String accessToken, String refreshToken, String tokenType, Long expiresDate){
+		Channel channel = channelRepository.findByKeyword(channelKeyword);
+
+		Authorization targetAuth = authRepository.findByUser_IdAndChannel_ChannelId(userId, channel.getChannelId());
+		if (targetAuth == null){
 			Authorization auth = new Authorization();
-			auth.setChannel(chan);
+			auth.setChannel(channel);
 			auth.setUser(userRepository.findOne(userId));
-			auth.setAccessToken(access_token);
-			auth.setRefreshToken(refresh_token);
-			auth.setTokenType(token_type);
-			auth.setExpireDate(expires_date);
+			auth.setAccessToken(accessToken);
+			auth.setRefreshToken(refreshToken);
+			auth.setTokenType(tokenType);
+			auth.setExpireDate(expiresDate);
 			authRepository.save(auth);
 		}
+		else{
+			targetAuth.setAccessToken(accessToken);
+			targetAuth.setRefreshToken(refreshToken);
+			targetAuth.setTokenType(tokenType);
+			targetAuth.setExpireDate(expiresDate);
+			authRepository.save(targetAuth);
+		}
 	}
-	
+
 	@Override
 	public void refreshChannelAuthorization(Authorization auth) {
 		authRepository.save(auth);
