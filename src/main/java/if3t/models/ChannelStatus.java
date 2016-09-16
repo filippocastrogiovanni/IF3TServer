@@ -22,12 +22,12 @@ public class ChannelStatus
 	
 	@ManyToOne()
 	@JoinColumn(name = "id_user")
-	@JsonBackReference(value = "channels_statuses-user")
+	@JsonBackReference(value = "channelstatus-user")
 	private User user;
 	
 	@ManyToOne()
 	@JoinColumn(name = "id_channel")
-	@JsonBackReference(value = "channels_statuses-channel")
+	@JsonBackReference(value = "channelstatus-channel")
 	private Channel channel;
 	
 	@Column(name = "since_ref")
