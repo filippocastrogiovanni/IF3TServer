@@ -143,7 +143,18 @@ public class ScheduledTasks {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}*/
-		
+		Authorization auth = authService.getAuthorization(7l, "gcalendar");
+		try {
+			Calendar now = Calendar.getInstance();
+			if(auth != null && auth.getExpireDate()*1000 > now.getTimeInMillis()){
+				System.out.println("OK");
+				GoogleCalendarUtil.isEventAdded(auth);	
+			}
+			else
+				System.out.println("gcalendar auth scaduto");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		RestTemplate restTemplate = new RestTemplate();
 
 		List<Recipe> gmailTriggerRecipes = recipeService.getRecipeByTriggerChannel("gmail");
@@ -213,8 +224,22 @@ public class ScheduledTasks {
 								String messageUrl = "https://www.googleapis.com/gmail/v1/users/me/messages/" + messageId;
 	
 								HttpEntity<String> messageResponse = restTemplate.exchange(messageUrl, HttpMethod.GET, entity, String.class);
-	
-								GmailUtil.sendEmail(actionIngredients, actionAuth);
+								
+								String to = "";
+								String subject = "";
+								String body = "";
+								
+								for(ActionIngredient actionIngredient: actionIngredients){
+									ParametersActions param = actionIngredient.getParam();
+
+									if(param.getKeyword().equals("to"))
+										to = actionIngredient.getValue();
+									if(param.getKeyword().equals("subject"))
+										subject = actionIngredient.getValue();
+									if(param.getKeyword().equals("body"))
+										body = actionIngredient.getValue();
+								}
+								GmailUtil.sendEmail(to, subject, body, actionAuth);
 								//System.out.println(messageResponse.getBody());
 							}
 							break;

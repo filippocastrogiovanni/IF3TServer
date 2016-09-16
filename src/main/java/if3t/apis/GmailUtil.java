@@ -48,27 +48,12 @@ public class GmailUtil {
         return message;
 	}
 
-	public static String sendEmail(List<ActionIngredient> actionIngredients, Authorization auth) throws MessagingException, IOException, URISyntaxException{
+	public static String sendEmail( String to, String subject, String body, Authorization auth) throws MessagingException, IOException, URISyntaxException{
 		RestTemplate restTemplate = new RestTemplate();
 		
-		String to = "";
-		String subject = "";
-		String bodyText = "";
-		
-		for(ActionIngredient actionIngredient: actionIngredients){
-			ParametersActions param = actionIngredient.getParam();
+		Message email = GmailUtil.createEmail(to, "", subject, body);
 
-			if(param.getKeyword().equals("to"))
-				to = actionIngredient.getValue();
-			if(param.getKeyword().equals("subject"))
-				subject = actionIngredient.getValue();
-			if(param.getKeyword().equals("body"))
-				bodyText = actionIngredient.getValue();
-		}
-
-		Message email = GmailUtil.createEmail(to, "", subject, bodyText);
-
-		String body = "{\"raw\":\"" + email.getRaw() +"\"}";
+		String ReqBody = "{\"raw\":\"" + email.getRaw() +"\"}";
 		MediaType mediaType = new MediaType("application", "json");
 
 		RequestEntity<String> request = RequestEntity
@@ -76,7 +61,7 @@ public class GmailUtil {
 				.contentLength(email.getRaw().getBytes().length)
 				.contentType(mediaType)
 				.header("Authorization", auth.getTokenType() + " " + auth.getAccessToken())
-				.body(body);
+				.body(ReqBody);
 
 		ResponseEntity<String> messageResponse = restTemplate.exchange(request, String.class);
 		return messageResponse.getBody();

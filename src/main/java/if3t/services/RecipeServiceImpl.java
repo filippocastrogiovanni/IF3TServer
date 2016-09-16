@@ -202,7 +202,6 @@ public class RecipeServiceImpl implements RecipeService {
 		}
 	}
 
-	//TODO capire se serve a qualcosa
 	public List<Recipe> getRecipeByTriggerChannel(String channelKeyword) {
 		return recipeRepository.findByIsEnabledAndTrigger_Channel_Keyword(true, channelKeyword);
 	}

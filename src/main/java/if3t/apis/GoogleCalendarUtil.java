@@ -1,13 +1,20 @@
 package if3t.apis;
 
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.DateTime;
+import com.google.api.services.calendar.model.*;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
+
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Calendar;
+import java.util.List;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -53,13 +60,34 @@ public class GoogleCalendarUtil {
 		return messageResponse.getStatusCode().is2xxSuccessful()? true : false;
 	}
 	
-	public void isEventAdded(){
-		GoogleCredential credential = new GoogleCredential().setAccessToken("dasd");
+	public static void isEventAdded(Authorization auth) throws IOException{
+		/*GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
 		com.google.api.services.calendar.Calendar calendar = 
 				 new com.google.api.services.calendar.Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
 				 .setApplicationName("IF3T")
 				 .build();
+		Events events = calendar.events().list("primary").setMaxResults(10).execute();
+		List<Event> items = events.getItems();
+        if (items.size() == 0) {
+            System.out.println("No upcoming events found.");
+        } else {
+            System.out.println("Upcoming events");
+            for (Event event : items) {
+                DateTime start = event.getStart().getDateTime();
+                if (start == null) {
+                    start = event.getStart().getDate();
+                }
+                System.out.printf("%s (%s)\n", event.getSummary(), start);
+            }
+        }*/
 		
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization", auth.getTokenType() + " " + auth.getAccessToken());
+		HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
+
+		String url = "https://www.googleapis.com/gmail/v1/users/"
+				+ "me/messages?"
+				+ "q=";
 	}
 	
 	private static String createJsonBody(String start, String end, String title, String location, String description) throws JsonProcessingException {
