@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.Properties;
 
 import javax.mail.MessagingException;
@@ -21,10 +20,8 @@ import org.springframework.web.client.RestTemplate;
 import com.google.api.client.repackaged.org.apache.commons.codec.binary.Base64;
 import com.google.api.services.gmail.model.Message;
 
-import if3t.models.ActionIngredient;
+import if3t.exceptions.InvalidParametersException;
 import if3t.models.Authorization;
-import if3t.models.ParametersActions;
-
 
 public class GmailUtil {
 
@@ -48,11 +45,11 @@ public class GmailUtil {
         return message;
 	}
 
-	public static String sendEmail( String to, String subject, String body, Authorization auth) throws MessagingException, IOException, URISyntaxException{
+	public static String sendEmail( String to, String subject, String body, Authorization auth) throws MessagingException, IOException, URISyntaxException, InvalidParametersException{
 		RestTemplate restTemplate = new RestTemplate();
 		
 		if(to == null)
-			throw new MessagingException("Address cannot be null!");
+			throw new InvalidParametersException("Address cannot be null!");
 		
 		Message email = GmailUtil.createEmail(to, "", subject == null? "" : subject, body == null? "" : subject);
 
