@@ -29,6 +29,7 @@ public class TwitterUtil
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 	
 	//FIXME settare il debug a false alla fine
+	//TODO forse questa funzione va richiamata in dei try/catch (ad Andrea è uscita una nullpointerexception)
 	private Twitter getTwitterInstance(Long userId, Authorization auth)
 	{
 		ConfigurationBuilder conf = new ConfigurationBuilder();

@@ -12,7 +12,7 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity()
-@Table(name="channels_statutes")
+@Table(name="channels_statuses")
 public class ChannelStatus 
 {
 	@Id
@@ -22,16 +22,27 @@ public class ChannelStatus
 	
 	@ManyToOne()
 	@JoinColumn(name = "id_user")
-	@JsonBackReference(value = "channels_statuses-user")
+	@JsonBackReference(value = "channelstatus-user")
 	private User user;
 	
 	@ManyToOne()
 	@JoinColumn(name = "id_channel")
-	@JsonBackReference(value = "channels_statuses-channel")
+	@JsonBackReference(value = "channelstatus-channel")
 	private Channel channel;
 	
 	@Column(name = "since_ref")
 	private Long sinceRef;
+	
+	@Column(name = "page_token")
+	private String pageToken;
+
+	public String getPageToken() {
+		return pageToken;
+	}
+
+	public void setPageToken(String pageToken) {
+		this.pageToken = pageToken;
+	}
 
 	public Long getId() {
 		return id;
