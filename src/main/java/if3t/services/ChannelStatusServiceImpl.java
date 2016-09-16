@@ -28,4 +28,9 @@ public class ChannelStatusServiceImpl implements ChannelStatusService
 		status.setSinceRef(sinceRef);
 		channelsStatusesRepo.save(status);
 	}
+
+	@Override
+	public void updateChannelStatus(ChannelStatus channelStatus) {
+		channelsStatusesRepo.save(channelStatus);
+	}
 }

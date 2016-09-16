@@ -24,8 +24,11 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 
 import if3t.exceptions.InvalidParametersException;
 import if3t.models.Authorization;
+import if3t.models.ChannelStatus;
 import if3t.models.GCalendarDatePojo;
 import if3t.models.GCalendarEventPOJO;
+import if3t.models.User;
+import if3t.services.ChannelStatusService;
 
 public class GoogleCalendarUtil {
 	/** Global instance of the JSON factory. */
@@ -58,25 +61,51 @@ public class GoogleCalendarUtil {
 		return messageResponse.getStatusCode().is2xxSuccessful()? true : false;
 	}
 	
-	public static void isEventAdded(Authorization auth, Long timestamp) throws IOException{
+	public static List<Event> isEventAdded(Authorization auth, ChannelStatusService channelStatusService, User user) throws IOException{
 		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
 		com.google.api.services.calendar.Calendar calendar = 
 				 new com.google.api.services.calendar.Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
 				 .setApplicationName("IF3T")
 				 .build();
 		
-		DateTime dateMin = new DateTime(1473976800000l);
-		Events events = calendar
-						.events()
-						.list("primary")
-						.setPageToken("CigKGjBoNGZwbXBrbnQ4ZjMzZTI4am8ydTVzM2NzGAEggICA_uWKzrkVGg0IABIAGMCD14yUlM8C")
-						.setMaxResults(50)
-						.setSingleEvents(true)
-						.setTimeMin(dateMin)
-						.execute();
+		ChannelStatus channelStatus = channelStatusService.readChannelStatus(user.getId(), "gcalendar");
 		
-		System.out.println(events.getNextPageToken() + "");
-		List<Event> items = events.getItems();
+		Long timestamp = 0L;
+		if(channelStatus == null)
+			timestamp = Calendar.getInstance().getTimeInMillis() - (1000*60*5);
+		else
+			timestamp = channelStatus.getSinceRef();
+		
+		DateTime dateMin = new DateTime(timestamp/*1473976800000l*/);
+		Events events = null;
+		if(channelStatus.getPageToken() == null){
+			events = calendar.events()
+							.list("primary")
+							.setMaxResults(50)
+							.setSingleEvents(true)
+							.setTimeMin(dateMin)
+							.execute();
+		}
+		else{
+			events = calendar.events()
+							.list("primary")
+							.setMaxResults(50)
+							.setPageToken(channelStatus.getPageToken())
+							.setSingleEvents(true)
+							.setTimeMin(dateMin)
+							.execute();
+		}
+		
+		if(events.getNextPageToken() != null)
+			channelStatus.setPageToken(events.getNextPageToken());
+		
+		timestamp += 1000*60*5;
+		channelStatus.setSinceRef(timestamp);
+		
+		channelStatusService.updateChannelStatus(channelStatus);
+		
+		return events.getItems();
+		/*List<Event> items = events.getItems();
         if (items.size() == 0) {
             System.out.println("No upcoming events found.");
         } else {
@@ -88,7 +117,7 @@ public class GoogleCalendarUtil {
                 }
                 System.out.printf("%s (%s)\n", event.getSummary(), start);
             }
-        }
+        }*/
 		/*RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", auth.getTokenType() + " " + auth.getAccessToken());

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import if3t.apis.GoogleCalendarUtil;
 import if3t.models.Authorization;
 import if3t.models.Channel;
-import if3t.models.ChannelStatus;
 import if3t.models.ParametersTriggers;
 import if3t.models.Recipe;
 import if3t.models.TriggerIngredient;
@@ -40,14 +39,14 @@ public class GCalendarTask {
 	@Scheduled(fixedRate = 1000*60*5)
 	public void gCalendarScheduler(){
 		
-		Authorization auth = authService.getAuthorization(7l, "gcalendar");
+		/*Authorization auth = authService.getAuthorization(7l, "gcalendar");
 		if(auth == null)
 			return;
 		try {
 			GoogleCalendarUtil.isEventAdded(auth, 13131l);	
 		} catch (IOException e1) {
 			e1.printStackTrace();
-		}
+		}*/
 		
 		
 		List<Recipe> gCalendarTriggerRecipes = recipeService.getRecipeByTriggerChannel("gcalendar");
@@ -68,23 +67,18 @@ public class GCalendarTask {
 			//Checking if the access token of the action channel is not present
 			if(actionAuth == null)
 				continue;
-
-			Long timestamp = 0l;
-			
-			ChannelStatus channelStatus = channelStatusService.readChannelStatus(user.getId(), "gcalendar");
-			if(channelStatus == null)
-				timestamp = Calendar.getInstance().getTimeInMillis()- (1000*60*5);
-			else
-				timestamp = channelStatus.getSinceRef();
 			
 			List<TriggerIngredient> triggerIngredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
 			for(TriggerIngredient triggerIngredient: triggerIngredients){
 				ParametersTriggers param = triggerIngredient.getParam();
 				switch(param.getKeyword()){
 					case "add" :
-						String pageToken = null;
-						if(channelStatus != null)
-							//pageToken.get
+						try {
+							GoogleCalendarUtil.isEventAdded(triggerAuth, channelStatusService, user);
+						} catch (IOException e) {
+							e.printStackTrace();
+							continue;
+						}
 						break;
 					case "start" :
 						break;
