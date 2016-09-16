@@ -37,10 +37,9 @@ public class RefreshTokens {
 	public void gmailTokensRefresh() {
 		log.info("GMail refresh: start check");
 
-		Long margin = 5L;// is the number of minutes (the same used in the
-							// annotations)
+		Long margin = 15L;
 		Calendar now = Calendar.getInstance();
-		Long timestamp = (now.getTimeInMillis() - (margin * 60 * 1000)) / 1000;
+		Long timestamp = (now.getTimeInMillis() + (margin * 60 * 1000)) / 1000;
 		List<Authorization> tokens = channelService.readExpiringAuthorizations("gmail", timestamp);
 		if (tokens != null) {
 			if (!tokens.isEmpty()) {
