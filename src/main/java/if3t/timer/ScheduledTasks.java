@@ -30,6 +30,7 @@ import if3t.exceptions.InvalidParametersException;
 import if3t.models.ActionIngredient;
 import if3t.models.Authorization;
 import if3t.models.Channel;
+import if3t.models.ChannelStatus;
 import if3t.models.ParametersActions;
 import if3t.models.ParametersTriggers;
 import if3t.models.Recipe;
@@ -37,6 +38,7 @@ import if3t.models.TriggerIngredient;
 import if3t.models.User;
 import if3t.services.ActionIngredientService;
 import if3t.services.AuthorizationService;
+import if3t.services.ChannelStatusService;
 import if3t.services.RecipeService;
 import if3t.services.TriggerIngredientService;
 
@@ -56,6 +58,8 @@ public class ScheduledTasks {
 	private ActionIngredientService actionIngredientService;
 	@Autowired
 	private AuthorizationService authService;
+	@Autowired
+	private ChannelStatusService channelStatusService;
 	
 	//hashmaps with one row for each user who has this trigger
 	private ConcurrentHashMap<String, String> couples_access_token_full_names = new ConcurrentHashMap<String, String>();
@@ -131,7 +135,7 @@ public class ScheduledTasks {
 		c.setTimeZone(zone);
 		System.out.println(c.get(Calendar.ZONE_OFFSET));
 		try {
-			GoogleCalendarUtil.createEvent(c, c, "PRova", "ciao ciao", "Torino");
+			GoogleCalendarUtil.createEvent(c, c, "Prova", "ciao ciao", "Torino");
 		} catch (JsonProcessingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -139,6 +143,7 @@ public class ScheduledTasks {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}*/
+		
 		RestTemplate restTemplate = new RestTemplate();
 
 		List<Recipe> gmailTriggerRecipes = recipeService.getRecipeByTriggerChannel("gmail");
@@ -146,7 +151,14 @@ public class ScheduledTasks {
 			User user = recipe.getUser();
 			Channel triggerChannel = recipe.getTrigger().getChannel();
 			Authorization auth = authService.getAuthorization(user.getId(), triggerChannel.getKeyword());
-
+			
+			//Checking if the access token is expired
+			Calendar now = Calendar.getInstance();
+			if(auth.getExpireDate()*1000 <= now.getTimeInMillis()){
+				System.out.println("scaduto");
+				continue;
+			}	
+			
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Authorization", auth.getTokenType() + " " + auth.getAccessToken());
 			HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
@@ -162,12 +174,21 @@ public class ScheduledTasks {
 
 				url += param.getKeyword() + ":" + triggerIngredient.getValue();
 			}
-			Long timestamp = Calendar.getInstance().getTimeInMillis() - (1000*60*5);
+			
+			Long timestamp = 0l;
+			
+			ChannelStatus channelStatus = channelStatusService.readChannelStatus(user.getId(), "gmail");
+			if(channelStatus == null)
+				timestamp = Calendar.getInstance().getTimeInMillis()- (1000*60*5);
+			else
+				timestamp = channelStatus.getSinceRef();
 
 			url += " after:" + timestamp/1000;
 
 			HttpEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
+			channelStatusService.updateChannelStatus(user.getId(), timestamp + (1000*60*5));
+			
 			JSONObject obj = new JSONObject(response.getBody());
 			try{
 				int result = obj.getInt("resultSizeEstimate");
@@ -203,9 +224,6 @@ public class ScheduledTasks {
 						case "twitter" :
 							break;
 					}
-					/*if(recipe.getAction().getChannel().getKeyword().equals("gmail")){
-	    	    	   GmailUtil.sendEmail(actionIngredients, auth);
-    			   }*/
 				}
 			}catch (Exception e){
 				e.printStackTrace();

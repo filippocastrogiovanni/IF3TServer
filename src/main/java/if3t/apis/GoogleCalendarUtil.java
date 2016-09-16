@@ -40,6 +40,8 @@ public class GoogleCalendarUtil {
 		ResponseEntity<String> messageResponse = restTemplate.exchange(request, String.class);
 		return messageResponse.getStatusCode().is2xxSuccessful()? true : false;
 	}
+	
+	
 
 	private static String createJsonBody(String start, String end, String title, String location, String description) throws JsonProcessingException {
 		GCalendarDatePojo startPOJO = new GCalendarDatePojo();
