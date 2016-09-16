@@ -51,7 +51,10 @@ public class GmailUtil {
 	public static String sendEmail( String to, String subject, String body, Authorization auth) throws MessagingException, IOException, URISyntaxException{
 		RestTemplate restTemplate = new RestTemplate();
 		
-		Message email = GmailUtil.createEmail(to, "", subject, body);
+		if(to == null)
+			throw new MessagingException("Address cannot be null!");
+		
+		Message email = GmailUtil.createEmail(to, "", subject == null? "" : subject, body == null? "" : subject);
 
 		String ReqBody = "{\"raw\":\"" + email.getRaw() +"\"}";
 		MediaType mediaType = new MediaType("application", "json");

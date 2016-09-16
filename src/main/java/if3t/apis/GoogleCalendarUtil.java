@@ -85,9 +85,7 @@ public class GoogleCalendarUtil {
 		headers.set("Authorization", auth.getTokenType() + " " + auth.getAccessToken());
 		HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
 
-		String url = "https://www.googleapis.com/gmail/v1/users/"
-				+ "me/messages?"
-				+ "q=";
+		String url = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
 	}
 	
 	private static String createJsonBody(String start, String end, String title, String location, String description) throws JsonProcessingException {
