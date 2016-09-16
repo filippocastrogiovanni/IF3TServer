@@ -15,7 +15,8 @@ public class GoogleRefreshTokenRequest implements Serializable {
 	public GoogleRefreshTokenRequest(String ref_token) {
 		super();
 		this.refresh_token = ref_token;
-		this.token_uri = "https://www.googleapis.com/oauth2/v4/token";
+		//this.token_uri = "https://www.googleapis.com/oauth2/v4/token";
+		this.token_uri = "https://accounts.google.com/o/oauth2/token";
 		this.client_id = "205247608184-qn9jd5afpqai7n8n6hbhb2qgvad7mih8.apps.googleusercontent.com";
 		this.client_secret = "DPPiyrVcd-uqUMw7ponxFKv1";
 		this.grant_type = "refresh_token";
