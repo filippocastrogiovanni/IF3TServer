@@ -1,5 +1,11 @@
 package if3t.apis;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Calendar;
+import java.util.List;
+
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.model.*;
@@ -7,15 +13,11 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Calendar;
-import java.util.List;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,16 +32,19 @@ import if3t.models.GCalendarEventPOJO;
 import if3t.models.User;
 import if3t.services.ChannelStatusService;
 
+@Component
 public class GoogleCalendarUtil {
-	/** Global instance of the JSON factory. */
+
     private static final JsonFactory JSON_FACTORY =
         JacksonFactory.getDefaultInstance();
 
-    /** Global instance of the HTTP transport. */
     private static HttpTransport HTTP_TRANSPORT = 
     	new NetHttpTransport();
     
-	public static boolean createEvent(Calendar startDate, Calendar endDate, String title, String description, String location, Authorization auth) throws InvalidParametersException, JsonProcessingException, URISyntaxException{
+    @Autowired
+    private ChannelStatusService channelStatusService;
+    
+	public boolean createEvent(Calendar startDate, Calendar endDate, String title, String description, String location, Authorization auth) throws InvalidParametersException, JsonProcessingException, URISyntaxException{
 		if(startDate == null || endDate == null)
 			throw new InvalidParametersException("startDate and endDate are required fields and can not be null!");
 		
@@ -61,7 +66,7 @@ public class GoogleCalendarUtil {
 		return messageResponse.getStatusCode().is2xxSuccessful()? true : false;
 	}
 	
-	public static List<Event> isEventAdded(Authorization auth, ChannelStatusService channelStatusService, User user) throws IOException{
+	public List<Event> isEventAdded(Authorization auth, User user) throws IOException{
 		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
 		com.google.api.services.calendar.Calendar calendar = 
 				 new com.google.api.services.calendar.Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)

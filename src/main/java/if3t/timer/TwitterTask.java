@@ -32,6 +32,8 @@ public class TwitterTask
 	@Autowired
 	private TwitterUtil twitterUtil;
 	@Autowired
+	private GmailUtil gmailUtil;
+	@Autowired
     private RecipeService recipeService;
 	@Autowired
 	private TriggerIngredientService triggerIngrService;
@@ -40,6 +42,7 @@ public class TwitterTask
 	@Autowired
 	private AuthorizationService authService;
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
+	
 	
 	//TODO diversificare i fixedRate dei vari task per non creare dei picchi di lavoro estremi intervallati dal nulla
 	@Scheduled(fixedRate = 1000*60*5)
@@ -117,7 +120,7 @@ public class TwitterTask
 						
 						try
 						{
-							GmailUtil.sendEmail(to, subject, body, authAction);
+							gmailUtil.sendEmail(to, subject, body, authAction);
 						}
 						catch (InvalidParametersException ipe)
 						{

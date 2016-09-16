@@ -51,6 +51,8 @@ import com.google.api.services.gmail.model.Message;
 public class ScheduledTasks {
 
 	@Autowired
+	private GmailUtil gmailUtil;
+	@Autowired
     private RecipeService recipeService;
 	@Autowired
 	private TriggerIngredientService triggerIngredientService;
@@ -146,7 +148,7 @@ public class ScheduledTasks {
 									if(param.getKeyword().equals("body"))
 										body = actionIngredient.getValue();
 								}
-								GmailUtil.sendEmail(to, subject, body, actionAuth);
+								gmailUtil.sendEmail(to, subject, body, actionAuth);
 								//System.out.println(messageResponse.getBody());
 							}
 							break;

@@ -25,6 +25,8 @@ import if3t.services.TriggerIngredientService;
 public class GCalendarTask {
 
 	@Autowired
+	private GoogleCalendarUtil gCalendarUtil;
+	@Autowired
     private RecipeService recipeService;
 	@Autowired
 	private TriggerIngredientService triggerIngredientService;
@@ -34,7 +36,6 @@ public class GCalendarTask {
 	private AuthorizationService authService;
 	@Autowired
 	private ChannelStatusService channelStatusService;
-	
 	
 	@Scheduled(fixedRate = 1000*60*5)
 	public void gCalendarScheduler(){
@@ -74,7 +75,8 @@ public class GCalendarTask {
 				switch(param.getKeyword()){
 					case "add" :
 						try {
-							GoogleCalendarUtil.isEventAdded(triggerAuth, channelStatusService, user);
+							
+							gCalendarUtil.isEventAdded(triggerAuth, user);
 						} catch (IOException e) {
 							e.printStackTrace();
 							continue;
