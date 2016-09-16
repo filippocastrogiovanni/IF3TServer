@@ -12,7 +12,7 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity()
-@Table(name="channels_statutes")
+@Table(name="channels_statuses")
 public class ChannelStatus 
 {
 	@Id

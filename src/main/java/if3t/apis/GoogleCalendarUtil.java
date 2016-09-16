@@ -13,8 +13,6 @@ import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.List;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -60,13 +58,24 @@ public class GoogleCalendarUtil {
 		return messageResponse.getStatusCode().is2xxSuccessful()? true : false;
 	}
 	
-	public static void isEventAdded(Authorization auth) throws IOException{
-		/*GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
+	public static void isEventAdded(Authorization auth, Long timestamp) throws IOException{
+		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
 		com.google.api.services.calendar.Calendar calendar = 
 				 new com.google.api.services.calendar.Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
 				 .setApplicationName("IF3T")
 				 .build();
-		Events events = calendar.events().list("primary").setMaxResults(10).execute();
+		
+		DateTime dateMin = new DateTime(1473976800000l);
+		Events events = calendar
+						.events()
+						.list("primary")
+						.setPageToken("CigKGjBoNGZwbXBrbnQ4ZjMzZTI4am8ydTVzM2NzGAEggICA_uWKzrkVGg0IABIAGMCD14yUlM8C")
+						.setMaxResults(50)
+						.setSingleEvents(true)
+						.setTimeMin(dateMin)
+						.execute();
+		
+		System.out.println(events.getNextPageToken() + "");
 		List<Event> items = events.getItems();
         if (items.size() == 0) {
             System.out.println("No upcoming events found.");
@@ -79,13 +88,15 @@ public class GoogleCalendarUtil {
                 }
                 System.out.printf("%s (%s)\n", event.getSummary(), start);
             }
-        }*/
-		
+        }
+		/*RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", auth.getTokenType() + " " + auth.getAccessToken());
 		HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
 
-		String url = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
+		String url = "https://www.googleapis.com/calendar/v3/calendars/primary/events?q=after:1325376000&maxResults=10&orderBy=startTime&singleEvents=true";
+		HttpEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+		System.out.println(response.getBody());*/
 	}
 	
 	private static String createJsonBody(String start, String end, String title, String location, String description) throws JsonProcessingException {

@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
 import com.restfb.FacebookClient.AccessToken;
+import com.restfb.Version;
 
 import if3t.apis.GoogleRefreshTokenRequest;
 import if3t.apis.GoogleRefreshTokenResponse;
@@ -34,8 +35,8 @@ public class RefreshTokens {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	@Scheduled(fixedRate = 5 * 60 * 1000)
-	public void gmailTokensRefresh() {
-		log.info("GMail refresh: start check");
+	public void gmailTokenRefresh() {
+		log.info("Gmail refresh: start check");
 
 		Long margin = 5L;// is the number of minutes (the same used in the
 							// annotations)
@@ -44,7 +45,7 @@ public class RefreshTokens {
 		List<Authorization> tokens = channelService.readExpiringAuthorizations("gmail", timestamp);
 		if (tokens != null) {
 			if (!tokens.isEmpty()) {
-				log.info("GMail refresh: {} tokens must be refreshed", tokens.size());
+				log.info("Gmail refresh: {} tokens must be refreshed", tokens.size());
 
 				RestTemplate restTemplate = new RestTemplate();
 				MediaType mediaType = new MediaType("application", "x-www-form-urlencoded", Charset.forName("UTF-8"));
@@ -63,30 +64,82 @@ public class RefreshTokens {
 						googleRS = new GoogleRefreshTokenResponse(response.getBody());
 						
 						if(!googleRS.isValid())
-							log.error("GMail refresh: POST response error in authorization id {}", auth.getId());
+							log.error("Gmail refresh: POST response error in authorization id {}", auth.getId());
 						else {
 							auth.setAccessToken(googleRS.getAccess_token());
 							auth.setExpireDate(googleRS.getExpiration_date());
 							auth.setTokenType(googleRS.getToken_type());
 							channelService.refreshChannelAuthorization(auth);
-							log.info("GMail refresh: authorization id {} succesfully refreshed", auth.getId());
+							log.info("Gmail refresh: authorization id {} succesfully refreshed", auth.getId());
 						}						
 
 					} catch (URISyntaxException e) {
-						log.error("GMail refresh: POST request error in authorization id {}", auth.getId());
+						log.error("Gmail refresh: POST request error in authorization id {}", auth.getId());
 						e.printStackTrace();
 					}
 				}
 			} else {
-				log.info("GMail refresh: no tokens to refresh");
+				log.info("Gmail refresh: no tokens to refresh");
 			}
 		} else {
-			log.info("GMail refresh: no tokens to refresh");
+			log.info("Gmail refresh: no tokens to refresh");
 		}
 	}
 	
 	@Scheduled(fixedRate = 5 * 60 * 1000)
-	public void facebookTokensRefresh() {
+	public void gCalendarTokenRefresh() {
+		log.info("Google Calendar refresh: start check");
+
+		Long margin = 5L;// is the number of minutes (the same used in the
+							// annotations)
+		Calendar now = Calendar.getInstance();
+		Long timestamp = (now.getTimeInMillis() - (margin * 60 * 1000)) / 1000;
+		List<Authorization> tokens = channelService.readExpiringAuthorizations("gcalendar", timestamp);
+		if (tokens != null) {
+			if (!tokens.isEmpty()) {
+				log.info("Google Calendar refresh: {} tokens must be refreshed", tokens.size());
+
+				RestTemplate restTemplate = new RestTemplate();
+				MediaType mediaType = new MediaType("application", "x-www-form-urlencoded", Charset.forName("UTF-8"));
+				GoogleRefreshTokenRequest googleRQ = null;
+				GoogleRefreshTokenResponse googleRS = null;
+				RequestEntity<String> request = null;
+				ResponseEntity<String> response = null;
+
+				for (Authorization auth : tokens) {
+					try {
+						googleRQ = new GoogleRefreshTokenRequest(auth.getRefreshToken());
+						request = RequestEntity.post(new URI(googleRQ.getToken_uri()))
+								.contentLength(googleRQ.getRequestBody().getBytes().length).contentType(mediaType)
+								.body(googleRQ.getRequestBody());
+						response = restTemplate.exchange(request, String.class);
+						googleRS = new GoogleRefreshTokenResponse(response.getBody());
+						
+						if(!googleRS.isValid())
+							log.error("Google Calendar refresh: POST response error in authorization id {}", auth.getId());
+						else {
+							auth.setAccessToken(googleRS.getAccess_token());
+							auth.setExpireDate(googleRS.getExpiration_date());
+							auth.setTokenType(googleRS.getToken_type());
+							channelService.refreshChannelAuthorization(auth);
+							log.info("Google Calendar refresh: authorization id {} succesfully refreshed", auth.getId());
+						}						
+
+					} catch (URISyntaxException e) {
+						log.error("Google Calendar refresh: POST request error in authorization id {}", auth.getId());
+						e.printStackTrace();
+					}
+				}
+			} else {
+				log.info("Google Calendar refresh: no tokens to refresh");
+			}
+		} else {
+			log.info("Google Calendar refresh: no tokens to refresh");
+		}
+	}
+	
+	@Scheduled(fixedRate = 5 * 60 * 1000)
+	public void facebookTokenRefresh() {
 		log.info("Facebook refresh: start check");
 
 		Long margin = 5L;// is the number of minutes (the same used in the
@@ -99,7 +152,7 @@ public class RefreshTokens {
 				log.info("Facebook refresh: {} tokens must be refreshed", tokens.size());
 				for (Authorization auth : tokens) {
 					String old_token = auth.getAccessToken();
-					FacebookClient fbClient = new DefaultFacebookClient(old_token);
+					FacebookClient fbClient = new DefaultFacebookClient(old_token, Version.LATEST);
 					AccessToken exAccessToken = fbClient.obtainExtendedAccessToken("1664045957250331", "4489952bdf1294fe0fd156288a2602f4"); //appId, appSecret
 					if(exAccessToken!=null){
 						System.out.println("The token access " + exAccessToken.getAccessToken() + " expires on" + exAccessToken.getExpires());
