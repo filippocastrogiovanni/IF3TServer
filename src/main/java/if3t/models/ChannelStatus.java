@@ -32,6 +32,17 @@ public class ChannelStatus
 	
 	@Column(name = "since_ref")
 	private Long sinceRef;
+	
+	@Column(name = "page_token")
+	private String pageToken;
+
+	public String getPageToken() {
+		return pageToken;
+	}
+
+	public void setPageToken(String pageToken) {
+		this.pageToken = pageToken;
+	}
 
 	public Long getId() {
 		return id;

@@ -41,6 +41,8 @@ public class GCalendarTask {
 	public void gCalendarScheduler(){
 		
 		Authorization auth = authService.getAuthorization(7l, "gcalendar");
+		if(auth == null)
+			return;
 		try {
 			GoogleCalendarUtil.isEventAdded(auth, 13131l);	
 		} catch (IOException e1) {
@@ -80,7 +82,9 @@ public class GCalendarTask {
 				ParametersTriggers param = triggerIngredient.getParam();
 				switch(param.getKeyword()){
 					case "add" :
-						
+						String pageToken = null;
+						if(channelStatus != null)
+							//pageToken.get
 						break;
 					case "start" :
 						break;
