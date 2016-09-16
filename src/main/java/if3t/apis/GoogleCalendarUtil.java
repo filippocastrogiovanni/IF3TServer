@@ -1,5 +1,9 @@
 package if3t.apis;
 
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Calendar;
@@ -11,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 
 import if3t.exceptions.InvalidParametersException;
 import if3t.models.Authorization;
@@ -18,7 +23,14 @@ import if3t.models.GCalendarDatePojo;
 import if3t.models.GCalendarEventPOJO;
 
 public class GoogleCalendarUtil {
+	/** Global instance of the JSON factory. */
+    private static final JsonFactory JSON_FACTORY =
+        JacksonFactory.getDefaultInstance();
 
+    /** Global instance of the HTTP transport. */
+    private static HttpTransport HTTP_TRANSPORT = 
+    	new NetHttpTransport();
+    
 	public static boolean createEvent(Calendar startDate, Calendar endDate, String title, String description, String location, Authorization auth) throws InvalidParametersException, JsonProcessingException, URISyntaxException{
 		if(startDate == null || endDate == null)
 			throw new InvalidParametersException("startDate and endDate are required fields and can not be null!");
@@ -41,8 +53,15 @@ public class GoogleCalendarUtil {
 		return messageResponse.getStatusCode().is2xxSuccessful()? true : false;
 	}
 	
+	public void isEventAdded(){
+		GoogleCredential credential = new GoogleCredential().setAccessToken("dasd");
+		com.google.api.services.calendar.Calendar calendar = 
+				 new com.google.api.services.calendar.Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
+				 .setApplicationName("IF3T")
+				 .build();
+		
+	}
 	
-
 	private static String createJsonBody(String start, String end, String title, String location, String description) throws JsonProcessingException {
 		GCalendarDatePojo startPOJO = new GCalendarDatePojo();
 		startPOJO.setDateTime(start);

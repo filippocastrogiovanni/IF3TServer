@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import if3t.apis.GoogleAuthRequest;
-import if3t.apis.GoogleAuthRevoke;
 import if3t.apis.GoogleTokenRequest;
 import if3t.apis.GoogleTokenResponse;
 import if3t.exceptions.NotLoggedInException;
@@ -87,11 +86,6 @@ public class GmailController {
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
 		Authorization authorization = authService.getAuthorization(loggedUser.getId(), "gmail");
-		GoogleAuthRevoke rev = new GoogleAuthRevoke(authorization.getAccessToken());
-		
-		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.getForObject(rev.getRevokeUrl(), String.class);
-		
 		authService.deleteAuthorization(authorization.getId());
 		return new Response("OK", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}

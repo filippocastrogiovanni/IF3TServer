@@ -106,5 +106,10 @@
 	    <artifactId>oauth</artifactId>
 	    <version>20100527</version>
 	</dependency-->
+  	<dependency>
+  		<groupId>com.google.apis</groupId>
+  		<artifactId>google-api-services-calendar</artifactId>
+  		<version>v3-rev210-1.22.0</version>
+  	</dependency>
   </dependencies>
 </project>

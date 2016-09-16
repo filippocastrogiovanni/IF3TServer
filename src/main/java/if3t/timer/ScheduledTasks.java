@@ -150,28 +150,32 @@ public class ScheduledTasks {
 		for(Recipe recipe: gmailTriggerRecipes){
 			User user = recipe.getUser();
 			Channel triggerChannel = recipe.getTrigger().getChannel();
-			Authorization auth = authService.getAuthorization(user.getId(), triggerChannel.getKeyword());
+			Channel actionChannel = recipe.getAction().getChannel();
+			Authorization triggerAuth = authService.getAuthorization(user.getId(), triggerChannel.getKeyword());
+			Authorization actionAuth = authService.getAuthorization(user.getId(), actionChannel.getKeyword());
 			
-			//Checking if the access token is expired
+			//Checking if the access token of the trigger channel is expired
 			Calendar now = Calendar.getInstance();
-			if(auth.getExpireDate()*1000 <= now.getTimeInMillis()){
+			if(triggerAuth == null || triggerAuth.getExpireDate()*1000 <= now.getTimeInMillis()){
 				System.out.println("scaduto");
 				continue;
-			}	
+			}
+			
+			//Checking if the access token of the action channel is not present
+			if(actionAuth == null)
+				continue;
 			
 			HttpHeaders headers = new HttpHeaders();
-			headers.set("Authorization", auth.getTokenType() + " " + auth.getAccessToken());
+			headers.set("Authorization", triggerAuth.getTokenType() + " " + triggerAuth.getAccessToken());
 			HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
 
 			String url = "https://www.googleapis.com/gmail/v1/users/"
 					+ "me/messages?"
 					+ "q=";
 
-
 			List<TriggerIngredient> triggerIngredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
 			for(TriggerIngredient triggerIngredient: triggerIngredients){
 				ParametersTriggers param = triggerIngredient.getParam();
-
 				url += param.getKeyword() + ":" + triggerIngredient.getValue();
 			}
 			
@@ -194,6 +198,12 @@ public class ScheduledTasks {
 				int result = obj.getInt("resultSizeEstimate");
 				if(result > 0){  		      		   
 					List<ActionIngredient> actionIngredients = actionIngredientService.getRecipeActionIngredients(recipe.getId());
+					
+					//Checking if the access token of the action channel is expired
+					now = Calendar.getInstance();
+					if(actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())
+						continue;
+					
 					switch(recipe.getAction().getChannel().getKeyword()){
 						case "gmail" :
 							JSONArray messages = obj.getJSONArray("messages");
@@ -204,14 +214,13 @@ public class ScheduledTasks {
 	
 								HttpEntity<String> messageResponse = restTemplate.exchange(messageUrl, HttpMethod.GET, entity, String.class);
 	
-								GmailUtil.sendEmail(actionIngredients, auth);
+								GmailUtil.sendEmail(actionIngredients, actionAuth);
 								//System.out.println(messageResponse.getBody());
 							}
 							break;
 						case "calendar" :
 							break;
 						case "facebook" :
-							Authorization FBAuth = authService.getAuthorization(user.getId(), recipe.getAction().getChannel().getKeyword());
 							String message = "";
 							for(ActionIngredient actionIngredient: actionIngredients){
 								ParametersActions param = actionIngredient.getParam();
@@ -219,7 +228,7 @@ public class ScheduledTasks {
 								if(param.getKeyword().equals("post"))
 									message = actionIngredient.getValue();
 							}
-							FacebookUtil.publish_new_post(message, FBAuth.getAccessToken());
+							FacebookUtil.publish_new_post(message, actionAuth.getAccessToken());
 							break;
 						case "twitter" :
 							break;
