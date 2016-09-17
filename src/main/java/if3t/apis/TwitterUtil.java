@@ -87,7 +87,7 @@ public class TwitterUtil
             ResponseList<Status> statuses = twitter.getHomeTimeline(page);
             
             if (statuses.size() == 0) {
-            	logger.info("There are no new tweets to inspect of the user @" + screenName);
+            	logger.info("There are no new tweets of the user @" + screenName + " to inspect");
             }
             
             for (Status status : statuses) 
@@ -113,7 +113,7 @@ public class TwitterUtil
             	}
             	           	
             	//FIXME togliere alla fine
-                System.out.println("Id " + status.getId() + " - @" + screenName + " - " + status.getText());
+                //System.out.println("Id " + status.getId() + " - @" + screenName + " - " + status.getText());
                 
                 if (status.getId() > lastProcessedTweetId) {
             		lastProcessedTweetId = status.getId();

@@ -11,12 +11,10 @@ import org.springframework.stereotype.Component;
 
 import if3t.apis.GmailUtil;
 import if3t.apis.TwitterUtil;
-import if3t.exceptions.InvalidParametersException;
 import if3t.models.ActionIngredient;
 import if3t.models.Authorization;
 import if3t.models.Channel;
 import if3t.models.ParametersActions;
-import if3t.models.ParametersTriggers;
 import if3t.models.Recipe;
 import if3t.models.TriggerIngredient;
 import if3t.models.User;
@@ -96,6 +94,12 @@ public class TwitterTask
 						}
 					}
 					
+					List<Status> newUsefulTweets = twitterUtil.getNewUsefulTweets(user.getId(), authTrigger, hashtag);
+					
+					if (newUsefulTweets.isEmpty()) {
+						break;
+					}
+					
 					for (ActionIngredient ai : actIngredients)
 					{
 						ParametersActions param = ai.getParam();
@@ -103,28 +107,26 @@ public class TwitterTask
 						if (param.getKeyword().equals("to")) {
 							to = ai.getValue();
 						}
-						
-						if (param.getKeyword().equals("subject")) {
+						else if (param.getKeyword().equals("subject")) {
 							subject = ai.getValue();
 						}
-						
-						if (param.getKeyword().equals("body")) {
+						else if (param.getKeyword().equals("body")) {
 							body = ai.getValue();
 						}
 					}
 					
-					for (Status tweet : twitterUtil.getNewUsefulTweets(user.getId(), authTrigger, hashtag))
+					for (Status tweet : newUsefulTweets)
 					{
 						//FIXME rimuovere alla fine
 						//System.out.println(tweet.getText());
+						StringBuffer sb = new StringBuffer(body);
+						sb.append("\n---- Content of the tweet ----\n");
+						sb.append(tweet.getText());
 						
 						try
 						{
-							gmailUtil.sendEmail(to, subject, body, authAction);
-						}
-						catch (InvalidParametersException ipe)
-						{
-							logger.error("Email address not found", ipe);
+							gmailUtil.sendEmail(to, subject, sb.toString(), authAction);
+							logger.info("Email sent from Gmail account of " + user.getUsername() + " to " + to);
 						}
 						catch (Throwable t)
 						{
