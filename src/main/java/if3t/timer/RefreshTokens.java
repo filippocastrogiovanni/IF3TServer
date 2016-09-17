@@ -90,10 +90,10 @@ public class RefreshTokens {
 	public void gCalendarTokenRefresh() {
 		log.info("Google Calendar refresh: start check");
 
-		Long margin = 5L;// is the number of minutes (the same used in the
+		Long margin = 15L;// is the number of minutes (the same used in the
 							// annotations)
 		Calendar now = Calendar.getInstance();
-		Long timestamp = (now.getTimeInMillis() - (margin * 60 * 1000)) / 1000;
+		Long timestamp = (now.getTimeInMillis() + (margin * 60 * 1000)) / 1000;
 		List<Authorization> tokens = channelService.readExpiringAuthorizations("gcalendar", timestamp);
 		if (tokens != null) {
 			if (!tokens.isEmpty()) {

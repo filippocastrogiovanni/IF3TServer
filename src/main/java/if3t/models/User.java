@@ -1,5 +1,6 @@
 package if3t.models;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.persistence.*;
@@ -9,8 +10,10 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name="users")
-public class User {
+public class User implements Serializable{
  
+	private static final long serialVersionUID = -7380510323624598148L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_user", nullable = false)

@@ -10,6 +10,7 @@ import java.util.List;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.model.*;
+import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -30,6 +31,7 @@ import if3t.models.Authorization;
 import if3t.models.ChannelStatus;
 import if3t.models.GCalendarDatePojo;
 import if3t.models.GCalendarEventPOJO;
+import if3t.models.Recipe;
 import if3t.models.User;
 import if3t.services.ChannelStatusService;
 
@@ -45,11 +47,38 @@ public class GoogleCalendarUtil {
     @Autowired
     private ChannelStatusService channelStatusService;
     
-	public boolean createEvent(Calendar startDate, Calendar endDate, String title, String description, String location, Authorization auth) throws InvalidParametersException, JsonProcessingException, URISyntaxException{
+	public boolean createEvent(Calendar startDate, Calendar endDate, String title, String description, String location, Authorization auth) throws InvalidParametersException, URISyntaxException, IOException{
 		if(startDate == null || endDate == null)
 			throw new InvalidParametersException("startDate and endDate are required fields and can not be null!");
 		
-		String start = createUsableDateTime(startDate);
+		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
+		com.google.api.services.calendar.Calendar calendar = 
+				 new com.google.api.services.calendar.Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
+				 .setApplicationName("IF3T")
+				 .build();
+		
+		EventDateTime start = new EventDateTime();
+		EventDateTime end = new EventDateTime();
+		start.setDateTime(new DateTime(startDate.getTimeInMillis()));
+		end.setDateTime(new DateTime(endDate.getTimeInMillis()));
+		
+		Event event = new Event();
+		event.setStart(start);
+		event.setEnd(end);
+		if(title != null && !title.equals(""))
+			event.setSummary(title);
+		if(location != null && !location.equals(""))
+			event.setLocation(location);
+		if(description != null && !description.equals(""))
+			event.setDescription(description);
+		
+		HttpResponse response = calendar.events()
+										.insert("primary", event)
+										.executeUnparsed();
+		
+		return (response.getStatusCode() < 300 && response.getStatusCode()>= 200)? true : false;
+		
+		/*String start = createUsableDateTime(startDate);
 		String end = createUsableDateTime(endDate);
 		String body = createJsonBody(start, end, title, location, description);
 		
@@ -64,17 +93,17 @@ public class GoogleCalendarUtil {
 				.body(body);
 
 		ResponseEntity<String> messageResponse = restTemplate.exchange(request, String.class);
-		return messageResponse.getStatusCode().is2xxSuccessful()? true : false;
+		return messageResponse.getStatusCode().is2xxSuccessful()? true : false;*/
 	}
 	
-	public List<Event> isEventAdded(Authorization auth, User user, String ingredientValue) throws IOException{
+	public List<Event> checkEventsAdded(Authorization auth, Recipe recipe, String ingredientValue) throws IOException{
 		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
 		com.google.api.services.calendar.Calendar calendar = 
 				 new com.google.api.services.calendar.Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
 				 .setApplicationName("IF3T")
 				 .build();
 		
-		ChannelStatus channelStatus = channelStatusService.readChannelStatus(user.getId(), "gcalendar");
+		ChannelStatus channelStatus = channelStatusService.readChannelStatusByRecipeId(recipe.getId());
 		
 		Long timestamp = 0L;
 		if(channelStatus == null)
@@ -125,15 +154,69 @@ public class GoogleCalendarUtil {
         }
         
         return targetEvents;
-        
-		/*RestTemplate restTemplate = new RestTemplate();
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("Authorization", auth.getTokenType() + " " + auth.getAccessToken());
-		HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
+	}
+	
+	public List<Event> checkEventsStarted(Authorization auth, Recipe recipe, String ingredientValue) throws IOException{
+		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
+		com.google.api.services.calendar.Calendar calendar = 
+				 new com.google.api.services.calendar.Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
+				 .setApplicationName("IF3T")
+				 .build();
+		
+		ChannelStatus channelStatus = channelStatusService.readChannelStatusByRecipeId(recipe.getId());
+		
+		Long timestamp = 0L;
+		if(channelStatus == null)
+			timestamp = Calendar.getInstance().getTimeInMillis() - (1000*60*5);
+		else
+			timestamp = channelStatus.getSinceRef();
+		
+		DateTime dateMin = new DateTime(timestamp/*1473976800000l*/);
+		Events events = null;
+		if(channelStatus.getPageToken() == null){
+			events = calendar.events()
+							.list("primary")
+							.setMaxResults(50)
+							.setOrderBy("startTime")
+							.setSingleEvents(true)
+							.setTimeMin(dateMin)
+							.execute();
+		}
+		else{
+			events = calendar.events()
+							.list("primary")
+							.setMaxResults(50)
+							.setOrderBy("startTime")
+							.setPageToken(channelStatus.getPageToken())
+							.setSingleEvents(true)
+							.setTimeMin(dateMin)
+							.execute();
+		}
+		
+		if(events.getNextPageToken() != null)
+			channelStatus.setPageToken(events.getNextPageToken());
+		
+		timestamp += 1000*60*5;
+		channelStatus.setSinceRef(timestamp);
+		
+		channelStatusService.updateChannelStatus(channelStatus);
+		
+		List<Event> items = events.getItems();
+        if (items.size() == 0)
+            return items;
+        if(ingredientValue == null || ingredientValue.equals(""))
+        	return items;
 
-		String url = "https://www.googleapis.com/calendar/v3/calendars/primary/events?q=after:1325376000&maxResults=10&orderBy=startTime&singleEvents=true";
-		HttpEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-		System.out.println(response.getBody());*/
+        List<Event> targetEvents = new ArrayList<>();
+        for (Event event : items) {
+            if(	(event.getSummary() != null && event.getSummary().contains(ingredientValue)) ||
+            	(event.getDescription() != null &&event.getDescription().contains(ingredientValue)) ||
+            	(event.getLocation() != null && event.getLocation().contains(ingredientValue)))
+            	
+            	targetEvents.add(event);
+        }
+        
+        return targetEvents;
 	}
 	
 	private static String createJsonBody(String start, String end, String title, String location, String description) throws JsonProcessingException {
@@ -145,9 +228,12 @@ public class GoogleCalendarUtil {
 		GCalendarEventPOJO eventPOJO = new GCalendarEventPOJO();
 		eventPOJO.setStart(startPOJO);
 		eventPOJO.setEnd(endPOJO);
-		eventPOJO.setTitle(title);
-		eventPOJO.setLocation(location);
-		eventPOJO.setDescription(description);
+		if(title != null && !title.equals(""))
+			eventPOJO.setTitle(title);
+		if(location != null && !location.equals(""))
+			eventPOJO.setLocation(location);
+		if(description != null && !description.equals(""))
+			eventPOJO.setDescription(description);
 		
 		ObjectMapper mapper = new ObjectMapper();
 		return mapper.writeValueAsString(eventPOJO);

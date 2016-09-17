@@ -11,7 +11,8 @@ public class GCalendarAuthRequest {
 	
 	public GCalendarAuthRequest(User user) {
 		this.client_id = "205247608184-qn9jd5afpqai7n8n6hbhb2qgvad7mih8.apps.googleusercontent.com";
-		this.scope = "https://www.googleapis.com/auth/calendar";
+		this.scope = "https://www.googleapis.com/auth/calendar "
+					+ "https://www.googleapis.com/auth/calendar.readonly";
 		this.redirect_uri = "http://localhost:8181/gcalendar/authresponse";
 		this.response_type = "code";
 		this.state = new BCryptPasswordEncoder().encode(user.getUsername());
