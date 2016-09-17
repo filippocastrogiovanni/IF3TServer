@@ -3,6 +3,7 @@ package if3t.apis;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -66,7 +67,7 @@ public class GoogleCalendarUtil {
 		return messageResponse.getStatusCode().is2xxSuccessful()? true : false;
 	}
 	
-	public List<Event> isEventAdded(Authorization auth, User user) throws IOException{
+	public List<Event> isEventAdded(Authorization auth, User user, String ingredientValue) throws IOException{
 		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
 		com.google.api.services.calendar.Calendar calendar = 
 				 new com.google.api.services.calendar.Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
@@ -109,20 +110,22 @@ public class GoogleCalendarUtil {
 		
 		channelStatusService.updateChannelStatus(channelStatus);
 		
-		return events.getItems();
-		/*List<Event> items = events.getItems();
-        if (items.size() == 0) {
-            System.out.println("No upcoming events found.");
-        } else {
-            System.out.println("Upcoming events");
-            for (Event event : items) {
-                DateTime start = event.getStart().getDateTime();
-                if (start == null) {
-                    start = event.getStart().getDate();
-                }
-                System.out.printf("%s (%s)\n", event.getSummary(), start);
-            }
-        }*/
+		//return events.getItems();
+		List<Event> items = events.getItems();
+        if (items.size() == 0)
+            return items;
+
+        List<Event> targetEvents = new ArrayList<>();
+        for (Event event : items) {
+            if(	(event.getSummary() != null && event.getSummary().contains(ingredientValue)) ||
+            	(event.getDescription() != null &&event.getDescription().contains(ingredientValue)) ||
+            	(event.getLocation() != null && event.getLocation().contains(ingredientValue)))
+            	
+            	targetEvents.add(event);
+        }
+        
+        return targetEvents;
+        
 		/*RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", auth.getTokenType() + " " + auth.getAccessToken());

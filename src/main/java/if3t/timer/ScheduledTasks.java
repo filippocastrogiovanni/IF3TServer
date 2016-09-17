@@ -170,6 +170,7 @@ public class ScheduledTasks {
 				}
 			}catch (Exception e){
 				e.printStackTrace();
+				continue;
 			}
 		}
 

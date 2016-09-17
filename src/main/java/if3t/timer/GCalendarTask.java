@@ -1,16 +1,27 @@
 package if3t.timer;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.google.api.services.calendar.model.Event;
+
+import if3t.apis.FacebookUtil;
+import if3t.apis.GmailUtil;
 import if3t.apis.GoogleCalendarUtil;
+import if3t.models.ActionIngredient;
 import if3t.models.Authorization;
 import if3t.models.Channel;
+import if3t.models.ParametersActions;
 import if3t.models.ParametersTriggers;
 import if3t.models.Recipe;
 import if3t.models.TriggerIngredient;
@@ -24,6 +35,8 @@ import if3t.services.TriggerIngredientService;
 @Component
 public class GCalendarTask {
 
+	@Autowired
+	private GmailUtil gmailUtil;
 	@Autowired
 	private GoogleCalendarUtil gCalendarUtil;
 	@Autowired
@@ -52,42 +65,84 @@ public class GCalendarTask {
 		
 		List<Recipe> gCalendarTriggerRecipes = recipeService.getRecipeByTriggerChannel("gcalendar");
 		for(Recipe recipe: gCalendarTriggerRecipes){
-			User user = recipe.getUser();
-			Channel triggerChannel = recipe.getTrigger().getChannel();
-			Channel actionChannel = recipe.getAction().getChannel();
-			Authorization triggerAuth = authService.getAuthorization(user.getId(), triggerChannel.getKeyword());
-			Authorization actionAuth = authService.getAuthorization(user.getId(), actionChannel.getKeyword());
-			
-			//Checking if the access token of the trigger channel is expired
-			Calendar now = Calendar.getInstance();
-			if(triggerAuth == null || triggerAuth.getExpireDate()*1000 <= now.getTimeInMillis()){
-				//System.out.println("scaduto");
-				continue;
-			}
-			
-			//Checking if the access token of the action channel is not present
-			if(actionAuth == null)
-				continue;
-			
-			List<TriggerIngredient> triggerIngredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
-			for(TriggerIngredient triggerIngredient: triggerIngredients){
-				ParametersTriggers param = triggerIngredient.getParam();
-				switch(param.getKeyword()){
+			try{
+				User user = recipe.getUser();
+				Channel triggerChannel = recipe.getTrigger().getChannel();
+				Channel actionChannel = recipe.getAction().getChannel();
+				Authorization triggerAuth = authService.getAuthorization(user.getId(), triggerChannel.getKeyword());
+				Authorization actionAuth = authService.getAuthorization(user.getId(), actionChannel.getKeyword());
+				
+				//Checking if the access token of the trigger channel is expired
+				Calendar now = Calendar.getInstance();
+				if(triggerAuth == null || triggerAuth.getExpireDate()*1000 <= now.getTimeInMillis()){
+					//System.out.println("scaduto");
+					continue;
+				}
+				
+				//Checking if the access token of the action channel is not present
+				if(actionAuth == null)
+					continue;
+				
+				List<TriggerIngredient> triggerIngredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
+				TriggerIngredient triggerIngredient = triggerIngredients.get(0);
+				ParametersTriggers triggerParam = triggerIngredient.getParam();
+				
+				List<Event> events = new ArrayList<>();
+				switch(triggerParam.getKeyword()){
 					case "add" :
-						try {
-							
-							gCalendarUtil.isEventAdded(triggerAuth, user);
-						} catch (IOException e) {
-							e.printStackTrace();
-							continue;
-						}
+						events = gCalendarUtil.isEventAdded(triggerAuth, user, triggerIngredient.getValue());
 						break;
 					case "start" :
 						break;
 				}
+				
+				if(!events.isEmpty()){
+					List<ActionIngredient> actionIngredients = actionIngredientService.getRecipeActionIngredients(recipe.getId());
+					
+					//Checking if the access token of the action channel is expired
+					now = Calendar.getInstance();
+					if(actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())
+						continue;
+					
+					switch(recipe.getAction().getChannel().getKeyword()){
+						case "gmail" :
+							String to = "";
+							String subject = "";
+							String body = "";
+							
+							for(ActionIngredient actionIngredient: actionIngredients){
+								ParametersActions actionParam = actionIngredient.getParam();
+	
+								if(actionParam.getKeyword().equals("to"))
+									to = actionIngredient.getValue();
+								if(actionParam.getKeyword().equals("subject"))
+									subject = actionIngredient.getValue();
+								if(actionParam.getKeyword().equals("body"))
+									body = actionIngredient.getValue();
+							}
+							gmailUtil.sendEmail(to, subject, body, actionAuth);
+							break;
+						case "calendar" :
+							break;
+						case "facebook" :
+							String message = "";
+							for(ActionIngredient actionIngredient: actionIngredients){
+								ParametersActions param = actionIngredient.getParam();
+	
+								if(param.getKeyword().equals("post"))
+									message = actionIngredient.getValue();
+							}
+							FacebookUtil.publish_new_post(message, actionAuth.getAccessToken());
+							break;
+						case "twitter" :
+							break;
+					}
+				}
+				
+			}catch(Exception e){
+				e.printStackTrace();
+				continue;
 			}
-			
-			
 		}
 	}
 		
