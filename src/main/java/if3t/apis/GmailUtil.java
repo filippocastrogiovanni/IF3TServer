@@ -33,7 +33,7 @@ public class GmailUtil {
 		if(to == null)
 			throw new InvalidParametersException("Address cannot be null!");
 		
-		Message email = createEmail(to, "", subject == null? "" : subject, body == null? "" : body);
+		Message email = createEmail(to, null, subject == null? "" : subject, body == null? "" : body);
 
 		String ReqBody = "{\"raw\":\"" + email.getRaw() +"\"}";
 		MediaType mediaType = new MediaType("application", "json");
