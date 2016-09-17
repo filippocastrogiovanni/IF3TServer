@@ -44,10 +44,8 @@ public class TwitterUtil
 		String screenName = null;
 		Twitter twitter = getTwitterInstance(userId, auth);
 		
-		if (hashtag != null && hashtag.length() > 0)
-		{
-			if (hashtag.startsWith("#")) tweet.concat(" " + hashtag);
-			else tweet.concat(" #" + hashtag);
+		if (hashtag != null && hashtag.length() > 0) {
+			tweet.concat((hashtag.startsWith("#") ? " " : " #") + hashtag);
 		}
 		   
 		try 
@@ -69,7 +67,7 @@ public class TwitterUtil
 	{
 		String screenName = null;
 		Twitter twitter = getTwitterInstance(userId, auth);
-		long lastProcessedTweetId = Long.MIN_VALUE;
+		long lastProcessedTweetIdByRecipe = Long.MIN_VALUE;
 		List<Status> tweetList = new ArrayList<Status>();
 		ChannelStatus twitterStatus = channelStatusService.readChannelStatusByRecipeId(recipeId);
 		
@@ -108,13 +106,19 @@ public class TwitterUtil
             	//FIXME togliere alla fine
                 //System.out.println("Id " + status.getId() + " - @" + screenName + " - " + status.getText());
                 
-                if (status.getId() > lastProcessedTweetId) {
-            		lastProcessedTweetId = status.getId();
+                if (status.getId() > lastProcessedTweetIdByRecipe) {
+            		lastProcessedTweetIdByRecipe = status.getId();
             	}
             }
          
-            if (lastProcessedTweetId > Long.MIN_VALUE) {
-            	channelStatusService.updateChannelStatus(twitterStatus.getId(), lastProcessedTweetId);
+            if (lastProcessedTweetIdByRecipe > Long.MIN_VALUE) 
+            {
+            	if (twitterStatus == null) {
+            		channelStatusService.saveNewChannelStatus(recipeId, lastProcessedTweetIdByRecipe);
+            	}
+            	else {
+            		channelStatusService.updateChannelStatus(twitterStatus.getId(), lastProcessedTweetIdByRecipe);
+            	}
             }
 
             return tweetList;
