@@ -15,6 +15,7 @@ import if3t.models.ActionIngredient;
 import if3t.models.Authorization;
 import if3t.models.Channel;
 import if3t.models.ParametersActions;
+import if3t.models.ParametersTriggers;
 import if3t.models.Recipe;
 import if3t.models.TriggerIngredient;
 import if3t.models.User;
@@ -83,18 +84,23 @@ public class TwitterTask
 						break;
 					}
 					
-					String to = null, subject = "", body = "", hashtag = null;
+					String to = null, subject = "", body = "", hashtag = null, fromUser = null;
 					List<TriggerIngredient> triIngredients = triggerIngrService.getRecipeTriggerIngredients(recipe.getId());
 					List<ActionIngredient> actIngredients = actionIngrService.getRecipeActionIngredients(recipe.getId());
 					
 					for (TriggerIngredient ti : triIngredients)
 					{
-						if (ti.getParam().getKeyword().equals("hashtag")) {
+						ParametersTriggers param = ti.getParam();
+						
+						if (param.getKeyword().equals("hashtag")) {
 							hashtag = ti.getValue();
+						}
+						else if (param.getKeyword().equals("user")) {
+							fromUser = ti.getValue();
 						}
 					}
 					
-					List<Status> newUsefulTweets = twitterUtil.getNewUsefulTweets(user.getId(), authTrigger, hashtag);
+					List<Status> newUsefulTweets = twitterUtil.getNewUsefulTweets(user.getId(), authTrigger, hashtag, fromUser);
 					
 					if (newUsefulTweets.isEmpty()) {
 						break;
@@ -119,6 +125,7 @@ public class TwitterTask
 					{
 						//FIXME rimuovere alla fine
 						//System.out.println(tweet.getText());
+						//TODO da fare solo quando specificato in fase di creazione della ricetta
 						StringBuffer sb = new StringBuffer(body);
 						sb.append("\n---- Content of the tweet ----\n");
 						sb.append(tweet.getText());

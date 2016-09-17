@@ -39,22 +39,15 @@ public class TwitterUtil
 		return new TwitterFactory(conf.build()).getInstance(new AccessToken(auth.getAccessToken(), auth.getRefreshToken(), userId));
 	}
 	
-	public boolean postTweet(Long userId, Authorization auth, String tweet, List<String> hashtags)
+	public boolean postTweet(Long userId, Authorization auth, String tweet, String hashtag)
 	{
 		String screenName = null;
 		Twitter twitter = getTwitterInstance(userId, auth);
 		
-		if (hashtags != null && hashtags.size() > 0)
+		if (hashtag != null && hashtag.length() > 0)
 		{
-			StringBuffer sb = new StringBuffer();
-			
-			for (String ht : hashtags)
-			{
-				if (ht.startsWith("#")) sb.append(" ").append(ht);
-				else sb.append(" ").append("#").append(ht);
-			}
-			
-			tweet.concat(sb.toString());
+			if (hashtag.startsWith("#")) tweet.concat(" " + hashtag);
+			else tweet.concat(" #" + hashtag);
 		}
 		   
 		try 
@@ -72,7 +65,7 @@ public class TwitterUtil
 	}
 	
 	//TODO assicurarsi che venga rispettato il limit rate
-	public List<Status> getNewUsefulTweets(Long userId, Authorization auth, String hashtag)
+	public List<Status> getNewUsefulTweets(Long userId, Authorization auth, String hashtag, String fromUser)
 	{
 		String screenName = null;
 		Twitter twitter = getTwitterInstance(userId, auth);
@@ -82,9 +75,9 @@ public class TwitterUtil
 		
 		try 
 		{
-			screenName = twitter.getScreenName();
+			screenName = (fromUser != null && fromUser.length() > 0 ) ? fromUser : twitter.getScreenName();
             Paging page = new Paging(1, 200, (twitterStatus != null) ? twitterStatus.getSinceRef() : 1);
-            ResponseList<Status> statuses = twitter.getHomeTimeline(page);
+            ResponseList<Status> statuses = (fromUser != null && fromUser.length() > 0 ) ? twitter.getUserTimeline(fromUser, page) : twitter.getUserTimeline(page);
             
             if (statuses.size() == 0) {
             	logger.info("There are no new tweets of the user @" + screenName + " to inspect");

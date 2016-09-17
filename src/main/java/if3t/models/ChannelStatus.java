@@ -9,8 +9,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
 @Entity()
 @Table(name="channels_statuses")
 public class ChannelStatus 
@@ -21,28 +19,14 @@ public class ChannelStatus
 	private Long id;
 	
 	@ManyToOne()
-	@JoinColumn(name = "id_user")
-	@JsonBackReference(value = "channelstatus-user")
-	private User user;
-	
-	@ManyToOne()
-	@JoinColumn(name = "id_channel")
-	@JsonBackReference(value = "channelstatus-channel")
-	private Channel channel;
+	@JoinColumn(name = "id_recipe")
+	private Recipe recipe;
 	
 	@Column(name = "since_ref")
 	private Long sinceRef;
 	
 	@Column(name = "page_token")
 	private String pageToken;
-
-	public String getPageToken() {
-		return pageToken;
-	}
-
-	public void setPageToken(String pageToken) {
-		this.pageToken = pageToken;
-	}
 
 	public Long getId() {
 		return id;
@@ -51,21 +35,13 @@ public class ChannelStatus
 	public void setId(Long id) {
 		this.id = id;
 	}
-
-	public User getUser() {
-		return user;
+	
+	public Recipe getRecipe() {
+		return recipe;
 	}
 
-	public void setUser(User user) {
-		this.user = user;
-	}
-
-	public Channel getChannel() {
-		return channel;
-	}
-
-	public void setChannel(Channel channel) {
-		this.channel = channel;
+	public void setRecipe(Recipe recipe) {
+		this.recipe = recipe;
 	}
 
 	public Long getSinceRef() {
@@ -75,13 +51,20 @@ public class ChannelStatus
 	public void setSinceRef(Long sinceRef) {
 		this.sinceRef = sinceRef;
 	}
+	
+	public String getPageToken() {
+		return pageToken;
+	}
+
+	public void setPageToken(String pageToken) {
+		this.pageToken = pageToken;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((channel == null) ? 0 : channel.hashCode());
-		result = prime * result + ((user == null) ? 0 : user.hashCode());
+		result = prime * result + ((recipe == null) ? 0 : recipe.hashCode());
 		return result;
 	}
 
@@ -94,15 +77,10 @@ public class ChannelStatus
 		if (!(obj instanceof ChannelStatus))
 			return false;
 		ChannelStatus other = (ChannelStatus) obj;
-		if (channel == null) {
-			if (other.channel != null)
+		if (recipe == null) {
+			if (other.recipe != null)
 				return false;
-		} else if (!channel.equals(other.channel))
-			return false;
-		if (user == null) {
-			if (other.user != null)
-				return false;
-		} else if (!user.equals(other.user))
+		} else if (!recipe.equals(other.recipe))
 			return false;
 		return true;
 	}

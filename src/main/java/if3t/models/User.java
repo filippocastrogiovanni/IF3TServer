@@ -45,13 +45,9 @@ public class User {
 	@JoinColumn(name="id_timezone")
 	private Timezone timezone;
 	
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "user")
 	@JsonBackReference(value="user-authorizations")
 	private Set<Authorization> authorizations;
-	
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-	@JsonBackReference(value="user-channels_statuses")
-	private Set<ChannelStatus> channels_statuses;
 
 	public Long getId() {
 		return id;
@@ -125,26 +121,12 @@ public class User {
 		this.timezone = timezone;
 	}
 
-	/**
-	 * @return the authorizations
-	 */
 	public Set<Authorization> getAuthorizations() {
 		return authorizations;
 	}
 
-	/**
-	 * @param authorizations the authorizations to set
-	 */
 	public void setAuthorizations(Set<Authorization> authorizations) {
 		this.authorizations = authorizations;
-	}
-
-	public Set<ChannelStatus> getChannels_statuses() {
-		return channels_statuses;
-	}
-
-	public void setChannels_statuses(Set<ChannelStatus> channels_statuses) {
-		this.channels_statuses = channels_statuses;
 	}
 
 	@Override

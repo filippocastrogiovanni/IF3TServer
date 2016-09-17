@@ -32,25 +32,18 @@ public class Channel {
 	
 	@NotNull
 	private String keyword;
+	
+	@Column(name = "is_needed_auth", nullable = false)
+	private Boolean isNeededAuth;
 
 	@OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
 	@JsonBackReference(value="channel-authorizations")
 	private Set<Authorization> authorizations;
-	
-	@OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
-	@JsonBackReference(value="channel-channels_statuses")
-	private Set<ChannelStatus> channels_statuses;
 	 
-	/**
-	 * @return the channelId
-	 */
 	public Long getChannelId() {
 		return channelId;
 	}
 
-	/**
-	 * @param channelId the channelId to set
-	 */
 	public void setChannelId(Long channelId) {
 		this.channelId = channelId;
 	}
@@ -63,59 +56,38 @@ public class Channel {
 		this.name = name;
 	}
 
-	/**
-	 * @return the image_url
-	 */
 	public String getImage_url() {
 		return image_url;
 	}
 
-	/**
-	 * @param image_url the image_url to set
-	 */
 	public void setImage_url(String image_url) {
 		this.image_url = image_url;
 	}
 
-	/**
-	 * @return the keyword
-	 */
 	public String getKeyword() {
 		return keyword;
 	}
 
-	/**
-	 * @param keyword the keyword to set
-	 */
 	public void setKeyword(String keyword) {
 		this.keyword = keyword;
 	}
 
-	/**
-	 * @return the authorizations
-	 */
+	public Boolean getIsNeededAuth() {
+		return isNeededAuth;
+	}
+
+	public void setIsNeededAuth(Boolean isNeededAuth) {
+		this.isNeededAuth = isNeededAuth;
+	}
+	
 	public Set<Authorization> getAuthorizations() {
 		return authorizations;
 	}
 
-	/**
-	 * @param authorizations the authorizations to set
-	 */
 	public void setAuthorizations(Set<Authorization> autorizations) {
 		this.authorizations = autorizations;
 	}
 
-	public Set<ChannelStatus> getChannels_statuses() {
-		return channels_statuses;
-	}
-
-	public void setChannels_statuses(Set<ChannelStatus> channels_statuses) {
-		this.channels_statuses = channels_statuses;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -124,9 +96,6 @@ public class Channel {
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -143,5 +112,4 @@ public class Channel {
 			return false;
 		return true;
 	}
-
 }

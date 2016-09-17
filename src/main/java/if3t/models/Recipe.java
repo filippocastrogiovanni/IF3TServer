@@ -27,28 +27,6 @@ public class Recipe {
 	@Column(name = "id_group", nullable = false)
 	private String groupId;
 	
-	@ManyToOne(/*cascade = CascadeType.ALL*/)
-	@JoinColumn(name = "id_user")
-	@JsonBackReference(value="recipe-user")
-	private User user;
-	
-	@OneToOne(/*cascade = CascadeType.ALL*/)
-	@JoinColumn(name = "id_trigger")
-	private Trigger trigger;
-	
-	@OneToMany(mappedBy = "recipe")
-	private Set<TriggerIngredient> trigger_ingredients;
-	
-	@OneToOne(/*cascade = CascadeType.ALL*/)
-	@JoinColumn(name = "id_action")
-	private Action action;
-	
-	@OneToMany(mappedBy = "recipe")
-	private Set<ActionIngredient> action_ingredients;
-	
-	@OneToMany(mappedBy = "recipe")
-	private Set<ParametersKeyword> parameters_keyword;
-	
 	private String description;
 	
 	@Column(name = "is_public", nullable = false)
@@ -57,116 +35,94 @@ public class Recipe {
 	@Column(name = "is_enabled", nullable = false)
 	private Boolean isEnabled;
 	
-	/**
-	 * @return the id
-	 */
+	@ManyToOne()
+	@JoinColumn(name = "id_user")
+	@JsonBackReference(value="recipe-user")
+	private User user;
+	
+	@OneToOne()
+	@JoinColumn(name = "id_trigger")
+	private Trigger trigger;
+	
+	@OneToOne()
+	@JoinColumn(name = "id_action")
+	private Action action;
+	
+	@OneToMany(mappedBy = "recipe")
+	private Set<TriggerIngredient> trigger_ingredients;
+	
+	@OneToMany(mappedBy = "recipe")
+	private Set<ActionIngredient> action_ingredients;
+	
+	@OneToMany(mappedBy = "recipe")
+	private Set<ParametersKeyword> parameters_keyword;
+	
+	@OneToMany(mappedBy = "recipe")
+	@JsonBackReference(value="recipe-channels_statuses")
+	private Set<ChannelStatus> channels_statuses;
+
 	public Long getId() {
 		return id;
 	}
 
-	/**
-	 * @param id the id to set
-	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	/**
-	 * @return the groupId
-	 */
 	public String getGroupId() {
 		return groupId;
 	}
 
-	/**
-	 * @param groupId the groupId to set
-	 */
 	public void setGroupId(String groupId) {
 		this.groupId = groupId;
 	}
 
-	/**
-	 * @return the user
-	 */
-	public User getUser() {
-		return user;
-	}
-
-	/**
-	 * @param user the user to set
-	 */
-	public void setUser(User user) {
-		this.user = user;
-	}
-
-	/**
-	 * @return the trigger
-	 */
-	public Trigger getTrigger() {
-		return trigger;
-	}
-
-	/**
-	 * @param trigger the trigger to set
-	 */
-	public void setTrigger(Trigger trigger) {
-		this.trigger = trigger;
-	}
-
-	/**
-	 * @return the action
-	 */
-	public Action getAction() {
-		return action;
-	}
-
-	/**
-	 * @param action the action to set
-	 */
-	public void setAction(Action action) {
-		this.action = action;
-	}
-
-	/**
-	 * @return the description
-	 */
 	public String getDescription() {
 		return description;
 	}
 
-	/**
-	 * @param description the description to set
-	 */
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
-	/**
-	 * @return the isPublic
-	 */
 	public Boolean getIsPublic() {
 		return isPublic;
 	}
 
-	/**
-	 * @param isPublic the isPublic to set
-	 */
 	public void setIsPublic(Boolean isPublic) {
 		this.isPublic = isPublic;
 	}
 
-	/**
-	 * @return the isEnabled
-	 */
 	public Boolean getIsEnabled() {
 		return isEnabled;
 	}
 
-	/**
-	 * @param isEnabled the isEnabled to set
-	 */
 	public void setIsEnabled(Boolean isEnabled) {
 		this.isEnabled = isEnabled;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public Trigger getTrigger() {
+		return trigger;
+	}
+
+	public void setTrigger(Trigger trigger) {
+		this.trigger = trigger;
+	}
+
+	public Action getAction() {
+		return action;
+	}
+
+	public void setAction(Action action) {
+		this.action = action;
 	}
 
 	public Set<TriggerIngredient> getTrigger_ingredients() {
@@ -193,9 +149,14 @@ public class Recipe {
 		this.parameters_keyword = parameters_keyword;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
+	public Set<ChannelStatus> getChannels_statuses() {
+		return channels_statuses;
+	}
+
+	public void setChannels_statuses(Set<ChannelStatus> channels_statuses) {
+		this.channels_statuses = channels_statuses;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -208,9 +169,6 @@ public class Recipe {
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
