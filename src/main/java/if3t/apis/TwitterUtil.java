@@ -65,13 +65,13 @@ public class TwitterUtil
 	}
 	
 	//TODO assicurarsi che venga rispettato il limit rate
-	public List<Status> getNewUsefulTweets(Long userId, Authorization auth, String hashtag, String fromUser)
+	public List<Status> getNewUsefulTweets(Long userId, Long recipeId, Authorization auth, String hashtag, String fromUser)
 	{
 		String screenName = null;
 		Twitter twitter = getTwitterInstance(userId, auth);
 		long lastProcessedTweetId = Long.MIN_VALUE;
 		List<Status> tweetList = new ArrayList<Status>();
-		ChannelStatus twitterStatus = channelStatusService.readChannelStatus(userId, "twitter");
+		ChannelStatus twitterStatus = channelStatusService.readChannelStatusByRecipeId(recipeId);
 		
 		try 
 		{

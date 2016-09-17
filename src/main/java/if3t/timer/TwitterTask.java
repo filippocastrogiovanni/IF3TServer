@@ -100,7 +100,7 @@ public class TwitterTask
 						}
 					}
 					
-					List<Status> newUsefulTweets = twitterUtil.getNewUsefulTweets(user.getId(), authTrigger, hashtag, fromUser);
+					List<Status> newUsefulTweets = twitterUtil.getNewUsefulTweets(user.getId(), recipe.getId(), authTrigger, hashtag, fromUser);
 					
 					if (newUsefulTweets.isEmpty()) {
 						break;

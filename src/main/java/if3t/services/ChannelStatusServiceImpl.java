@@ -16,9 +16,9 @@ public class ChannelStatusServiceImpl implements ChannelStatusService
 	private ChannelsStatusesRepository channelsStatusesRepo;
 	
 	@Override
-	public ChannelStatus readChannelStatus(Long userId, String keyword) 
+	public ChannelStatus readChannelStatusByRecipeId(Long recipeId) 
 	{
-		return channelsStatusesRepo.findByUser_IdAndChannel_Keyword(userId, keyword);
+		return channelsStatusesRepo.findByRecipe_Id(recipeId);
 	}
 
 	@Override
