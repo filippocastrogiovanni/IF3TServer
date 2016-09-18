@@ -52,12 +52,12 @@ public class TwitterUtil
 		{
 			twitter.updateStatus(tweet);
 			screenName = twitter.getScreenName();
-			logger.info("Successfully updated the status of the user @" + screenName);
+			logger.info("Successfully updated the Twitter status of the user @" + screenName);
 			return true;
 		} 
 		catch (Throwable t)
 		{
-			logger.error("Failed to update the status of the user" + ((screenName != null && screenName.length() > 0) ? " @" + screenName : ""), t);
+			logger.error("Failed to update the Twitter status of the user" + ((screenName != null && screenName.length() > 0) ? " @" + screenName : ""), t);
 			return false;
 		}
 	}
@@ -77,8 +77,10 @@ public class TwitterUtil
             Paging page = new Paging(1, 200, (twitterStatus != null) ? twitterStatus.getSinceRef() : 1);
             ResponseList<Status> statuses = (fromUser != null && fromUser.length() > 0 ) ? twitter.getUserTimeline(fromUser, page) : twitter.getUserTimeline(page);
             
-            if (statuses.size() == 0) {
+            if (statuses.size() == 0) 
+            {
             	logger.info("There are no new tweets of the user @" + screenName + " to inspect");
+            	return Collections.emptyList();
             }
             
             for (Status status : statuses) 
@@ -102,9 +104,6 @@ public class TwitterUtil
             	{
             		tweetList.add(status);
             	}
-            	           	
-            	//FIXME togliere alla fine
-                //System.out.println("Id " + status.getId() + " - @" + screenName + " - " + status.getText());
                 
                 if (status.getId() > lastProcessedTweetIdByRecipe) {
             		lastProcessedTweetIdByRecipe = status.getId();
@@ -114,7 +113,7 @@ public class TwitterUtil
             if (lastProcessedTweetIdByRecipe > Long.MIN_VALUE) 
             {
             	if (twitterStatus == null) {
-            		channelStatusService.saveNewChannelStatus(recipeId, lastProcessedTweetIdByRecipe);
+            		channelStatusService.createNewChannelStatus(recipeId, lastProcessedTweetIdByRecipe);
             	}
             	else {
             		channelStatusService.updateChannelStatus(twitterStatus.getId(), lastProcessedTweetIdByRecipe);
@@ -128,5 +127,15 @@ public class TwitterUtil
 			logger.error("Failed to inspect new tweets of the user" + ((screenName != null && screenName.length() > 0) ? " @" + screenName : ""), t);
 			return Collections.emptyList();
 		}
+	}
+	
+	public String addTriggeredTweetToAction(Status tweet, String message)
+	{
+		StringBuffer sb = new StringBuffer(message);
+		sb.append("\n------------------------------------------------------------");
+		sb.append("\nFrom: @" + tweet.getUser().getScreenName());
+		sb.append("\nCreated at: " + tweet.getCreatedAt().toString());
+		sb.append("\nContent of the tweet:\n\n" + tweet.getText());
+		return sb.toString();
 	}
 }

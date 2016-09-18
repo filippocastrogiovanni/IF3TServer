@@ -19,7 +19,7 @@ public class ChannelStatusServiceImpl implements ChannelStatusService
 	private RecipeRepository recipeRepo;
 	
 	@Override
-	public void saveNewChannelStatus(Long recipeId, Long sinceRef) 
+	public void createNewChannelStatus(Long recipeId, Long sinceRef) 
 	{
 		ChannelStatus cs = new ChannelStatus();
 		cs.setRecipe(recipeRepo.findOne(recipeId));

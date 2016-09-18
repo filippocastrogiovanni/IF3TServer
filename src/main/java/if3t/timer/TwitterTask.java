@@ -44,13 +44,11 @@ public class TwitterTask
 	
 	
 	//TODO diversificare i fixedRate dei vari task per non creare dei picchi di lavoro estremi intervallati dal nulla
+	//TODO quello da far partire per primo è quello relativo al refresh
 	@Scheduled(fixedRate = 1000*60*5)
     public void twitterScheduler() 
-	{
-    	//TODO forse va modificato il nome della funzione per evidenziare che ritorna solo le ricette enabled
-		List<Recipe> twitterTriggerRecipes = recipeService.getRecipeByTriggerChannel("twitter");
-		
-		for (Recipe recipe : twitterTriggerRecipes)
+	{		
+		for (Recipe recipe : recipeService.getEnabledRecipesByTriggerChannel("twitter"))
 		{
 			User user = recipe.getUser();
 			Channel triggerChannel = recipe.getTrigger().getChannel();
@@ -62,12 +60,40 @@ public class TwitterTask
 				continue;
 			}
 			
+			Authorization authAction;
 			Channel actionChannel = recipe.getAction().getChannel();
-			Authorization authAction = authService.getAuthorization(user.getId(), actionChannel.getKeyword());
 			
-			if (authAction == null)
+			if (!actionChannel.getKeyword().equals(triggerChannel.getKeyword()))
 			{
-				logger.info("Action channel (" + actionChannel.getKeyword() + ") is not enabled for the user " + user.getUsername());
+				authAction = authService.getAuthorization(user.getId(), actionChannel.getKeyword());
+				
+				if (authAction == null)
+				{
+					logger.info("Action channel (" + actionChannel.getKeyword() + ") is not enabled for the user " + user.getUsername());
+					continue;
+				}
+			}
+			else {
+				authAction = authTrigger;
+			}
+			
+			String hashtagTrigger = null, fromUser = null;
+			
+			for (TriggerIngredient ti : triggerIngrService.getRecipeTriggerIngredients(recipe.getId()))
+			{
+				ParametersTriggers param = ti.getParam();
+				
+				if (param.getKeyword().equals("hashtag")) {
+					hashtagTrigger = ti.getValue();
+				}
+				else if (param.getKeyword().equals("user")) {
+					fromUser = ti.getValue();
+				}
+			}
+			
+			List<Status> newUsefulTweets = twitterUtil.getNewUsefulTweets(user.getId(), recipe.getId(), authTrigger, hashtagTrigger, fromUser);
+			
+			if (newUsefulTweets.isEmpty()) {
 				continue;
 			}
 			
@@ -84,29 +110,9 @@ public class TwitterTask
 						break;
 					}
 					
-					String to = null, subject = "", body = "", hashtag = null, fromUser = null;
-					List<TriggerIngredient> triIngredients = triggerIngrService.getRecipeTriggerIngredients(recipe.getId());
-					List<ActionIngredient> actIngredients = actionIngrService.getRecipeActionIngredients(recipe.getId());
+					String to = null, subject = "", body = "";
 					
-					for (TriggerIngredient ti : triIngredients)
-					{
-						ParametersTriggers param = ti.getParam();
-						
-						if (param.getKeyword().equals("hashtag")) {
-							hashtag = ti.getValue();
-						}
-						else if (param.getKeyword().equals("user")) {
-							fromUser = ti.getValue();
-						}
-					}
-					
-					List<Status> newUsefulTweets = twitterUtil.getNewUsefulTweets(user.getId(), recipe.getId(), authTrigger, hashtag, fromUser);
-					
-					if (newUsefulTweets.isEmpty()) {
-						break;
-					}
-					
-					for (ActionIngredient ai : actIngredients)
+					for (ActionIngredient ai : actionIngrService.getRecipeActionIngredients(recipe.getId()))
 					{
 						ParametersActions param = ai.getParam();
 						
@@ -123,16 +129,13 @@ public class TwitterTask
 					
 					for (Status tweet : newUsefulTweets)
 					{
-						//FIXME rimuovere alla fine
-						//System.out.println(tweet.getText());
 						//TODO da fare solo quando specificato in fase di creazione della ricetta
-						StringBuffer sb = new StringBuffer(body);
-						sb.append("\n---- Content of the tweet ----\n");
-						sb.append(tweet.getText());
+						//TODO inserire anche altre cose tipo l'utente che ha twittato etc
+						body = twitterUtil.addTriggeredTweetToAction(tweet, body);
 						
 						try
 						{
-							gmailUtil.sendEmail(to, subject, sb.toString(), authAction);
+							gmailUtil.sendEmail(to, subject, body, authAction);
 							logger.info("Email sent from Gmail account of " + user.getUsername() + " to " + to);
 						}
 						catch (Throwable t)
@@ -145,7 +148,27 @@ public class TwitterTask
 				}
 				case "twitter":
 				{
+					String tweetAction = "", hashtagAction = "";
 					
+					for (ActionIngredient ai : actionIngrService.getRecipeActionIngredients(recipe.getId()))
+					{
+						ParametersActions param = ai.getParam();
+						
+						if (param.getKeyword().equals("tweet")) {
+							tweetAction = ai.getValue();
+						}
+						else if (param.getKeyword().equals("hashtag")) {
+							hashtagAction = ai.getValue();
+						}
+					}
+					
+					for (Status tweet : newUsefulTweets)
+					{
+						//TODO da fare solo quando specificato in fase di creazione della ricetta
+						//TODO inserire anche altre cose tipo l'utente che ha twittato etc
+						tweetAction = twitterUtil.addTriggeredTweetToAction(tweet, tweetAction);
+						twitterUtil.postTweet(user.getId(), authAction, tweetAction, hashtagAction);
+					}
 					
 					break;
 				}

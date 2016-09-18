@@ -37,7 +37,6 @@ import if3t.models.TriggerIngredient;
 import if3t.models.User;
 import if3t.repositories.ActionIngredientRepository;
 import if3t.repositories.AuthorizationRepository;
-import if3t.repositories.ParametersKeywordsRepository;
 import if3t.repositories.RecipeRepository;
 import if3t.repositories.TriggerIngredientRepository;
 
@@ -202,7 +201,7 @@ public class RecipeServiceImpl implements RecipeService {
 		}
 	}
 
-	public List<Recipe> getRecipeByTriggerChannel(String channelKeyword) {
+	public List<Recipe> getEnabledRecipesByTriggerChannel(String channelKeyword) {
 		return recipeRepository.findByIsEnabledAndTrigger_Channel_Keyword(true, channelKeyword);
 	}
 
