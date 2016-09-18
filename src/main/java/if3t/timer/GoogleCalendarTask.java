@@ -58,7 +58,7 @@ public class GoogleCalendarTask {
 		}*/
 		
 		
-		List<Recipe> gCalendarTriggerRecipes = recipeService.getRecipeByTriggerChannel("gcalendar");
+		List<Recipe> gCalendarTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gcalendar");
 		for(Recipe recipe: gCalendarTriggerRecipes){
 			try{
 				User user = recipe.getUser();

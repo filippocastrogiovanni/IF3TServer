@@ -56,7 +56,7 @@ public class GmailTasks {
 	public void gmailScheduler(){
 		RestTemplate restTemplate = new RestTemplate();
 
-		List<Recipe> gmailTriggerRecipes = recipeService.getRecipeByTriggerChannel("gmail");
+		List<Recipe> gmailTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gmail");
 		for(Recipe recipe: gmailTriggerRecipes){
 			try{
 				User user = recipe.getUser();
