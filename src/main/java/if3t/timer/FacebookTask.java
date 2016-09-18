@@ -59,7 +59,7 @@ public class FacebookTask {
 	@Scheduled(fixedRateString = "${app.scheduler.value}")
 	public void gmailScheduler(){
 	
-		List<Recipe> facebookTriggerRecipes = recipeService.getRecipeByTriggerChannel("facebook");
+		List<Recipe> facebookTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("facebook");
 		for(Recipe recipe: facebookTriggerRecipes){
 			try{
 				User user = recipe.getUser();

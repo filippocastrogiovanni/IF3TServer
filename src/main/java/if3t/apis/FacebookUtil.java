@@ -39,7 +39,7 @@ public class FacebookUtil {
 		ChannelStatus css = channelStatusService.readChannelStatusByRecipeId(recipe_id);
 		if(css == null){
 			Long timestamp = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
-			channelStatusService.saveNewChannelStatus(recipe_id, timestamp);
+			channelStatusService.createNewChannelStatus(recipe_id, timestamp);
 		}
 		Long since_ref = css.getFacebookSinceRef();
 		ChannelStatus old_cs = channelStatusService.readChannelStatusByRecipeId(recipe_id);
@@ -93,7 +93,7 @@ public class FacebookUtil {
 			ChannelStatus css = channelStatusService.readChannelStatusByRecipeId(recipe_id);
 			if(css == null){
 				Long timestamp = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
-				channelStatusService.saveNewChannelStatus(recipe_id, timestamp);
+				channelStatusService.createNewChannelStatus(recipe_id, timestamp);
 				css = channelStatusService.readChannelStatusByRecipeId(recipe_id);
 			}
 			old_full_name = css.getFacebookFullName();
@@ -139,7 +139,7 @@ public class FacebookUtil {
 			ChannelStatus css = channelStatusService.readChannelStatusByRecipeId(recipe_id);
 			if(css == null){
 				Long timestamp = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
-				channelStatusService.saveNewChannelStatus(recipe_id, timestamp);
+				channelStatusService.createNewChannelStatus(recipe_id, timestamp);
 				css = channelStatusService.readChannelStatusByRecipeId(recipe_id);
 			}
 			old_profile_picture = css.getFacebookProfilePicture();
@@ -185,7 +185,7 @@ public class FacebookUtil {
 			ChannelStatus css = channelStatusService.readChannelStatusByRecipeId(recipe_id);
 			if(css == null){
 				Long timestamp = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
-				channelStatusService.saveNewChannelStatus(recipe_id, timestamp);
+				channelStatusService.createNewChannelStatus(recipe_id, timestamp);
 				css = channelStatusService.readChannelStatusByRecipeId(recipe_id);
 			}
 			old_location = css.getFacebookLocation();
