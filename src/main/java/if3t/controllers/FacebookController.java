@@ -22,6 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.restfb.DefaultFacebookClient;
+import com.restfb.DefaultLegacyFacebookClient;
+import com.restfb.FacebookClient;
+import com.restfb.Parameter;
+
 import if3t.apis.FacebookAuthRequest;
 import if3t.apis.FacebookTokenRequest;
 import if3t.apis.FacebookTokenResponse;
@@ -168,6 +173,38 @@ public class FacebookController {
 		if (!loggedUser.isEnabled())
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 
+		Authorization facebookAuth = authService.getAuthorization(loggedUser.getId(), "facebook");
+
+		/*
+		DefaultLegacyFacebookClient oldRestAPIFbClient = new DefaultLegacyFacebookClient(facebookAuth.getAccessToken()); 
+		FacebookClient fbClient = new DefaultFacebookClient(facebookAuth.getAccessToken());
+		com.restfb.types.User me = fbClient.fetchObject("me", com.restfb.types.User.class);
+		String facebookUserID = me.getId();
+		oldRestAPIFbClient.execute("auth_revokeAuthorization"
+				, Parameter.with("uid", facebookUserID)
+				); 
+		*/
+		
+		/*
+		RestTemplate restTemplate = new RestTemplate();
+        restTemplate.delete(REST_SERVICE_URI+"/user/3");
+        */
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://graph.facebook.com/v2.7/me/permissions")
+		        .queryParam("access_token", facebookAuth.getAccessToken());
+
+		HttpEntity<?> entity = new HttpEntity<>(headers);
+
+		RestTemplate restTemplate = new RestTemplate();
+		HttpEntity<String> response = restTemplate.exchange(
+		        builder.build().encode().toUri(), 
+		        HttpMethod.DELETE, 
+		        entity, 
+		        String.class);
+		
 		Channel channel = channelService.findByKeyword("facebook");
    	    Authorization authorization_to_delete = authRepository.findByUserAndChannel(loggedUser, channel);
 		authService.deleteAuthorization(authorization_to_delete.getId());

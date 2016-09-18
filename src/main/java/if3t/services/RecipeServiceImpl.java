@@ -37,6 +37,7 @@ import if3t.models.TriggerIngredient;
 import if3t.models.User;
 import if3t.repositories.ActionIngredientRepository;
 import if3t.repositories.AuthorizationRepository;
+import if3t.repositories.ParametersKeywordsRepository;
 import if3t.repositories.RecipeRepository;
 import if3t.repositories.TriggerIngredientRepository;
 
@@ -201,7 +202,7 @@ public class RecipeServiceImpl implements RecipeService {
 		}
 	}
 
-	public List<Recipe> getEnabledRecipesByTriggerChannel(String channelKeyword) {
+	public List<Recipe> getRecipeByTriggerChannel(String channelKeyword) {
 		return recipeRepository.findByIsEnabledAndTrigger_Channel_Keyword(true, channelKeyword);
 	}
 
@@ -362,17 +363,17 @@ public class RecipeServiceImpl implements RecipeService {
 						}
 						
 						//validate parameters_keyword
-						if(r.getParameters_keyword()!=null){
-							Map<String, String> map_name_value_real = new HashMap<String, String>();
-							Map<String, String> map_name_value_received = new HashMap<String, String>();
+						if(r.getParameters_keyword()!=null && r.getParameters_keyword().size()!=0){
+							HashSet<String> hashset_name_real = new HashSet<String>();
+							HashSet<String> hashset_name_received = new HashSet<String>();
 							//get all real parameters ingredients
 							for(TriggerIngredient pt : r.getTrigger_ingredients()){
-								map_name_value_real.put(pt.getParam().getName(), pt.getValue());
+								hashset_name_real.add(pt.getParam().getName());
 							}
 							for(ParametersKeyword pk : r.getParameters_keyword()){
-								map_name_value_received.put(pk.getName(), pk.getValue());
+								hashset_name_received.add(pk.getName());
 							}
-							if(!map_name_value_real.equals(map_name_value_received)){
+							if(!hashset_name_real.equals(hashset_name_received)){
 								System.out.println("Parameters Keywords does not match trigger data received");
 								throw new AddRecipeException("ERROR: Parameters Keywords does not match trigger data received");								
 							}
