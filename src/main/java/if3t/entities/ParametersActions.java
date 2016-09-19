@@ -44,6 +44,12 @@ public class ParametersActions {
 	
 	@OneToMany(mappedBy = "param")
 	private Set<ActionIngredient> action_ingredients;
+	
+	@Column(name = "can_receive")
+	private Boolean canReceive;
+	
+	@Column(name = "max_length")
+	private int maxLength;
 
 	public Long getId() {
 		return id;
@@ -77,8 +83,6 @@ public class ParametersActions {
 		this.type = type;
 	}
 	
-	
-
 	public Action getAction() {
 		return action;
 	}
@@ -107,6 +111,22 @@ public class ParametersActions {
 
 	public void setAction_ingredients(Set<ActionIngredient> action_ingredients) {
 		this.action_ingredients = action_ingredients;
+	}
+
+	public Boolean getCanReceive() {
+		return canReceive;
+	}
+
+	public void setCanReceive(Boolean canReceive) {
+		this.canReceive = canReceive;
+	}
+
+	public int getMaxLength() {
+		return maxLength;
+	}
+
+	public void setMaxLength(int maxLength) {
+		this.maxLength = maxLength;
 	}
 
 	/* (non-Javadoc)

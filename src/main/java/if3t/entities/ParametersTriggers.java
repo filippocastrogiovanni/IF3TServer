@@ -44,7 +44,13 @@ public class ParametersTriggers {
 	
 	@OneToMany(mappedBy = "param")
 	private Set<TriggerIngredient> trigger_ingredients;
-
+	
+	@Column(name = "is_sendable")
+	private Boolean isSendable;
+	
+	@Column(name = "max_length")
+	private int maxLength;
+	
 	public Long getId() {
 		return id;
 	}
@@ -107,13 +113,29 @@ public class ParametersTriggers {
 		this.trigger_ingredients = trigger_ingredients;
 	}
 
+	public Boolean getIsSendable() {
+		return isSendable;
+	}
+
+	public void setIsSendable(Boolean isSendable) {
+		this.isSendable = isSendable;
+	}
+
+	public int getMaxLength() {
+		return maxLength;
+	}
+
+	public void setMaxLength(int maxLength) {
+		this.maxLength = maxLength;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((channel == null) ? 0 : channel.hashCode());
+		result = prime * result + ((keyword == null) ? 0 : keyword.hashCode());
 		result = prime * result + ((trigger == null) ? 0 : trigger.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
 
@@ -126,21 +148,23 @@ public class ParametersTriggers {
 		if (!(obj instanceof ParametersTriggers))
 			return false;
 		ParametersTriggers other = (ParametersTriggers) obj;
-		if (name == null) {
-			if (other.name != null)
+		if (channel == null) {
+			if (other.channel != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!channel.equals(other.channel))
+			return false;
+		if (keyword == null) {
+			if (other.keyword != null)
+				return false;
+		} else if (!keyword.equals(other.keyword))
 			return false;
 		if (trigger == null) {
 			if (other.trigger != null)
 				return false;
 		} else if (!trigger.equals(other.trigger))
 			return false;
-		if (type == null) {
-			if (other.type != null)
-				return false;
-		} else if (!type.equals(other.type))
-			return false;
 		return true;
 	}
+
+	
 }

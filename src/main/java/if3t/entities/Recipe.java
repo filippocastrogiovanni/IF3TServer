@@ -55,9 +55,6 @@ public class Recipe {
 	private Set<ActionIngredient> action_ingredients;
 	
 	@OneToMany(mappedBy = "recipe")
-	private Set<ParametersKeyword> parameters_keyword;
-	
-	@OneToMany(mappedBy = "recipe")
 	@JsonBackReference(value="recipe-channels_statuses")
 	private Set<ChannelStatus> channels_statuses;
 
@@ -141,14 +138,6 @@ public class Recipe {
 		this.action_ingredients = action_ingredients;
 	}
 
-	public Set<ParametersKeyword> getParameters_keyword() {
-		return parameters_keyword;
-	}
-
-	public void setParameters_keyword(Set<ParametersKeyword> parameters_keyword) {
-		this.parameters_keyword = parameters_keyword;
-	}
-
 	public Set<ChannelStatus> getChannels_statuses() {
 		return channels_statuses;
 	}
@@ -164,6 +153,8 @@ public class Recipe {
 		result = prime * result + ((action == null) ? 0 : action.hashCode());
 		result = prime * result + ((description == null) ? 0 : description.hashCode());
 		result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
+		result = prime * result + ((isEnabled == null) ? 0 : isEnabled.hashCode());
+		result = prime * result + ((isPublic == null) ? 0 : isPublic.hashCode());
 		result = prime * result + ((trigger == null) ? 0 : trigger.hashCode());
 		result = prime * result + ((user == null) ? 0 : user.hashCode());
 		return result;
@@ -193,6 +184,16 @@ public class Recipe {
 				return false;
 		} else if (!groupId.equals(other.groupId))
 			return false;
+		if (isEnabled == null) {
+			if (other.isEnabled != null)
+				return false;
+		} else if (!isEnabled.equals(other.isEnabled))
+			return false;
+		if (isPublic == null) {
+			if (other.isPublic != null)
+				return false;
+		} else if (!isPublic.equals(other.isPublic))
+			return false;
 		if (trigger == null) {
 			if (other.trigger != null)
 				return false;
@@ -205,4 +206,6 @@ public class Recipe {
 			return false;
 		return true;
 	}
+
+	
 }

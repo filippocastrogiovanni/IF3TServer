@@ -19,7 +19,6 @@ import if3t.entities.Action;
 import if3t.entities.ActionIngredient;
 import if3t.entities.Channel;
 import if3t.entities.ParametersActions;
-import if3t.entities.ParametersKeyword;
 import if3t.entities.ParametersTriggers;
 import if3t.entities.Recipe;
 import if3t.entities.Trigger;
@@ -36,7 +35,6 @@ import if3t.models.RecipePOJO;
 import if3t.repositories.ActionIngredientRepository;
 import if3t.repositories.ActionRepository;
 import if3t.repositories.AuthorizationRepository;
-import if3t.repositories.ParametersKeywordsRepository;
 import if3t.repositories.RecipeRepository;
 import if3t.repositories.TriggerIngredientRepository;
 import if3t.repositories.TriggerRepository;
@@ -57,8 +55,6 @@ public class RecipeServiceImpl implements RecipeService {
 	private ActionRepository actionRespository;	
 	@Autowired
 	private TriggerRepository triggerRepository;
-	@Autowired
-	private ParametersKeywordsRepository parameterKeywordRepository;
 	@Autowired
 	private CreateRecipeService createRecipeService;
 	private static final String EMAIL_PATTERN = "^[-a-z0-9~!$%^&*_=+}{\'?]+(.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(.[-a-z0-9_]+)*.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}))(:[0-9]{1,5})?$";
@@ -138,11 +134,11 @@ public class RecipeServiceImpl implements RecipeService {
 
 			recipeRepository.save(r);
 
-			if(r.getParameters_keyword()!=null)
+			/*if(r.getParameters_keyword()!=null)
 				for(ParametersKeyword pk : r.getParameters_keyword()){
 					pk.setRecipe(r);
 					parameterKeywordRepository.save(pk);
-				}
+				}*/
 			
 			//Il salvataggio degli ingredienti va fatto qui (e non nel controller) per garantire la transazionalità
 			for (TriggerIngredient ti : r.getTrigger_ingredients())
@@ -362,7 +358,7 @@ public class RecipeServiceImpl implements RecipeService {
 							throw new AddRecipeException("ERROR: Invalid data in recipe sent");
 						}
 						
-						//validate parameters_keyword
+						/*//validate parameters_keyword
 						if(r.getParameters_keyword()!=null && r.getParameters_keyword().size()!=0){
 							HashSet<String> hashset_name_real = new HashSet<String>();
 							HashSet<String> hashset_name_received = new HashSet<String>();
@@ -377,7 +373,7 @@ public class RecipeServiceImpl implements RecipeService {
 								System.out.println("Parameters Keywords does not match trigger data received");
 								throw new AddRecipeException("ERROR: Parameters Keywords does not match trigger data received");								
 							}
-						}
+						}*/
 					}
 					else
 					{

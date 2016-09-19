@@ -62,9 +62,7 @@ public class Timezone {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (daylight_time ? 1231 : 1237);
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + timezone_value;
 		return result;
 	}
 
@@ -77,15 +75,12 @@ public class Timezone {
 		if (!(obj instanceof Timezone))
 			return false;
 		Timezone other = (Timezone) obj;
-		if (daylight_time != other.daylight_time)
-			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
-		if (timezone_value != other.timezone_value)
-			return false;
 		return true;
 	}
+	
 }

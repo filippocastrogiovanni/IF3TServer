@@ -1,8 +1,10 @@
 package if3t.timer;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +16,7 @@ import com.google.api.services.calendar.model.Event;
 import if3t.apis.FacebookUtil;
 import if3t.apis.GmailUtil;
 import if3t.apis.GoogleCalendarUtil;
+import if3t.apis.TwitterUtil;
 import if3t.entities.ActionIngredient;
 import if3t.entities.Authorization;
 import if3t.entities.Channel;
@@ -38,6 +41,8 @@ public class GcalendarTask {
 	@Autowired
 	private FacebookUtil facebookUtil;
 	@Autowired
+	private TwitterUtil twitterUtil;
+	@Autowired
     private RecipeService recipeService;
 	@Autowired
 	private TriggerIngredientService triggerIngredientService;
@@ -49,20 +54,12 @@ public class GcalendarTask {
 	private ChannelStatusService channelStatusService;
 	@Value("${app.scheduler.value}")
 	private long rate;
+	@Value("${app.timezone}")
+	private String zone;
 	
 	@Scheduled(fixedRateString = "${app.scheduler.value}")
 	public void gCalendarScheduler(){
-		
-		/*Authorization auth = authService.getAuthorization(7l, "gcalendar");
-		if(auth == null)
-			return;
-		try {
-			GoogleCalendarUtil.isEventAdded(auth, 13131l);	
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}*/
-		
-		
+		TimeZone timezone = TimeZone.getTimeZone(zone);
 		List<Recipe> gCalendarTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gcalendar");
 		for(Recipe recipe: gCalendarTriggerRecipes){
 			try{
@@ -123,6 +120,54 @@ public class GcalendarTask {
 							gmailUtil.sendEmail(to, subject, body, actionAuth);
 							break;
 						case "calendar" :
+							String title = "";
+							String location = "";
+							String description = "";
+							String startDateString = "";
+							String endDateString = "";
+							String startTimeString = "";
+							String endTimeString = "";
+							
+							for(ActionIngredient actionIngredient: actionIngredients){
+								ParametersActions param = actionIngredient.getParam();
+		
+								switch(param.getKeyword()){
+									case "start_date" :
+										startDateString = actionIngredient.getValue();
+										break;
+									case "end_date" :
+										endDateString = actionIngredient.getValue();
+										break;
+									case "start_time" :
+										startTimeString = actionIngredient.getValue();
+										break;
+									case "end_time" :
+										endTimeString = actionIngredient.getValue();
+										break;
+									case "title" :
+										title = actionIngredient.getValue();
+										break;
+									case "description" :
+										description = actionIngredient.getValue();
+										break;
+									case "location" :
+										location = actionIngredient.getValue();
+										break;
+								}
+							}
+							
+							SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+
+							String startDate = startDateString + " " + startTimeString;
+							String endDate = endDateString + " " + endTimeString;
+							Calendar start = Calendar.getInstance();
+							Calendar end = Calendar.getInstance();
+							start.setTime(format.parse(startDate));
+							start.setTimeZone(timezone);
+							end.setTime(format.parse(endDate));
+							end.setTimeZone(timezone);
+
+							gCalendarUtil.createEvent(start, end, title, description, location, triggerAuth);
 							break;
 						case "facebook" :
 							String message = "";
@@ -135,6 +180,17 @@ public class GcalendarTask {
 							facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
 							break;
 						case "twitter" :
+							String tweet = "";
+							String hashtag = "";
+							for(ActionIngredient actionIngredient: actionIngredients){
+								ParametersActions param = actionIngredient.getParam();
+	
+								if(param.getKeyword().equals("tweet"))
+									tweet += actionIngredient.getValue();
+								if(param.getKeyword().equals("hashtag"))
+									hashtag += actionIngredient.getValue();
+							}
+							twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
 							break;
 					}
 				}
