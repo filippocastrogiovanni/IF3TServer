@@ -16,7 +16,6 @@ import if3t.entities.ActionIngredient;
 import if3t.entities.Authorization;
 import if3t.entities.Channel;
 import if3t.entities.ParametersActions;
-import if3t.entities.ParametersKeyword;
 import if3t.entities.ParametersTriggers;
 import if3t.entities.Recipe;
 import if3t.entities.TriggerIngredient;
@@ -25,7 +24,6 @@ import if3t.repositories.ParametersTriggersRepository;
 import if3t.services.ActionIngredientService;
 import if3t.services.AuthorizationService;
 import if3t.services.ChannelStatusService;
-import if3t.services.ParameterKeywordService;
 import if3t.services.RecipeService;
 import if3t.services.TriggerIngredientService;
 import java.util.ArrayList;
@@ -39,8 +37,6 @@ public class FacebookTask {
     private RecipeService recipeService;
 	@Autowired
 	private TriggerIngredientService triggerIngredientService;
-	@Autowired
-	private ParameterKeywordService parametersKeywordService;
 	@Autowired
 	private ActionIngredientService actionIngredientService;
 	@Autowired

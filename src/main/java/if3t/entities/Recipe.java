@@ -55,9 +55,6 @@ public class Recipe {
 	private Set<ActionIngredient> action_ingredients;
 	
 	@OneToMany(mappedBy = "recipe")
-	private Set<ParametersKeyword> parameters_keyword;
-	
-	@OneToMany(mappedBy = "recipe")
 	@JsonBackReference(value="recipe-channels_statuses")
 	private Set<ChannelStatus> channels_statuses;
 
@@ -139,14 +136,6 @@ public class Recipe {
 
 	public void setAction_ingredients(Set<ActionIngredient> action_ingredients) {
 		this.action_ingredients = action_ingredients;
-	}
-
-	public Set<ParametersKeyword> getParameters_keyword() {
-		return parameters_keyword;
-	}
-
-	public void setParameters_keyword(Set<ParametersKeyword> parameters_keyword) {
-		this.parameters_keyword = parameters_keyword;
 	}
 
 	public Set<ChannelStatus> getChannels_statuses() {
