@@ -32,7 +32,7 @@ public class RefreshTokensTask {
 	@Autowired
 	private ChannelService channelService;
 
-	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private final Logger log = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 
 	@Scheduled(fixedRate = 5 * 60 * 1000)
 	public void gmailTokenRefresh() {
