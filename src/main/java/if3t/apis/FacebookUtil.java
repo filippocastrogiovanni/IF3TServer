@@ -1,5 +1,6 @@
 package if3t.apis;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,7 +36,8 @@ public class FacebookUtil {
 	private long fixedRateString;
 	
 	//TRIGGER: NEW POST BY USER
-	public int calculate_new_posts_by_user_number(String access_token, Long recipe_id) throws Exception{
+	public ArrayList<String> calculate_new_posts_by_user_number(String access_token, Long recipe_id) throws Exception{
+		ArrayList<String> new_posts = new ArrayList<String>();
 		ChannelStatus css = channelStatusService.readChannelStatusByRecipeId(recipe_id);
 		if(css == null){
 			Long timestamp = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
@@ -58,9 +60,13 @@ public class FacebookUtil {
 		
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+		/*
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(
-			//TODO insert calendar_seconds_to_now as parameter
 			"https://graph.facebook.com/v2.7/me/posts?fields=message,type&since="+ since_ref + "&access_token="+access_token);
+		*/
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(
+			 "https://graph.facebook.com/v2.7/me/posts?fields=message,type&since=1470000000&access_token="+access_token);
+
 		HttpEntity<?> entity = new HttpEntity<>(headers);
 		RestTemplate restTemplate = new RestTemplate();
 		HttpEntity<String> response = restTemplate.exchange(
@@ -73,12 +79,12 @@ public class FacebookUtil {
 		int new_posts_by_user_number = 0;
 		for(int i=0; i<data_json_response.length(); i++){
 			JSONObject data_element_json_object = data_json_response.getJSONObject(i);
-			if(data_element_json_object.get("type").equals("status")){
-				new_posts_by_user_number++; //count only status posts
+			if(data_element_json_object.get("type").equals("status") && data_element_json_object.get("message")!=null && !data_element_json_object.get("message").equals("")){
+				new_posts.add((String) data_element_json_object.get("message")); //count only status posts
 			}
 		}
 		
-		return new_posts_by_user_number;
+		return new_posts;
 	}
 	
 	//TRIGGER: CHANGE OF FULL NAME

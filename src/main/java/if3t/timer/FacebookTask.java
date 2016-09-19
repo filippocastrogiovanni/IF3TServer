@@ -115,7 +115,7 @@ public class FacebookTask {
 					situation = 7;	
 				
 				boolean full_name_changed = false, profile_picture_changed = false, location_changed = false;
-				int number_new_posts = 0;
+				ArrayList<String> new_posts = new ArrayList<String>();
 				String access_token = triggerAuth.getAccessToken();
 				
 				//the server should never stop, so I do not need to have a table in the DB with full_name, profile_picture, location history
@@ -124,12 +124,12 @@ public class FacebookTask {
 				//the server can not wait for the verification of all the conditions because they could never happen, so we just take into account a moment, if in that moment the conditions are verified, then we proceed with the action
 				case 0://new post
 					try {
-						number_new_posts = facebookUtil.calculate_new_posts_by_user_number(access_token, recipe.getId());
+						new_posts = facebookUtil.calculate_new_posts_by_user_number(access_token, recipe.getId());
 					} catch (Exception e) {
 						System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
 						e.printStackTrace();
 					}	
-				   	if(number_new_posts<=0)
+				   	if(new_posts.size()<=0)
 				   		continue; 	
 					break;
 				case 1://every one
@@ -244,13 +244,9 @@ public class FacebookTask {
 				if(actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())
 					continue;
 				
-				if(situation != 0) //not new_posts
-					number_new_posts = 1;
-				//else nothing
+			
 				//we need to repeat the action for each new post, or just once 
-				while(number_new_posts > 0){
-					number_new_posts--;
-					
+				if(situation != 0){ //not new_post as trigger
 					switch(recipe.getAction().getChannel().getKeyword()){
 					
 					case "facebook" :
@@ -266,7 +262,25 @@ public class FacebookTask {
 						break;
 					
 					}
-					
+				}
+				else{
+					for(String s : new_posts){
+						
+						switch(recipe.getAction().getChannel().getKeyword()){
+						
+						case "facebook" :
+							String message = "";
+							for(ActionIngredient actionIngredient: actionIngredients){
+								ParametersActions param = actionIngredient.getParam();
+		
+								//there are no other possible actions
+								//if(param.getKeyword().equals("post"))
+									message = actionIngredient.getValue();
+							}
+							facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
+							break;
+						}
+					}	
 				}
 				
 			}catch (Exception e){
