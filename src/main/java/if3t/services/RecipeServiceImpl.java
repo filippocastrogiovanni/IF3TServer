@@ -3,10 +3,8 @@ package if3t.services;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -36,10 +34,12 @@ import if3t.models.Trigger;
 import if3t.models.TriggerIngredient;
 import if3t.models.User;
 import if3t.repositories.ActionIngredientRepository;
+import if3t.repositories.ActionRepository;
 import if3t.repositories.AuthorizationRepository;
 import if3t.repositories.ParametersKeywordsRepository;
 import if3t.repositories.RecipeRepository;
 import if3t.repositories.TriggerIngredientRepository;
+import if3t.repositories.TriggerRepository;
 
 @Service
 @Transactional
@@ -54,11 +54,11 @@ public class RecipeServiceImpl implements RecipeService {
 	@Autowired
 	private ActionIngredientRepository actionIngRepo;
 	@Autowired
-	private ActionService actionService;	
+	private ActionRepository actionRespository;	
 	@Autowired
-	private TriggerService triggerService;
+	private TriggerRepository triggerRepository;
 	@Autowired
-	private ParameterKeywordService parameterKeywordService;
+	private ParametersKeywordsRepository parameterKeywordRepository;
 	@Autowired
 	private CreateRecipeService createRecipeService;
 	private static final String EMAIL_PATTERN = "^[-a-z0-9~!$%^&*_=+}{\'?]+(.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(.[-a-z0-9_]+)*.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}))(:[0-9]{1,5})?$";
@@ -141,7 +141,7 @@ public class RecipeServiceImpl implements RecipeService {
 			if(r.getParameters_keyword()!=null)
 				for(ParametersKeyword pk : r.getParameters_keyword()){
 					pk.setRecipe(r);
-					parameterKeywordService.addParametersKeyword(pk);
+					parameterKeywordRepository.save(pk);
 				}
 			
 			//Il salvataggio degli ingredienti va fatto qui (e non nel controller) per garantire la transazionalità
@@ -318,7 +318,7 @@ public class RecipeServiceImpl implements RecipeService {
 						}
 					}
 					
-					if (actionService.findById(r.getAction().getId()) != null && triggerService.findById(r.getTrigger().getId()) != null)
+					if (actionRespository.findOne(r.getAction().getId()) != null && triggerRepository.findOne(r.getTrigger().getId()) != null)
 					{
 						System.out.println("ACTION AND TRIGGER ARE VALID");
 						

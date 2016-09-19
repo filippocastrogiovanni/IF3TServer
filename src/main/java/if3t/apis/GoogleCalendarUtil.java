@@ -1,30 +1,26 @@
 package if3t.apis;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.DateTime;
-import com.google.api.services.calendar.model.*;
-import com.google.api.client.http.HttpResponse;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.http.HttpResponse;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.DateTime;
+import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventDateTime;
+import com.google.api.services.calendar.model.Events;
 
 import if3t.exceptions.InvalidParametersException;
 import if3t.models.Authorization;
@@ -32,7 +28,6 @@ import if3t.models.ChannelStatus;
 import if3t.models.GCalendarDatePojo;
 import if3t.models.GCalendarEventPOJO;
 import if3t.models.Recipe;
-import if3t.models.User;
 import if3t.services.ChannelStatusService;
 
 @Component
@@ -219,7 +214,7 @@ public class GoogleCalendarUtil {
         return targetEvents;
 	}
 	
-	private static String createJsonBody(String start, String end, String title, String location, String description) throws JsonProcessingException {
+	/*private static String createJsonBody(String start, String end, String title, String location, String description) throws JsonProcessingException {
 		GCalendarDatePojo startPOJO = new GCalendarDatePojo();
 		startPOJO.setDateTime(start);
 		GCalendarDatePojo endPOJO = new GCalendarDatePojo();
@@ -257,5 +252,5 @@ public class GoogleCalendarUtil {
 		startBuilder.append(":00");
 		
 		return startBuilder.toString();
-	}
+	}*/
 }

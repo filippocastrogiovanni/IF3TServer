@@ -36,7 +36,6 @@ import if3t.models.ChannelStatus;
 import if3t.models.ParametersTriggers;
 import if3t.models.Recipe;
 import if3t.models.TriggerIngredient;
-import if3t.models.User;
 import if3t.services.ChannelStatusService;
 
 @Component

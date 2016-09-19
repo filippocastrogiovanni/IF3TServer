@@ -80,8 +80,8 @@ public class Trigger {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((channel == null) ? 0 : channel.hashCode());
 		result = prime * result + ((header == null) ? 0 : header.hashCode());
-		result = prime * result + ((paragraph == null) ? 0 : paragraph.hashCode());
 		return result;
 	}
 
@@ -94,16 +94,18 @@ public class Trigger {
 		if (!(obj instanceof Trigger))
 			return false;
 		Trigger other = (Trigger) obj;
+		if (channel == null) {
+			if (other.channel != null)
+				return false;
+		} else if (!channel.equals(other.channel))
+			return false;
 		if (header == null) {
 			if (other.header != null)
 				return false;
 		} else if (!header.equals(other.header))
 			return false;
-		if (paragraph == null) {
-			if (other.paragraph != null)
-				return false;
-		} else if (!paragraph.equals(other.paragraph))
-			return false;
 		return true;
 	}
+
+
 }
