@@ -63,7 +63,10 @@ public class TwitterTask
 			Authorization authAction;
 			Channel actionChannel = recipe.getAction().getChannel();
 			
-			if (!actionChannel.getKeyword().equals(triggerChannel.getKeyword()))
+			if (actionChannel.getKeyword().equals(triggerChannel.getKeyword())) {
+				authAction = authTrigger;
+			}
+			else 
 			{
 				authAction = authService.getAuthorization(user.getId(), actionChannel.getKeyword());
 				
@@ -72,9 +75,6 @@ public class TwitterTask
 					logger.info("Action channel (" + actionChannel.getKeyword() + ") is not enabled for the user " + user.getUsername());
 					continue;
 				}
-			}
-			else {
-				authAction = authTrigger;
 			}
 			
 			String hashtagTrigger = null, fromUser = null;

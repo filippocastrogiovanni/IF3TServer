@@ -27,7 +27,7 @@ import if3t.models.Authorization;
 import if3t.services.ChannelService;
 
 @Component
-public class RefreshTokens {
+public class RefreshTokensTask {
 
 	@Autowired
 	private ChannelService channelService;

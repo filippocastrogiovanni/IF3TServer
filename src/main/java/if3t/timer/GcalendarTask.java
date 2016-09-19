@@ -28,7 +28,7 @@ import if3t.services.RecipeService;
 import if3t.services.TriggerIngredientService;
 
 @Component
-public class GoogleCalendarTask {
+public class GcalendarTask {
 
 	@Autowired
 	private GmailUtil gmailUtil;
