@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 @Table(name="parameters_keyword")
 public class ParametersKeyword {
 
+	//TODO vedere se fatto cosi va bene o va trovato un altro modo
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id_parameter_keyword", nullable = false)

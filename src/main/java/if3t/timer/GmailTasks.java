@@ -1,7 +1,9 @@
 package if3t.timer;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,6 +21,7 @@ import com.google.api.services.gmail.model.Message;
 import if3t.apis.FacebookUtil;
 import if3t.apis.GmailUtil;
 import if3t.apis.GoogleCalendarUtil;
+import if3t.apis.TwitterUtil;
 import if3t.entities.ActionIngredient;
 import if3t.entities.Authorization;
 import if3t.entities.Channel;
@@ -42,6 +45,8 @@ public class GmailTasks {
 	@Autowired
 	private GoogleCalendarUtil gCalendarUtil;
 	@Autowired
+	private TwitterUtil twitterUtil;
+	@Autowired
     private RecipeService recipeService;
 	@Autowired
 	private FacebookUtil facebookUtil;
@@ -55,9 +60,12 @@ public class GmailTasks {
 	private ChannelStatusService channelStatusService;
 	@Value("${app.scheduler.value}")
 	private long rate;
+	@Value("${app.timezone}")
+	private String zone;
 
 	@Scheduled(fixedRateString = "${app.scheduler.value}")
 	public void gmailScheduler(){
+		TimeZone timezone = TimeZone.getTimeZone(zone);
 		RestTemplate restTemplate = new RestTemplate();
 
 		List<Recipe> gmailTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gmail");
@@ -78,7 +86,6 @@ public class GmailTasks {
 				//Checking if the access token of the action channel is not present
 				if(actionAuth == null)
 					continue;
-
 
 				HttpHeaders headers = new HttpHeaders();
 				headers.set("Authorization", triggerAuth.getTokenType() + " " + triggerAuth.getAccessToken());
@@ -150,6 +157,54 @@ public class GmailTasks {
 						}
 						break;
 					case "calendar" :
+						String title = "";
+						String location = "";
+						String description = "";
+						String startDateString = "";
+						String endDateString = "";
+						String startTimeString = "";
+						String endTimeString = "";
+						
+						for(ActionIngredient actionIngredient: actionIngredients){
+							ParametersActions param = actionIngredient.getParam();
+	
+							switch(param.getKeyword()){
+								case "start_date" :
+									startDateString = actionIngredient.getValue();
+									break;
+								case "end_date" :
+									endDateString = actionIngredient.getValue();
+									break;
+								case "start_time" :
+									startTimeString = actionIngredient.getValue();
+									break;
+								case "end_time" :
+									endTimeString = actionIngredient.getValue();
+									break;
+								case "title" :
+									title = actionIngredient.getValue();
+									break;
+								case "description" :
+									description = actionIngredient.getValue();
+									break;
+								case "location" :
+									location = actionIngredient.getValue();
+									break;
+							}
+						}
+						
+						SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+
+						String startDate = startDateString + " " + startTimeString;
+						String endDate = endDateString + " " + endTimeString;
+						Calendar start = Calendar.getInstance();
+						Calendar end = Calendar.getInstance();
+						start.setTime(format.parse(startDate));
+						start.setTimeZone(timezone);
+						end.setTime(format.parse(endDate));
+						end.setTimeZone(timezone);
+
+						gCalendarUtil.createEvent(start, end, title, description, location, triggerAuth);
 						break;
 					case "facebook" :
 						String message = "";
@@ -162,6 +217,17 @@ public class GmailTasks {
 						facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
 						break;
 					case "twitter" :
+						String tweet = "";
+						String hashtag = "";
+						for(ActionIngredient actionIngredient: actionIngredients){
+							ParametersActions param = actionIngredient.getParam();
+
+							if(param.getKeyword().equals("tweet"))
+								tweet += actionIngredient.getValue();
+							if(param.getKeyword().equals("hashtag"))
+								hashtag += actionIngredient.getValue();
+						}
+						twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
 						break;
 					}
 				}

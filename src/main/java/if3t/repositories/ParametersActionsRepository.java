@@ -1,15 +1,12 @@
 package if3t.repositories;
 
 import java.util.List;
-
 import org.springframework.data.repository.Repository;
-
 import if3t.entities.Action;
 import if3t.entities.Channel;
 import if3t.entities.ParametersActions;
 
 public interface ParametersActionsRepository extends Repository<ParametersActions, Long> {
-
 	public Iterable<ParametersActions> findAll();
 	public List<ParametersActions> findByChannel(Channel channel);
 	public ParametersActions findOne(Long id);

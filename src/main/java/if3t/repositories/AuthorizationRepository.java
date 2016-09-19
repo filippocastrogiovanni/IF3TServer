@@ -8,8 +8,7 @@ import if3t.entities.Authorization;
 import if3t.entities.Channel;
 import if3t.entities.User;
 
-public interface AuthorizationRepository extends Repository<Authorization, Long> 
-{
+public interface AuthorizationRepository extends Repository<Authorization, Long> {
 	public Authorization findOne(Long id);
 	public void deleteByUser_IdAndChannel_ChannelId(Long userId, Long channelId);
 	public void deleteByUser_IdAndChannel_Keyword(Long userId, String channelKeyword);

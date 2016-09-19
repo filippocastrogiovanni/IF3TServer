@@ -155,7 +155,7 @@ public class RefreshTokensTask {
 					FacebookClient fbClient = new DefaultFacebookClient(old_token, Version.LATEST);
 					AccessToken exAccessToken = fbClient.obtainExtendedAccessToken("1664045957250331", "4489952bdf1294fe0fd156288a2602f4"); //appId, appSecret
 					if(exAccessToken!=null){
-						System.out.println("The token access " + exAccessToken.getAccessToken() + " expires on" + exAccessToken.getExpires());
+						//System.out.println("The token access " + exAccessToken.getAccessToken() + " expires on" + exAccessToken.getExpires());
 						auth.setAccessToken(exAccessToken.getAccessToken());
 						Calendar c = Calendar.getInstance();
 						c.setTime(exAccessToken.getExpires());
