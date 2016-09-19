@@ -32,7 +32,7 @@ import java.util.ArrayList;
 public class FacebookTask {
 
 	@Autowired
-	private FacebookUtil facebookUtil;
+	private FacebookUtil facebookUtil
 	@Autowired
     private RecipeService recipeService;
 	@Autowired

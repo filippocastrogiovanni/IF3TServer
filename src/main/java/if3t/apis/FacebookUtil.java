@@ -33,7 +33,7 @@ public class FacebookUtil {
 	@Autowired
 	private ChannelStatusService channelStatusService;	
 	@Value("${app.scheduler.value}")
-	private long fixedRateString;
+	private long fixedRateString
 	
 	//TRIGGER: NEW POST BY USER
 	public ArrayList<String> calculate_new_posts_by_user_number(String access_token, Long recipe_id) throws Exception{
