@@ -35,6 +35,8 @@ public class GoogleCalendarTask {
 	@Autowired
 	private GoogleCalendarUtil gCalendarUtil;
 	@Autowired
+	private FacebookUtil facebookUtil;
+	@Autowired
     private RecipeService recipeService;
 	@Autowired
 	private TriggerIngredientService triggerIngredientService;
@@ -127,7 +129,7 @@ public class GoogleCalendarTask {
 								if(param.getKeyword().equals("post"))
 									message = actionIngredient.getValue();
 							}
-							FacebookUtil.publish_new_post(message, actionAuth.getAccessToken());
+							facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
 							break;
 						case "twitter" :
 							break;

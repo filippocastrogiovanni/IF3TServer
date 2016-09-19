@@ -44,6 +44,8 @@ public class GmailTasks {
 	@Autowired
     private RecipeService recipeService;
 	@Autowired
+	private FacebookUtil facebookUtil;
+	@Autowired
 	private TriggerIngredientService triggerIngredientService;
 	@Autowired
 	private ActionIngredientService actionIngredientService;
@@ -155,7 +157,7 @@ public class GmailTasks {
 							if(param.getKeyword().equals("post"))
 								message = actionIngredient.getValue();
 						}
-						FacebookUtil.publish_new_post(message, actionAuth.getAccessToken());
+						facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
 						break;
 					case "twitter" :
 						break;
