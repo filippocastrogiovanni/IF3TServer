@@ -1,12 +1,12 @@
 package if3t.timer;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -53,6 +53,8 @@ public class GmailTasks {
 	private AuthorizationService authService;
 	@Autowired
 	private ChannelStatusService channelStatusService;
+	@Value("${app.scheduler.value}")
+	private long rate;
 
 	@Scheduled(fixedRateString = "${app.scheduler.value}")
 	public void gmailScheduler(){
@@ -96,7 +98,7 @@ public class GmailTasks {
 
 				ChannelStatus channelStatus = channelStatusService.readChannelStatusByRecipeId(recipe.getId());
 				if(channelStatus == null)
-					timestamp = Calendar.getInstance().getTimeInMillis()- (1000*60*5);
+					timestamp = Calendar.getInstance().getTimeInMillis()- (rate);
 				else
 					timestamp = channelStatus.getSinceRef();
 

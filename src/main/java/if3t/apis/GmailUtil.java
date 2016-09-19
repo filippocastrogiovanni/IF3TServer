@@ -14,6 +14,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMessage.RecipientType;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +22,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.repackaged.org.apache.commons.codec.binary.Base64;
 import com.google.api.services.gmail.Gmail;
+import com.google.api.services.gmail.Gmail.Users.Messages;
+import com.google.api.services.gmail.Gmail.Users.Messages.Send;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
 
@@ -49,6 +53,8 @@ public class GmailUtil {
 	
 	@Autowired
     private ChannelStatusService channelStatusService;
+	@Value("${app.scheduler.value}")
+	private long rate;
     
 	public List<Message> checkEmailReceived(Authorization auth, List<TriggerIngredient> triggerIngredients, Long timestamp, Recipe recipe) throws IOException{
 		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
@@ -87,7 +93,7 @@ public class GmailUtil {
 		if(messageList.getNextPageToken() != null)
 			channelStatus.setPageToken(messageList.getNextPageToken());
 		
-		timestamp += 1000*60*5;
+		timestamp += rate;
 		channelStatus.setSinceRef(timestamp);
 		channelStatusService.updateChannelStatus(channelStatus);
 		
@@ -96,15 +102,27 @@ public class GmailUtil {
 		return messages;
 	}
 	
-	public String sendEmail( String to, String subject, String body, Authorization auth) throws MessagingException, IOException, URISyntaxException, InvalidParametersException{
-		RestTemplate restTemplate = new RestTemplate();
+	public boolean sendEmail( String to, String subject, String body, Authorization auth) throws MessagingException, IOException, URISyntaxException, InvalidParametersException{
+		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
+		Gmail gmail = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
+						.setApplicationName("IF3T")
+						.build();
+		
+		//RestTemplate restTemplate = new RestTemplate();
 		
 		if(to == null)
 			throw new InvalidParametersException("Address cannot be null!");
 		
 		Message email = createEmail(to, null, subject == null? "" : subject, body == null? "" : body);
 
-		String ReqBody = "{\"raw\":\"" + email.getRaw() +"\"}";
+		HttpResponse response = gmail.users()
+									.messages()
+									.send("me", email)
+									.executeUnparsed();
+		response.disconnect();
+		return (response.getStatusCode() < 300 && response.getStatusCode()>= 200)? true : false;
+		
+		/*String ReqBody = "{\"raw\":\"" + email.getRaw() +"\"}";
 		MediaType mediaType = new MediaType("application", "json");
 
 		RequestEntity<String> request = RequestEntity
@@ -115,7 +133,7 @@ public class GmailUtil {
 				.body(ReqBody);
 
 		ResponseEntity<String> messageResponse = restTemplate.exchange(request, String.class);
-		return messageResponse.getBody();
+		return messageResponse.getBody();*/
 	}
 	
 	private Message createEmail(String to, String from, String subject, String bodyText) throws MessagingException, IOException {

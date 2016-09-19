@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -41,6 +42,8 @@ public class GoogleCalendarUtil {
     
     @Autowired
     private ChannelStatusService channelStatusService;
+    @Value("${app.scheduler.value}")
+	private long rate;
     
 	public boolean createEvent(Calendar startDate, Calendar endDate, String title, String description, String location, Authorization auth) throws InvalidParametersException, URISyntaxException, IOException{
 		if(startDate == null || endDate == null)
@@ -71,6 +74,7 @@ public class GoogleCalendarUtil {
 										.insert("primary", event)
 										.executeUnparsed();
 		
+		response.disconnect();
 		return (response.getStatusCode() < 300 && response.getStatusCode()>= 200)? true : false;
 		
 		/*String start = createUsableDateTime(startDate);
@@ -102,7 +106,7 @@ public class GoogleCalendarUtil {
 		
 		Long timestamp = 0L;
 		if(channelStatus == null)
-			timestamp = Calendar.getInstance().getTimeInMillis() - (1000*60*5);
+			timestamp = Calendar.getInstance().getTimeInMillis() - (rate);
 		else
 			timestamp = channelStatus.getSinceRef();
 		
@@ -129,7 +133,7 @@ public class GoogleCalendarUtil {
 		if(events.getNextPageToken() != null)
 			channelStatus.setPageToken(events.getNextPageToken());
 		
-		timestamp += 1000*60*5;
+		timestamp += rate;
 		channelStatus.setSinceRef(timestamp);
 		
 		channelStatusService.updateChannelStatus(channelStatus);
@@ -162,7 +166,7 @@ public class GoogleCalendarUtil {
 		
 		Long timestamp = 0L;
 		if(channelStatus == null)
-			timestamp = Calendar.getInstance().getTimeInMillis() - (1000*60*5);
+			timestamp = Calendar.getInstance().getTimeInMillis() - (rate);
 		else
 			timestamp = channelStatus.getSinceRef();
 		
@@ -191,7 +195,7 @@ public class GoogleCalendarUtil {
 		if(events.getNextPageToken() != null)
 			channelStatus.setPageToken(events.getNextPageToken());
 		
-		timestamp += 1000*60*5;
+		timestamp += rate;
 		channelStatus.setSinceRef(timestamp);
 		
 		channelStatusService.updateChannelStatus(channelStatus);

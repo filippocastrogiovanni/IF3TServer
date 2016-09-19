@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -46,8 +47,10 @@ public class GcalendarTask {
 	private AuthorizationService authService;
 	@Autowired
 	private ChannelStatusService channelStatusService;
+	@Value("${app.scheduler.value}")
+	private long rate;
 	
-	@Scheduled(fixedRate = 1000*60*5)
+	@Scheduled(fixedRateString = "${app.scheduler.value}")
 	public void gCalendarScheduler(){
 		
 		/*Authorization auth = authService.getAuthorization(7l, "gcalendar");
