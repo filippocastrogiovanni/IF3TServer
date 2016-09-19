@@ -2,14 +2,14 @@ package if3t.services;
 
 import java.util.List;
 
+import if3t.entities.Recipe;
+import if3t.entities.User;
 import if3t.exceptions.AddRecipeException;
 import if3t.exceptions.ChannelNotAuthorizedException;
 import if3t.exceptions.NoPermissionException;
 import if3t.exceptions.NotFoundRecipeException;
 import if3t.exceptions.PartialUpdateException;
-import if3t.models.Recipe;
 import if3t.models.RecipePOJO;
-import if3t.models.User;
 
 public interface RecipeService {
 

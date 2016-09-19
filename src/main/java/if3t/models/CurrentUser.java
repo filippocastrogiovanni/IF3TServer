@@ -2,6 +2,8 @@ package if3t.models;
 
 import org.springframework.security.core.authority.AuthorityUtils;
 
+import if3t.entities.User;
+
 public class CurrentUser extends org.springframework.security.core.userdetails.User {
 
 	private static final long serialVersionUID = -4912217803859074988L;

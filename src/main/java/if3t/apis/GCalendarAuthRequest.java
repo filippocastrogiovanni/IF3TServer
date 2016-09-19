@@ -1,7 +1,8 @@
 package if3t.apis;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import if3t.models.User;
+
+import if3t.entities.User;
 
 public class GCalendarAuthRequest {
 

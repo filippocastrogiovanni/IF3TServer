@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.data.repository.Repository;
 
-import if3t.models.Action;
-import if3t.models.Channel;
+import if3t.entities.Action;
+import if3t.entities.Channel;
 
 public interface ActionRepository extends Repository<Action, Long> {
 

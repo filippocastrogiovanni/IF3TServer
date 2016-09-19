@@ -1,6 +1,6 @@
 package if3t.models;
 
-public class GCalendarDatePojo {
+public class GCalendarDatePOJO {
 	private String dateTime;
 
 	public String getDateTime() {

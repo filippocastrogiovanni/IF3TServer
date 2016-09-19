@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.data.repository.Repository;
 
-import if3t.models.TriggerIngredient;
+import if3t.entities.TriggerIngredient;
 
 public interface TriggerIngredientRepository extends Repository<TriggerIngredient, Long> 
 {

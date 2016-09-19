@@ -1,4 +1,4 @@
-package if3t.models;
+package if3t.entities;
 
 import java.util.Set;
 
@@ -17,12 +17,12 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import javax.persistence.Id;
 
 @Entity
-@Table(name="actions")
-public class Action {
+@Table(name="triggers")
+public class Trigger {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id_action", nullable = false)
+	@Column(name = "id_trigger", nullable = false)
 	private Long id;
 	
 	@NotNull
@@ -35,15 +35,15 @@ public class Action {
 	
 	@NotNull
 	private String paragraph;
-	
-	@OneToMany(mappedBy = "action")
-	@JsonBackReference(value="action-recipe")
+		
+	@OneToMany(mappedBy = "trigger")
+	@JsonBackReference(value="trigger-recipe")
 	private Set<Recipe> recipe;
-	
-	@OneToMany(mappedBy = "action")
-	@JsonBackReference(value="action-parameters")
-	private Set<ParametersActions> parameters;
 
+	@OneToMany(mappedBy = "trigger")
+	@JsonBackReference(value="trigger-parameters")
+	private Set<ParametersTriggers> parameters;
+	
 	public Long getId() {
 		return id;
 	}
@@ -76,14 +76,6 @@ public class Action {
 		this.paragraph = paragraph;
 	}
 
-	public Set<ParametersActions> getParameters() {
-		return parameters;
-	}
-
-	public void setParameters(Set<ParametersActions> parameters) {
-		this.parameters = parameters;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -99,9 +91,9 @@ public class Action {
 			return true;
 		if (obj == null)
 			return false;
-		if (!(obj instanceof Action))
+		if (!(obj instanceof Trigger))
 			return false;
-		Action other = (Action) obj;
+		Trigger other = (Trigger) obj;
 		if (channel == null) {
 			if (other.channel != null)
 				return false;
@@ -115,5 +107,5 @@ public class Action {
 		return true;
 	}
 
-	
+
 }

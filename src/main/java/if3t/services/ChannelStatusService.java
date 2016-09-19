@@ -1,6 +1,6 @@
 package if3t.services;
 
-import if3t.models.ChannelStatus;
+import if3t.entities.ChannelStatus;
 
 public interface ChannelStatusService 
 {

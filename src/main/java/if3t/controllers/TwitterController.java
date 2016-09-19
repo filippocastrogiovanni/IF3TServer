@@ -24,9 +24,9 @@ import com.google.api.client.auth.oauth.OAuthHmacSigner;
 import com.google.api.client.http.javanet.NetHttpTransport;
 
 import if3t.apis.TwitterTemporaryToken;
+import if3t.entities.User;
 import if3t.exceptions.NotLoggedInException;
 import if3t.models.Response;
-import if3t.models.User;
 import if3t.services.AuthorizationService;
 import if3t.services.ChannelService;
 import if3t.services.UserService;

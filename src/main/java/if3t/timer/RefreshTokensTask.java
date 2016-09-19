@@ -23,7 +23,7 @@ import com.restfb.Version;
 
 import if3t.apis.GoogleRefreshTokenRequest;
 import if3t.apis.GoogleRefreshTokenResponse;
-import if3t.models.Authorization;
+import if3t.entities.Authorization;
 import if3t.services.ChannelService;
 
 @Component

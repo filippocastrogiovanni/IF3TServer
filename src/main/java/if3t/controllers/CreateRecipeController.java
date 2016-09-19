@@ -9,10 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import if3t.models.Action;
-import if3t.models.ParametersActions;
-import if3t.models.ParametersTriggers;
-import if3t.models.Trigger;
+
+import if3t.entities.Action;
+import if3t.entities.ParametersActions;
+import if3t.entities.ParametersTriggers;
+import if3t.entities.Trigger;
 import if3t.services.CreateRecipeService;
 
 @RestController

@@ -1,7 +1,8 @@
 package if3t.repositories;
 
 import org.springframework.data.repository.Repository;
-import if3t.models.User;
+
+import if3t.entities.User;
 
 public interface UserRepository extends Repository<User, Long> {
 

@@ -3,8 +3,8 @@ package if3t.services;
 import java.util.List;
 import java.util.Map;
 
-import if3t.models.ParametersKeyword;
-import if3t.models.User;
+import if3t.entities.ParametersKeyword;
+import if3t.entities.User;
 
 public interface ParameterKeywordService 
 {	

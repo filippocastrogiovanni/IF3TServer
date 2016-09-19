@@ -2,8 +2,8 @@ package if3t.services;
 
 import java.util.List;
 
-import if3t.models.Authorization;
-import if3t.models.Channel;
+import if3t.entities.Authorization;
+import if3t.entities.Channel;
 
 public interface ChannelService 
 {

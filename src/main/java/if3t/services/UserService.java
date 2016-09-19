@@ -1,7 +1,7 @@
 package if3t.services;
 
-import if3t.models.Timezone;
-import if3t.models.User;
+import if3t.entities.Timezone;
+import if3t.entities.User;
 
 public interface UserService {
 

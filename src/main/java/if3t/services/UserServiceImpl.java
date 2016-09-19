@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import if3t.models.Timezone;
-import if3t.models.User;
+import if3t.entities.Timezone;
+import if3t.entities.User;
 import if3t.repositories.TimezoneRepository;
 import if3t.repositories.UserRepository;
 

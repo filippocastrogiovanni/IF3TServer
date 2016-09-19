@@ -1,4 +1,4 @@
-package if3t.models;
+package if3t.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,25 +14,25 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import javax.persistence.Id;
 
 @Entity
-@Table(name="actions_ingredients")
-public class ActionIngredient {
-
+@Table(name="triggers_ingredients")
+public class TriggerIngredient {
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id_act_ing", nullable = false)
+	@Column(name = "id_tri_ing", nullable = false)
 	private Long id;
 	
 	@NotNull
 	@ManyToOne
-	@JsonBackReference(value="actioningredient-recipe")
+	@JsonBackReference(value="triggeringredient-recipe")
 	@JoinColumn(name="id_recipe")
 	private Recipe recipe;
 	
 	@NotNull
 	@ManyToOne
-	@JsonBackReference(value="actioningredient-param")
+	@JsonBackReference(value="triggeringredient-param")
 	@JoinColumn(name="id_param")
-	private ParametersActions param;
+	private ParametersTriggers param;
 	
 	@Column(name = "param_value", nullable = false)
 	private String value;
@@ -53,11 +53,11 @@ public class ActionIngredient {
 		this.recipe = recipe;
 	}
 
-	public ParametersActions getParam() {
+	public ParametersTriggers getParam() {
 		return param;
 	}
 
-	public void setParam(ParametersActions param) {
+	public void setParam(ParametersTriggers param) {
 		this.param = param;
 	}
 
@@ -75,7 +75,6 @@ public class ActionIngredient {
 		int result = 1;
 		result = prime * result + ((param == null) ? 0 : param.hashCode());
 		result = prime * result + ((recipe == null) ? 0 : recipe.hashCode());
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
 
@@ -85,9 +84,9 @@ public class ActionIngredient {
 			return true;
 		if (obj == null)
 			return false;
-		if (!(obj instanceof ActionIngredient))
+		if (!(obj instanceof TriggerIngredient))
 			return false;
-		ActionIngredient other = (ActionIngredient) obj;
+		TriggerIngredient other = (TriggerIngredient) obj;
 		if (param == null) {
 			if (other.param != null)
 				return false;
@@ -98,16 +97,11 @@ public class ActionIngredient {
 				return false;
 		} else if (!recipe.equals(other.recipe))
 			return false;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
-			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "ActionIngredient [id=" + id + ", recipe=" + recipe + ", param=" + param + ", value=" + value + "]";
+		return "TriggerIngredient [id=" + id + ", recipe=" + recipe + ", param=" + param + ", value=" + value + "]";
 	}
 }

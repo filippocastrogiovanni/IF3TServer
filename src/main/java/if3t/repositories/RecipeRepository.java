@@ -2,7 +2,8 @@ package if3t.repositories;
 
 import java.util.List;
 import org.springframework.data.repository.Repository;
-import if3t.models.Recipe;
+
+import if3t.entities.Recipe;
 
 public interface RecipeRepository extends Repository<Recipe, Long> {
 

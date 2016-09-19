@@ -3,9 +3,10 @@ package if3t.repositories;
 import java.util.List;
 
 import org.springframework.data.repository.Repository;
-import if3t.models.Channel;
-import if3t.models.ParametersTriggers;
-import if3t.models.Trigger;
+
+import if3t.entities.Channel;
+import if3t.entities.ParametersTriggers;
+import if3t.entities.Trigger;
 
 public interface ParametersTriggersRepository extends Repository<ParametersTriggers, Long> {
 

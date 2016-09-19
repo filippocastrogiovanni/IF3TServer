@@ -3,7 +3,8 @@ package if3t.repositories;
 import java.util.List;
 
 import org.springframework.data.repository.Repository;
-import if3t.models.ParametersKeyword;
+
+import if3t.entities.ParametersKeyword;
 
 public interface ParametersKeywordsRepository extends Repository<ParametersKeyword, Long>{
 

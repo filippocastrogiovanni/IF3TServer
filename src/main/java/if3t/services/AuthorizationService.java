@@ -1,6 +1,6 @@
 package if3t.services;
 
-import if3t.models.Authorization;
+import if3t.entities.Authorization;
 
 public interface AuthorizationService 
 {

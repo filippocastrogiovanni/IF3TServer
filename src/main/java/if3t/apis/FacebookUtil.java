@@ -23,7 +23,7 @@ import com.restfb.json.JsonObject;
 import com.restfb.types.FacebookType;
 import com.restfb.types.User;
 
-import if3t.models.ChannelStatus;
+import if3t.entities.ChannelStatus;
 import if3t.services.ChannelStatusService;
 
 @Component

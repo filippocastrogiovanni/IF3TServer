@@ -7,6 +7,8 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 
+import if3t.entities.Recipe;
+
 public class RecipePOJO 
 {
 	@NotNull(message = "error.recipe.id.null")

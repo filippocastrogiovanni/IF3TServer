@@ -1,4 +1,4 @@
-package if3t.models;
+package if3t.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

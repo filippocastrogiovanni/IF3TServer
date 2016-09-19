@@ -1,4 +1,4 @@
-package if3t.models;
+package if3t.entities;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -7,6 +7,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import if3t.models.Role;
 
 @Entity
 @Table(name="users")

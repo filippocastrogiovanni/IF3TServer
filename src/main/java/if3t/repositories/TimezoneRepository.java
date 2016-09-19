@@ -1,7 +1,8 @@
 package if3t.repositories;
 
 import org.springframework.data.repository.Repository;
-import if3t.models.Timezone;
+
+import if3t.entities.Timezone;
 
 public interface TimezoneRepository extends Repository<Timezone, Long> {
 

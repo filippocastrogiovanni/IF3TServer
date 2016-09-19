@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.data.repository.Repository;
 
-import if3t.models.ActionIngredient;
+import if3t.entities.ActionIngredient;
 
 public interface ActionIngredientRepository extends Repository<ActionIngredient, Long> {
 

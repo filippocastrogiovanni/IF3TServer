@@ -5,8 +5,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import if3t.entities.User;
 import if3t.models.CurrentUser;
-import if3t.models.User;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {

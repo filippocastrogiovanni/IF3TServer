@@ -10,8 +10,8 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import if3t.models.Recipe;
-import if3t.models.TriggerIngredient;
+import if3t.entities.Recipe;
+import if3t.entities.TriggerIngredient;
 import if3t.repositories.RecipeRepository;
 import if3t.repositories.TriggerIngredientRepository;
 

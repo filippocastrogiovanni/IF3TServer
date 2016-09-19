@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.data.repository.Repository;
 
-import if3t.models.Action;
-import if3t.models.Channel;
-import if3t.models.ParametersActions;
+import if3t.entities.Action;
+import if3t.entities.Channel;
+import if3t.entities.ParametersActions;
 
 public interface ParametersActionsRepository extends Repository<ParametersActions, Long> {
 

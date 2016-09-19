@@ -1,7 +1,8 @@
 package if3t.repositories;
 
-import if3t.models.ChannelStatus;
 import org.springframework.data.repository.Repository;
+
+import if3t.entities.ChannelStatus;
 
 public interface ChannelsStatusesRepository extends Repository<ChannelStatus, Long>
 {

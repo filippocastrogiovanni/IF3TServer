@@ -8,6 +8,9 @@ import javax.validation.constraints.NotNull;
 
 import if3t.annotations.Parameters;
 import if3t.annotations.Parameters.ValidationMode;
+import if3t.entities.ParametersTriggers;
+import if3t.entities.Trigger;
+import if3t.entities.TriggerIngredient;
 
 public class TriggerPOJO 
 {

@@ -34,12 +34,12 @@ import com.google.api.services.gmail.Gmail.Users.Messages.Send;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
 
+import if3t.entities.Authorization;
+import if3t.entities.ChannelStatus;
+import if3t.entities.ParametersTriggers;
+import if3t.entities.Recipe;
+import if3t.entities.TriggerIngredient;
 import if3t.exceptions.InvalidParametersException;
-import if3t.models.Authorization;
-import if3t.models.ChannelStatus;
-import if3t.models.ParametersTriggers;
-import if3t.models.Recipe;
-import if3t.models.TriggerIngredient;
 import if3t.services.ChannelStatusService;
 
 @Component

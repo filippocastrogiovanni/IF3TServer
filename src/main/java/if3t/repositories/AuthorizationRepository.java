@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.data.repository.Repository;
 
-import if3t.models.Authorization;
-import if3t.models.Channel;
-import if3t.models.User;
+import if3t.entities.Authorization;
+import if3t.entities.Channel;
+import if3t.entities.User;
 
 public interface AuthorizationRepository extends Repository<Authorization, Long> 
 {

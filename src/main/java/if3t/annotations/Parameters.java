@@ -17,9 +17,9 @@ import javax.validation.Payload;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import if3t.models.ParametersActions;
+import if3t.entities.ParametersActions;
+import if3t.entities.ParametersTriggers;
 import if3t.models.ParametersPOJO;
-import if3t.models.ParametersTriggers;
 import if3t.services.CreateRecipeService;
 
 @Target(ElementType.FIELD)

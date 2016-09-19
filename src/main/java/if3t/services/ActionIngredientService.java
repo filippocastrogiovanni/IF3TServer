@@ -3,7 +3,7 @@ package if3t.services;
 import java.util.List;
 import java.util.Map;
 
-import if3t.models.ActionIngredient;
+import if3t.entities.ActionIngredient;
 
 public interface ActionIngredientService 
 {	

@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import if3t.models.Authorization;
-import if3t.models.ChannelStatus;
+import if3t.entities.Authorization;
+import if3t.entities.ChannelStatus;
 import if3t.services.ChannelStatusService;
 import twitter4j.HashtagEntity;
 import twitter4j.Paging;

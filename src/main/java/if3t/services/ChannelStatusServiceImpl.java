@@ -5,7 +5,7 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import if3t.models.ChannelStatus;
+import if3t.entities.ChannelStatus;
 import if3t.repositories.ChannelsStatusesRepository;
 import if3t.repositories.RecipeRepository;
 

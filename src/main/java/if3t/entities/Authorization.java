@@ -1,4 +1,4 @@
-package if3t.models;
+package if3t.entities;
 
 import java.io.Serializable;
 

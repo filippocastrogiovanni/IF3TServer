@@ -8,6 +8,9 @@ import javax.validation.constraints.NotNull;
 
 import if3t.annotations.Parameters;
 import if3t.annotations.Parameters.ValidationMode;
+import if3t.entities.Action;
+import if3t.entities.ActionIngredient;
+import if3t.entities.ParametersActions;
 
 public class ActionPOJO 
 {

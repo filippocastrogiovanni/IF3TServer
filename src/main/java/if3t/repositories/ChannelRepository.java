@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.data.repository.Repository;
 
-import if3t.models.Channel;
+import if3t.entities.Channel;
 
 public interface ChannelRepository extends Repository<Channel, Long> 
 {

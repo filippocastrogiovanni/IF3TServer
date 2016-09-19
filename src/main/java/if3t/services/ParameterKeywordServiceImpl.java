@@ -10,7 +10,7 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import if3t.models.ParametersKeyword;
+import if3t.entities.ParametersKeyword;
 import if3t.repositories.ParametersKeywordsRepository;
 import if3t.repositories.ParametersKeywordsRepository;
 

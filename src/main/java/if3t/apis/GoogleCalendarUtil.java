@@ -23,12 +23,12 @@ import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
 
+import if3t.entities.Authorization;
+import if3t.entities.ChannelStatus;
+import if3t.entities.Recipe;
 import if3t.exceptions.InvalidParametersException;
-import if3t.models.Authorization;
-import if3t.models.ChannelStatus;
-import if3t.models.GCalendarDatePojo;
+import if3t.models.GCalendarDatePOJO;
 import if3t.models.GCalendarEventPOJO;
-import if3t.models.Recipe;
 import if3t.services.ChannelStatusService;
 
 @Component

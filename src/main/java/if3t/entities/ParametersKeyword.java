@@ -1,9 +1,10 @@
-package if3t.models;
+package if3t.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -11,31 +12,29 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import javax.persistence.Id;
-
 @Entity
-@Table(name="triggers_ingredients")
-public class TriggerIngredient {
-	
+@Table(name="parameters_keyword")
+public class ParametersKeyword {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id_tri_ing", nullable = false)
+	@Column(name = "id_parameter_keyword", nullable = false)
 	private Long id;
 	
 	@NotNull
 	@ManyToOne
-	@JsonBackReference(value="triggeringredient-recipe")
+	@JsonBackReference(value="parametertrigger-recipe")
 	@JoinColumn(name="id_recipe")
 	private Recipe recipe;
 	
-	@NotNull
-	@ManyToOne
-	@JsonBackReference(value="triggeringredient-param")
-	@JoinColumn(name="id_param")
-	private ParametersTriggers param;
-	
-	@Column(name = "param_value", nullable = false)
+	@Column(name = "parameter_keyword_value", nullable = false)
 	private String value;
+	
+	@Column(name = "parameter_keyword_name", nullable = false)
+	private String name;
+	
+	@Column(name = "parameter_keyword_selected", nullable = false)
+	private boolean selected;
 
 	public Long getId() {
 		return id;
@@ -53,14 +52,6 @@ public class TriggerIngredient {
 		this.recipe = recipe;
 	}
 
-	public ParametersTriggers getParam() {
-		return param;
-	}
-
-	public void setParam(ParametersTriggers param) {
-		this.param = param;
-	}
-
 	public String getValue() {
 		return value;
 	}
@@ -69,12 +60,28 @@ public class TriggerIngredient {
 		this.value = value;
 	}
 
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
+		this.selected = selected;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((param == null) ? 0 : param.hashCode());
-		result = prime * result + ((recipe == null) ? 0 : recipe.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + (selected ? 1231 : 1237);
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
@@ -85,18 +92,15 @@ public class TriggerIngredient {
 			return true;
 		if (obj == null)
 			return false;
-		if (!(obj instanceof TriggerIngredient))
+		if (getClass() != obj.getClass())
 			return false;
-		TriggerIngredient other = (TriggerIngredient) obj;
-		if (param == null) {
-			if (other.param != null)
+		ParametersKeyword other = (ParametersKeyword) obj;
+		if (name == null) {
+			if (other.name != null)
 				return false;
-		} else if (!param.equals(other.param))
+		} else if (!name.equals(other.name))
 			return false;
-		if (recipe == null) {
-			if (other.recipe != null)
-				return false;
-		} else if (!recipe.equals(other.recipe))
+		if (selected != other.selected)
 			return false;
 		if (value == null) {
 			if (other.value != null)
@@ -105,9 +109,5 @@ public class TriggerIngredient {
 			return false;
 		return true;
 	}
-
-	@Override
-	public String toString() {
-		return "TriggerIngredient [id=" + id + ", recipe=" + recipe + ", param=" + param + ", value=" + value + "]";
-	}
+	
 }

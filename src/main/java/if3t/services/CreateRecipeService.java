@@ -2,10 +2,10 @@ package if3t.services;
 
 import java.util.List;
 
-import if3t.models.Action;
-import if3t.models.ParametersActions;
-import if3t.models.ParametersTriggers;
-import if3t.models.Trigger;
+import if3t.entities.Action;
+import if3t.entities.ParametersActions;
+import if3t.entities.ParametersTriggers;
+import if3t.entities.Trigger;
 
 public interface CreateRecipeService 
 {

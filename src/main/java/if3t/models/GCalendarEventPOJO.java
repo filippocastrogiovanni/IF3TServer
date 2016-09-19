@@ -1,20 +1,20 @@
 package if3t.models;
 
 public class GCalendarEventPOJO {
-	private GCalendarDatePojo start;
-	private GCalendarDatePojo end;
+	private GCalendarDatePOJO start;
+	private GCalendarDatePOJO end;
 	private String description, title, location;
 	
-	public GCalendarDatePojo getStart() {
+	public GCalendarDatePOJO getStart() {
 		return start;
 	}
-	public void setStart(GCalendarDatePojo start) {
+	public void setStart(GCalendarDatePOJO start) {
 		this.start = start;
 	}
-	public GCalendarDatePojo getEnd() {
+	public GCalendarDatePOJO getEnd() {
 		return end;
 	}
-	public void setEnd(GCalendarDatePojo end) {
+	public void setEnd(GCalendarDatePOJO end) {
 		this.end = end;
 	}
 	public String getDescription() {

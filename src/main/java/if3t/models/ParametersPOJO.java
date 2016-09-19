@@ -1,5 +1,10 @@
 package if3t.models;
 
+import if3t.entities.ActionIngredient;
+import if3t.entities.ParametersActions;
+import if3t.entities.ParametersTriggers;
+import if3t.entities.TriggerIngredient;
+
 public class ParametersPOJO 
 {
 	private Long id;

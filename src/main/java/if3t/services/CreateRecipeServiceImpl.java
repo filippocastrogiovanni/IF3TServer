@@ -4,11 +4,12 @@ import java.util.List;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import if3t.models.Action;
-import if3t.models.Channel;
-import if3t.models.ParametersActions;
-import if3t.models.ParametersTriggers;
-import if3t.models.Trigger;
+
+import if3t.entities.Action;
+import if3t.entities.Channel;
+import if3t.entities.ParametersActions;
+import if3t.entities.ParametersTriggers;
+import if3t.entities.Trigger;
 import if3t.repositories.ActionRepository;
 import if3t.repositories.ChannelRepository;
 import if3t.repositories.ParametersActionsRepository;

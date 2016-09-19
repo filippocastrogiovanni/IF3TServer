@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import if3t.entities.User;
 import if3t.exceptions.InvalidParametersException;
 import if3t.exceptions.NotLoggedInException;
 import if3t.exceptions.WrongPasswordException;
 import if3t.models.RequestPassword;
 import if3t.models.Response;
 import if3t.models.Role;
-import if3t.models.User;
 import if3t.services.UserService;
 
 @RestController
