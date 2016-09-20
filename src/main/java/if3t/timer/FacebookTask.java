@@ -254,8 +254,14 @@ public class FacebookTask {
 							//if(param.getKeyword().equals("post"))
 								message = actionIngredient.getValue();
 						}
-						facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
-						break;
+						try{
+							facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
+							}
+							catch(com.restfb.exception.FacebookOAuthException e){
+								//do nothing, it is just spamming
+								System.out.println("FACEBOOK SPAMMING");
+							}
+							break;
 					
 					}
 				}
@@ -273,7 +279,13 @@ public class FacebookTask {
 								//if(param.getKeyword().equals("post"))
 									message = actionIngredient.getValue();
 							}
+							try{
 							facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
+							}
+							catch(com.restfb.exception.FacebookOAuthException e){
+								//do nothing, it is just spamming
+								System.out.println("FACEBOOK SPAMMING");
+							}
 							break;
 						}
 					}	

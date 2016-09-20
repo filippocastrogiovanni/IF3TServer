@@ -43,30 +43,20 @@ public class FacebookUtil {
 			Long timestamp = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
 			channelStatusService.createNewChannelStatus(recipe_id, timestamp);
 		}
-		Long since_ref = css.getFacebookSinceRef();
 		ChannelStatus old_cs = channelStatusService.readChannelStatusByRecipeId(recipe_id);
+		Long since_ref = css.getFacebookSinceRef();
 		if(since_ref == null || since_ref == 0){
-			since_ref = css.getSinceRef();
-			if(since_ref == null || since_ref == 0){
-				since_ref = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
-				old_cs.setSinceRef(since_ref);
-			}		
-		}
-		else{
-			since_ref = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
-			old_cs.setFacebookSinceRef(since_ref);	
-			channelStatusService.updateChannelStatus(old_cs);			
+			since_ref = css.getSinceRef();	
 		}
 		
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
-		/*
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(
 			"https://graph.facebook.com/v2.7/me/posts?fields=message,type&since="+ since_ref + "&access_token="+access_token);
-		*/
+		/*
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(
 			 "https://graph.facebook.com/v2.7/me/posts?fields=message,type&since=1470000000&access_token="+access_token);
-
+		*/
 		HttpEntity<?> entity = new HttpEntity<>(headers);
 		RestTemplate restTemplate = new RestTemplate();
 		HttpEntity<String> response = restTemplate.exchange(
@@ -83,6 +73,10 @@ public class FacebookUtil {
 				new_posts.add((String) data_element_json_object.get("message")); //count only status posts
 			}
 		}
+		
+		since_ref = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
+		old_cs.setFacebookSinceRef(since_ref);	
+		channelStatusService.updateChannelStatus(old_cs);	
 		
 		return new_posts;
 	}
