@@ -1,6 +1,7 @@
 package if3t.services;
 
 import java.util.List;
+import java.util.Set;
 
 import if3t.entities.Authorization;
 import if3t.entities.Channel;
@@ -8,6 +9,8 @@ import if3t.entities.Channel;
 public interface ChannelService 
 {
 	public List<Channel> readChannels();
+	public Set<Channel> getChannelsForTrigger();
+	public Set<Channel> getChannelsForAction();
 	public Channel readChannel(Long id);
 	public Channel findByKeyword(String keyword);
 	public List<Channel> readUserChannels(Long userId);

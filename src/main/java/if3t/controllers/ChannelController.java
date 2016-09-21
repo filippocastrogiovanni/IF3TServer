@@ -1,6 +1,7 @@
 package if3t.controllers;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,18 @@ public class ChannelController {
 	@RequestMapping(value="/channel/{id}", method=RequestMethod.GET)
 	public Channel getChannel(@PathVariable Long id) {
 		return channelService.readChannel(id);
+	}
+	
+	@ResponseStatus(value = HttpStatus.OK)
+	@RequestMapping(value="/trigger_channels", method=RequestMethod.GET)
+	public Set<Channel> getTriggerChannels() {
+		return channelService.getChannelsForTrigger();
+	}
+	
+	@ResponseStatus(value = HttpStatus.OK)
+	@RequestMapping(value="/action_channels", method=RequestMethod.GET)
+	public Set<Channel> getActionChannels() {
+		return channelService.getChannelsForAction();
 	}
 	
 	@ResponseStatus(value = HttpStatus.OK)

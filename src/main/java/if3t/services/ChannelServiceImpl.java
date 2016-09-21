@@ -1,17 +1,23 @@
 package if3t.services;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import if3t.entities.Action;
 import if3t.entities.Authorization;
 import if3t.entities.Channel;
+import if3t.entities.Trigger;
+import if3t.repositories.ActionRepository;
 import if3t.repositories.AuthorizationRepository;
 import if3t.repositories.ChannelRepository;
+import if3t.repositories.TriggerRepository;
 import if3t.repositories.UserRepository;
 
 @Service
@@ -24,6 +30,10 @@ public class ChannelServiceImpl implements ChannelService
 	private AuthorizationRepository authRepository;
 	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+	private TriggerRepository triggerRepository;
+	@Autowired
+	private ActionRepository actionRepository;
 	
 	@Override
 	public List<Channel> readChannels() 
@@ -33,6 +43,32 @@ public class ChannelServiceImpl implements ChannelService
 		for (Channel channel: channelRepository.findAll())
 		{
 			channels.add(channel);
+		}
+		
+		return channels;
+	}
+	
+	@Override
+	public Set<Channel> getChannelsForTrigger() 
+	{
+		Set<Channel> channels = new HashSet<Channel>();
+		
+		for (Trigger tri : triggerRepository.findAll())
+		{
+			channels.add(tri.getChannel());
+		}
+		
+		return channels;
+	}
+	
+	@Override
+	public Set<Channel> getChannelsForAction() 
+	{
+		Set<Channel> channels = new HashSet<Channel>();
+		
+		for (Action tri : actionRepository.findAll())
+		{
+			channels.add(tri.getChannel());
 		}
 		
 		return channels;

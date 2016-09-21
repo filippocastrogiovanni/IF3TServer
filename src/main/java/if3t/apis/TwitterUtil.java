@@ -115,8 +115,10 @@ public class TwitterUtil
             	if (twitterStatus == null) {
             		channelStatusService.createNewChannelStatus(recipeId, lastProcessedTweetIdByRecipe);
             	}
-            	else {
-            		channelStatusService.updateChannelStatus(twitterStatus.getId(), lastProcessedTweetIdByRecipe);
+            	else 
+            	{
+            		twitterStatus.setSinceRef(lastProcessedTweetIdByRecipe);
+            		channelStatusService.updateChannelStatus(twitterStatus);
             	}
             }
 
