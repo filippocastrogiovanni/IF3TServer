@@ -36,6 +36,7 @@ public class WeatherUtil
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 	
 	public enum UnitsFormat { CELSIUS, KELVIN, FAHRENHEIT }
+	public enum EventType { SUNRISE, SUNSET }
 	
 	private HttpResponse executeRequest(String url) throws IOException
 	{
@@ -52,17 +53,18 @@ public class WeatherUtil
 	}
 	
 	//TODO eliminare alla fine i commenti
-	public String getCurrentWeatherAtSunrise(Long cityId, Long recipeId, UnitsFormat format)
+	public String getCurrentWeatherAtSunriseOrSunset(Long cityId, Long recipeId, EventType eventType, UnitsFormat format)
 	{
 		try 
 		{
-			String final_url = URL_CURRENT_WEATHER + "&id=" + cityId;
+			String eventName = eventType.toString().toLowerCase();
+			String finalUrl = URL_CURRENT_WEATHER + "&id=" + cityId;
 			
 			if (format != UnitsFormat.KELVIN) {
-				final_url += "&units=" + ((format == UnitsFormat.CELSIUS) ? "metric" : "imperial");
+				finalUrl += "&units=" + ((format == UnitsFormat.CELSIUS) ? "metric" : "imperial");
 			}
 			
-			HttpResponse response = executeRequest(final_url);
+			HttpResponse response = executeRequest(finalUrl);
 			ChannelStatus weatherStatus = channelStatusService.readChannelStatusByRecipeId(recipeId);
 			
 			if (response.getStatusCode() == 200)
@@ -109,7 +111,7 @@ public class WeatherUtil
 				
 				JSONObject sysObject = respObject.getJSONObject("sys");
 				
-				if (!sysObject.has("sunrise") || sysObject.isNull("sunrise"))
+				if (!sysObject.has(eventName) || sysObject.isNull(eventName))
 				{
 //					System.out.println("xxx7");
 					response.disconnect();
@@ -117,22 +119,22 @@ public class WeatherUtil
 				}
 								
 				OffsetDateTime now = OffsetDateTime.now().withNano(0);
-				OffsetDateTime sunrise = normalizeDate(sysObject.getLong("sunrise"), now.getOffset());
+				OffsetDateTime eventOdt = normalizeDate(sysObject.getLong(eventName), now.getOffset());
 				
-				if (sunrise.isBefore(now))
+				if (eventOdt.isBefore(now))
 				{
 //					System.out.println("xxx8");
 					response.disconnect();
 					return null;
 				}
 				
-				// WARNING: the field facebookSinceRef is used for store the epoch of the last triggered sunrise
+				// WARNING: the field facebookSinceRef is used for store the epoch of the last triggered sunrise/sunset
 				if (weatherStatus != null)
 				{
 //					System.out.println("xxx9");
-					OffsetDateTime lastSunrise = normalizeDate(weatherStatus.getFacebookSinceRef(), now.getOffset());
+					OffsetDateTime lastEventOdt = normalizeDate(weatherStatus.getFacebookSinceRef(), now.getOffset());
 					
-					if (Duration.between(lastSunrise, sunrise).abs().toMinutes() < 60)
+					if (Duration.between(lastEventOdt, eventOdt).abs().toMinutes() < 60)
 					{
 //						System.out.println("xxx10");
 						response.disconnect();
@@ -140,7 +142,7 @@ public class WeatherUtil
 					}
 				}
 				
-				if (Duration.between(now, sunrise).toMinutes() > 15)
+				if (Duration.between(now, eventOdt).toMinutes() > 15)
 				{
 //					System.out.println("xxx11");
 					response.disconnect();
@@ -150,23 +152,23 @@ public class WeatherUtil
 				if (weatherStatus == null) 
 				{
 //					System.out.println("xxx12");
-					// WARNING: the field facebookSinceRef is used for store the epoch of the last triggered sunrise
-            		channelStatusService.createNewChannelStatus(recipeId, respObject.getLong("dt"), sysObject.getLong("sunrise"));
+					// WARNING: the field facebookSinceRef is used for store the epoch of the last triggered sunrise/sunset
+            		channelStatusService.createNewChannelStatus(recipeId, respObject.getLong("dt"), sysObject.getLong(eventName));
             	}
             	else
             	{
 //            		System.out.println("xxx13");
-            		// WARNING: the field facebookSinceRef is used for store the epoch of the last triggered sunrise
-            		weatherStatus.setFacebookSinceRef(sysObject.getLong("sunrise"));
+            		// WARNING: the field facebookSinceRef is used for store the epoch of the last triggered sunrise/sunset
+            		weatherStatus.setFacebookSinceRef(sysObject.getLong(eventName));
             		weatherStatus.setSinceRef(respObject.getLong("dt"));
             		channelStatusService.updateChannelStatus(weatherStatus);
             	}
 				
 				response.disconnect();
-				String city = (respObject.has("name") && !respObject.isNull("name")) ? respObject.getString("name") : "the city whose ID is " + cityId;
-				logger.info("The sun in " + city + " will rise within 15 minutes");
+				String city = (respObject.has("name") && !respObject.isNull("name")) ? respObject.getString("name") : "the city the id of which is " + cityId;
+				logger.info("The sun in " + city + " will " + eventName.substring(3) + " within 15 minutes");
 				
-				StringBuffer message = new StringBuffer("It's sunrise.");
+				StringBuffer message = new StringBuffer("It's " + eventName + ".");
 				
 				if (respObject.has("main") && !respObject.isNull("main"))
 				{

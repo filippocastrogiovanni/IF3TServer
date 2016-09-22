@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -38,7 +39,7 @@ public class WeatherController
 	
 	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value = "/weather/stored_location", method = RequestMethod.GET)
-	public Response getWeatherLocation() throws NotLoggedInException
+	public ResponseEntity<City> getWeatherLocation() throws NotLoggedInException
 	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
@@ -50,14 +51,11 @@ public class WeatherController
 		Authorization storedAuth = authorizationService.getAuthorization(loggedUser.getId(), "weather");
 		
 		if (storedAuth == null) {
-			return new Response(null, HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase());
+			return new ResponseEntity<City>(HttpStatus.NOT_FOUND);
 		}
 		
-		City city = cityService.getCityById(Long.parseLong(storedAuth.getAccessToken()));
-		String response = city.getId() + "&" + city.getName() + "&" + city.getCountry();
-		
 		// WARNING: access token for the channel weather doesn't exist, so the field is used to store the id of the location associated with it
-		return new Response(response, HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+		return new ResponseEntity<City>(cityService.getCityById(Long.parseLong(storedAuth.getAccessToken())), HttpStatus.OK);
 	}
 	
 	@ResponseStatus(value = HttpStatus.OK)
