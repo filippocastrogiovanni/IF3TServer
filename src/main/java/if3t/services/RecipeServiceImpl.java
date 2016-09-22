@@ -123,7 +123,7 @@ public class RecipeServiceImpl implements RecipeService {
 	public void addRecipe(List<Recipe> recipes, User loggedUser) throws AddRecipeException
 	{		
 		System.out.println("Saving recipe");
-		//validateRecipe(recipes);
+		validateRecipe(recipes);
 		
 		for (Recipe r : recipes)
 		{
