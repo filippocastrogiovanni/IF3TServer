@@ -77,6 +77,7 @@ public class WeatherController
 		}
 		
 		User loggedUser = userService.getUserByUsername(auth.getName());
+		// WARNING: access token for the channel weather doesn't exist, so the field is used to store the id of the location associated with it
 		channelService.authorizeChannel(loggedUser.getId(), "weather", id.toString(), null, null, null);
 		return new Response("The weather location has been created/updated successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
