@@ -106,13 +106,16 @@ public class RecipeController
 	
 	@ResponseStatus(value = HttpStatus.CREATED)
 	@RequestMapping(value="/add_recipe", method=RequestMethod.POST)
-	public Response addRecipe(@RequestBody List<Recipe> recipes) throws NotLoggedInException, AddRecipeException 
+	public Response addRecipe(@RequestBody Recipe recipe) throws NotLoggedInException, AddRecipeException 
 	{		
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
 		if (auth == null) {
 			throw new NotLoggedInException("ERROR: not logged in!");
 		}
+		
+		List<Recipe> recipes = new ArrayList<Recipe>();
+		recipes.add(recipe);
 		
 		recipeService.addRecipe(recipes, userService.getUserByUsername(auth.getName()));
 		return new Response("The recipe has been created successfully", HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());

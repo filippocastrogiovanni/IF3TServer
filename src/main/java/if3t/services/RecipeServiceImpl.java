@@ -123,16 +123,18 @@ public class RecipeServiceImpl implements RecipeService {
 	public void addRecipe(List<Recipe> recipes, User loggedUser) throws AddRecipeException
 	{		
 		System.out.println("Saving recipe");
-		validateRecipe(recipes);
+		//validateRecipe(recipes);
 		
 		for (Recipe r : recipes)
 		{
-			r.setIsEnabled(false);
+			r.setIsEnabled(true);
 			r.setIsPublic(false);
 			r.setGroupId(UUID.randomUUID().toString());	
 			r.setUser(loggedUser);
-
+			
+			System.out.println("Recipe ready to save");
 			recipeRepository.save(r);
+			System.out.println("Recipe saved");
 
 			/*if(r.getParameters_keyword()!=null)
 				for(ParametersKeyword pk : r.getParameters_keyword()){
@@ -146,12 +148,14 @@ public class RecipeServiceImpl implements RecipeService {
 				ti.setRecipe(r);
 				triggerIngRepo.save(ti);
 			}
+			System.out.println("Trigger ingredients saved");
 			
 			for (ActionIngredient ai : r.getAction_ingredients())
 			{
 				ai.setRecipe(r);
 				actionIngRepo.save(ai);
 			}
+			System.out.println("Action ingredient saved");
 		}
 	}
 
