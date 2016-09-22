@@ -1,6 +1,6 @@
 package if3t.controllers;
 
-import java.util.Set;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,7 +59,7 @@ public class WeatherController
 	
 	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value = "/weather/query_locations/{keyword}", method = RequestMethod.GET)
-	public Set<City> getResponseWeatherQuery(@PathVariable String keyword) throws NotLoggedInException
+	public List<City> getResponseWeatherQuery(@PathVariable String keyword) throws NotLoggedInException
 	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
@@ -67,7 +67,7 @@ public class WeatherController
 			throw new NotLoggedInException("ERROR: not logged in!");
 		}
 		
-		return cityService.getCitiesWithPartOfName(keyword);
+		return cityService.getCitiesWithPartOfName(keyword, 50);
 	}
 	
 	@ResponseStatus(value = HttpStatus.OK)

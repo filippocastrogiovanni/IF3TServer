@@ -1,11 +1,11 @@
 package if3t.services;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import if3t.entities.City;
@@ -24,7 +24,7 @@ public class CityServiceImpl implements CityService
 	}
 	
 	@Override
-	public Set<City> getCitiesWithPartOfName(String keyword) {
-		return new HashSet<City>(cityRepository.findCitiesWithPartOfName(keyword));
+	public List<City> getCitiesWithPartOfName(String keyword, int limit) {
+		return cityRepository.findCitiesWithPartOfName(keyword, new PageRequest(0, limit));
 	}
 }
