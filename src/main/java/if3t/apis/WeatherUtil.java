@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -46,176 +47,174 @@ public class WeatherUtil
 	
 	private OffsetDateTime normalizeDate(Long epochSeconds, ZoneOffset offset)
 	{
-		System.out.println(epochSeconds);
 		Instant instant = Instant.ofEpochSecond(epochSeconds);
 		return OffsetDateTime.ofInstant(instant, offset);
 	}
 	
-	//TODO in un task da eseguire ogni 15 minuti, recupero le ricette con questo tipo di trigger e chiamo questa funzione.
-	//Scarico il JSON relativo alla località e controllo l'ora dell'alba. Se (normalizzata) è al massimo 15 minuti dall'ora attuale
-	//allora scatta l'evento e nel DB salvo l'ultima data alla quale è scattato (se serve)
-	public boolean isSunriseEventTriggered(Long cityId, Long recipeId)
+	//TODO eliminare alla fine i commenti
+	public String getCurrentWeatherAtSunrise(Long cityId, Long recipeId, UnitsFormat format)
 	{
 		try 
 		{
-			HttpResponse response = executeRequest(URL_CURRENT_WEATHER + "&id=" + cityId);
+			String final_url = URL_CURRENT_WEATHER + "&id=" + cityId;
+			
+			if (format != UnitsFormat.KELVIN) {
+				final_url += "&units=" + ((format == UnitsFormat.CELSIUS) ? "metric" : "imperial");
+			}
+			
+			HttpResponse response = executeRequest(final_url);
 			ChannelStatus weatherStatus = channelStatusService.readChannelStatusByRecipeId(recipeId);
 			
 			if (response.getStatusCode() == 200)
 			{
-				System.out.println("xxx1");
+//				System.out.println("xxx1");
 				JSONObject respObject = new JSONObject(response.parseAsString());
 				
 				if (!respObject.has("cod") || respObject.isNull("cod"))
 				{
+//					System.out.println("xxx2");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				if (respObject.getInt("cod") != 200)
 				{
+//					System.out.println("xxx3");
 					response.disconnect();
 					logger.error((respObject.has("message") && !respObject.isNull("message")) ? respObject.getInt("cod") + " - " + respObject.getString("message") : "Error: maybe the passed city ID was incorrect");
-					return false;
+					return null;
 				}
 				
 				if (!respObject.has("dt") || respObject.isNull("dt"))
 				{
+//					System.out.println("xxx4");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				// If received JSON file is older then the last read one, than do not continue
 				if (weatherStatus != null && respObject.getLong("dt") <= weatherStatus.getSinceRef())
 				{
+//					System.out.println("xxx5");
 					response.disconnect();
-					return false;
+					return null;
 				}
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				if (respObject.has("cod") && respObject.getInt("cod") != 200)
-				{
-					System.out.println("xxx2");
-					response.disconnect();
-					logger.error((respObject.has("message") && !respObject.isNull("message")) ? respObject.getInt("cod") + " - " + respObject.getString("message") : "Error: maybe the passed city ID was incorrect");
-					return false;
-				}
-				
-				// If received JSON file is older then the last read one, than do not continue
-				if (weatherStatus != null && respObject.has("dt") && respObject.getLong("dt") <= weatherStatus.getSinceRef())
-				{
-					System.out.println("xxx3");
-					response.disconnect();
-					return false;
-				}
-				
-				if (weatherStatus == null && respObject.has("dt")) {
-					System.out.println("xxx4");
-            		weatherStatus = channelStatusService.createNewChannelStatus(recipeId, respObject.getLong("dt"));
-            	}
-            	else if (weatherStatus != null && respObject.has("dt"))
-            	{
-            		System.out.println("xxx5");
-            		weatherStatus.setSinceRef(respObject.getLong("dt"));
-            		weatherStatus = channelStatusService.updateChannelStatus(weatherStatus);
-            	}
 				
 				if (!respObject.has("sys") || respObject.isNull("sys"))
 				{
-					System.out.println("xxx6");
+//					System.out.println("xxx6");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				JSONObject sysObject = respObject.getJSONObject("sys");
 				
 				if (!sysObject.has("sunrise") || sysObject.isNull("sunrise"))
 				{
-					System.out.println("xxx7");
+//					System.out.println("xxx7");
 					response.disconnect();
-					return false;
+					return null;
 				}
 								
 				OffsetDateTime now = OffsetDateTime.now().withNano(0);
 				OffsetDateTime sunrise = normalizeDate(sysObject.getLong("sunrise"), now.getOffset());
 				
-				System.out.println(now + " - " + sunrise);
-				
 				if (sunrise.isBefore(now))
 				{
-					System.out.println("xxx8");
+//					System.out.println("xxx8");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				// WARNING: the field facebookSinceRef is used for store the epoch of the last triggered sunrise
-				if (weatherStatus.getFacebookSinceRef() != null)
+				if (weatherStatus != null)
 				{
+//					System.out.println("xxx9");
 					OffsetDateTime lastSunrise = normalizeDate(weatherStatus.getFacebookSinceRef(), now.getOffset());
-					Duration difference = Duration.between(lastSunrise, sunrise).abs();
 					
-					System.out.println(difference + " - " + difference.toHours());
-					
-					if (difference.toMinutes() < 60)
+					if (Duration.between(lastSunrise, sunrise).abs().toMinutes() < 60)
 					{
-						System.out.println("xxx9");
+//						System.out.println("xxx10");
 						response.disconnect();
-						return false;
+						return null;
 					}
 				}
 				
-				System.out.println(Duration.between(now, sunrise).toMinutes());
-				
-				if (Duration.between(sunrise, now).toMinutes() > 15)
+				if (Duration.between(now, sunrise).toMinutes() > 15)
 				{
-					System.out.println("xxx10");
+//					System.out.println("xxx11");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
-				// WARNING: the field facebookSinceRef is used for store the epoch of the last triggered sunrise
-				weatherStatus.setFacebookSinceRef(sysObject.getLong("sunrise"));
-				channelStatusService.updateChannelStatus(weatherStatus);
-				//FIXME sostituire l'id col nome della città se possibile
-				logger.info("The sun in " + cityId + " will rise within 15 minutes");
+				if (weatherStatus == null) 
+				{
+//					System.out.println("xxx12");
+					// WARNING: the field facebookSinceRef is used for store the epoch of the last triggered sunrise
+            		channelStatusService.createNewChannelStatus(recipeId, respObject.getLong("dt"), sysObject.getLong("sunrise"));
+            	}
+            	else
+            	{
+//            		System.out.println("xxx13");
+            		// WARNING: the field facebookSinceRef is used for store the epoch of the last triggered sunrise
+            		weatherStatus.setFacebookSinceRef(sysObject.getLong("sunrise"));
+            		weatherStatus.setSinceRef(respObject.getLong("dt"));
+            		channelStatusService.updateChannelStatus(weatherStatus);
+            	}
+				
 				response.disconnect();
-				return true;
+				String city = (respObject.has("name") && !respObject.isNull("name")) ? respObject.getString("name") : "the city whose ID is " + cityId;
+				logger.info("The sun in " + city + " will rise within 15 minutes");
+				
+				StringBuffer message = new StringBuffer("It's sunrise.");
+				
+				if (respObject.has("main") && !respObject.isNull("main"))
+				{
+					JSONObject mainObject = respObject.getJSONObject("main");
+					
+					if (mainObject.has("temp") && !mainObject.isNull("temp"))
+					{
+						message.append(" The temperature at the moment is ");
+						message.append(mainObject.getDouble("temp") + " " + format.toString().substring(0, 1) + ".");
+					}
+				}
+				
+				if (respObject.has("weather") && !respObject.isNull("weather"))
+				{
+					JSONArray weatherArray = respObject.getJSONArray("weather");
+					
+					if (weatherArray.length() > 0)
+					{
+						JSONObject weatherObject = (JSONObject) weatherArray.get(0);
+						
+						if (weatherObject.has("description") && !weatherObject.isNull("description"))
+						{
+							message.append(" Current conditions are '");
+							message.append(weatherObject.getString("description") + "'.");
+						}
+					}
+				}
+				
+				//FIXME eliminare alla fine
+				System.out.println(message);
+				return message.toString();
 			}
 			else
 			{
 				response.disconnect();
 				logger.error("A problem occurred during the communication with the weather web service");
-				return false;
+				return null;
 			}
 		}
 		catch (JSONException e)
 		{
 			logger.error("A problem occurred during the parsing of the JSON response", e);
-			return false;
+			return null;
 		}
 		catch (IOException e) 
 		{
 			logger.error("Failed to communicate with the weather web service", e);
-			return false;
+			return null;
 		}    	
 	}
 }

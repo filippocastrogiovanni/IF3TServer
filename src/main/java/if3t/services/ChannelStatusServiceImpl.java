@@ -19,13 +19,22 @@ public class ChannelStatusServiceImpl implements ChannelStatusService
 	private RecipeRepository recipeRepo;
 	
 	@Override
-	public ChannelStatus createNewChannelStatus(Long recipeId, Long sinceRef) 
+	public void createNewChannelStatus(Long recipeId, Long sinceRef) 
 	{
 		ChannelStatus cs = new ChannelStatus();
 		cs.setRecipe(recipeRepo.findOne(recipeId));
 		cs.setSinceRef(sinceRef);
 		channelsStatusesRepo.save(cs);
-		return cs;
+	}
+	
+	@Override
+	public void createNewChannelStatus(Long recipeId, Long sinceRef, Long facebookSinceRef) 
+	{
+		ChannelStatus cs = new ChannelStatus();
+		cs.setRecipe(recipeRepo.findOne(recipeId));
+		cs.setSinceRef(sinceRef);
+		cs.setFacebookSinceRef(facebookSinceRef);
+		channelsStatusesRepo.save(cs);
 	}
 	
 	@Override
@@ -34,18 +43,15 @@ public class ChannelStatusServiceImpl implements ChannelStatusService
 	}
 	
 	@Override
-	public ChannelStatus updateChannelStatus(Long statusId, Long sinceRef) 
+	public void updateChannelStatus(Long statusId, Long sinceRef) 
 	{
 		ChannelStatus status = channelsStatusesRepo.findOne(statusId);
 		status.setSinceRef(sinceRef);
 		channelsStatusesRepo.save(status);
-		return status;
 	}
 
 	@Override
-	public ChannelStatus updateChannelStatus(ChannelStatus channelStatus) 
-	{
+	public void updateChannelStatus(ChannelStatus channelStatus) {
 		channelsStatusesRepo.save(channelStatus);
-		return channelStatus;
 	}
 }

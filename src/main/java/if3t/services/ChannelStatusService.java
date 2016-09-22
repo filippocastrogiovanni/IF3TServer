@@ -4,8 +4,9 @@ import if3t.entities.ChannelStatus;
 
 public interface ChannelStatusService 
 {
-	public ChannelStatus createNewChannelStatus(Long recipeId, Long sinceRef);
+	public void createNewChannelStatus(Long recipeId, Long sinceRef);
+	public void createNewChannelStatus(Long recipeId, Long sinceRef, Long facebookSinceRef);
 	public ChannelStatus readChannelStatusByRecipeId(Long recipeId);
-	public ChannelStatus updateChannelStatus(Long statusId, Long sinceRef);
-	public ChannelStatus updateChannelStatus(ChannelStatus channelStatus);
+	public void updateChannelStatus(Long statusId, Long sinceRef);
+	public void updateChannelStatus(ChannelStatus channelStatus);
 }

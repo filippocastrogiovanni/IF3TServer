@@ -1,0 +1,83 @@
+package if3t.controllers;
+
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import if3t.entities.Authorization;
+import if3t.entities.City;
+import if3t.entities.User;
+import if3t.exceptions.NotLoggedInException;
+import if3t.models.Response;
+import if3t.services.AuthorizationService;
+import if3t.services.ChannelService;
+import if3t.services.CityService;
+import if3t.services.UserService;
+
+@CrossOrigin
+@RestController
+public class WeatherController 
+{
+	@Autowired
+	private UserService userService;
+	@Autowired
+	private ChannelService channelService;
+	@Autowired
+	private AuthorizationService authorizationService;
+	@Autowired
+	private CityService cityService;
+	
+	@ResponseStatus(value = HttpStatus.OK)
+	@RequestMapping(value = "/weather/stored_location", method = RequestMethod.GET)
+	public Long getWeatherLocation() throws NotLoggedInException
+	{
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		
+		if (auth == null) {
+			throw new NotLoggedInException("ERROR: not logged in!");
+		}
+
+		User loggedUser = userService.getUserByUsername(auth.getName());
+		Authorization storedAuth = authorizationService.getAuthorization(loggedUser.getId(), "weather");
+		
+		// WARNING: access token for the channel weather doesn't exist, so the field is used to store the id of the location associated with it
+		return (storedAuth == null) ? null : Long.parseLong(storedAuth.getAccessToken());
+	}
+	
+	@ResponseStatus(value = HttpStatus.OK)
+	@RequestMapping(value = "/weather/query_locations/{keyword}", method = RequestMethod.GET)
+	public Set<City> getResponseWeatherQuery(@PathVariable String keyword) throws NotLoggedInException
+	{
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		
+		if (auth == null) {
+			throw new NotLoggedInException("ERROR: not logged in!");
+		}
+		
+		return cityService.getCitiesWithPartOfName(keyword);
+	}
+	
+	@ResponseStatus(value = HttpStatus.OK)
+	@RequestMapping(value = "/weather/update_location/{id}", method = RequestMethod.PUT)
+	public Response updateWeatherLocation(@PathVariable Long id) throws NotLoggedInException
+	{
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		
+		if (auth == null) {
+			throw new NotLoggedInException("ERROR: not logged in!");
+		}
+		
+		User loggedUser = userService.getUserByUsername(auth.getName());
+		channelService.authorizeChannel(loggedUser.getId(), "weather", id.toString(), null, null, null);
+		return new Response("The weather location has been created/updated successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+	}
+}
