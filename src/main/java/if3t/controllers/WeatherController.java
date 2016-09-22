@@ -53,8 +53,11 @@ public class WeatherController
 			return new Response(null, HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase());
 		}
 		
+		City city = cityService.getCityById(Long.parseLong(storedAuth.getAccessToken()));
+		String response = city.getId() + "&" + city.getName() + "&" + city.getCountry();
+		
 		// WARNING: access token for the channel weather doesn't exist, so the field is used to store the id of the location associated with it
-		return new Response(storedAuth.getAccessToken(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
+		return new Response(response, HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 	
 	@ResponseStatus(value = HttpStatus.OK)
