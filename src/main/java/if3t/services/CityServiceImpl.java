@@ -16,7 +16,12 @@ import if3t.repositories.CityRepository;
 public class CityServiceImpl implements CityService 
 {
 	@Autowired
-	CityRepository cityRepository;
+	private CityRepository cityRepository;
+	
+	@Override
+	public City getCityById(Long id) {
+		return cityRepository.findOne(id);
+	}
 	
 	@Override
 	public Set<City> getCitiesWithPartOfName(String keyword) {

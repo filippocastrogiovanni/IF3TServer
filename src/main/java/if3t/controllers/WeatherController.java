@@ -38,19 +38,23 @@ public class WeatherController
 	
 	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value = "/weather/stored_location", method = RequestMethod.GET)
-	public Long getWeatherLocation() throws NotLoggedInException
+	public Response getWeatherLocation() throws NotLoggedInException
 	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		
 		if (auth == null) {
 			throw new NotLoggedInException("ERROR: not logged in!");
 		}
-
+		
 		User loggedUser = userService.getUserByUsername(auth.getName());
 		Authorization storedAuth = authorizationService.getAuthorization(loggedUser.getId(), "weather");
 		
+		if (storedAuth == null) {
+			return new Response(null, HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase());
+		}
+		
 		// WARNING: access token for the channel weather doesn't exist, so the field is used to store the id of the location associated with it
-		return (storedAuth == null) ? null : Long.parseLong(storedAuth.getAccessToken());
+		return new Response(storedAuth.getAccessToken(), HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
 	
 	@ResponseStatus(value = HttpStatus.OK)
@@ -74,6 +78,10 @@ public class WeatherController
 		
 		if (auth == null) {
 			throw new NotLoggedInException("ERROR: not logged in!");
+		}
+		
+		if (cityService.getCityById(id) == null) {
+			return new Response("There is no city the id of which is the passed one", HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
 		}
 		
 		User loggedUser = userService.getUserByUsername(auth.getName());
