@@ -72,7 +72,7 @@ public class WeatherController
 	}
 	
 	@ResponseStatus(value = HttpStatus.OK)
-	@RequestMapping(value = "/weather/update_location/{id}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/weather/update_location/{id}", method = RequestMethod.POST)
 	public Response updateWeatherLocation(@PathVariable Long id) throws NotLoggedInException
 	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
