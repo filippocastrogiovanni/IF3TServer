@@ -122,6 +122,7 @@ public class RecipeController
 		return new Response("The recipe has been created successfully", HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
 	}
 
+	//TODO pare che non funzioni la cancellazione
 	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value="/delete_recipe/{id}", method=RequestMethod.DELETE)
 	public Response deleteRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException, NotFoundRecipeException 
