@@ -376,6 +376,9 @@ public class WeatherUtil
 	
 	public String getTomorrowWeatherReport(Long cityId, Long recipeId, String time, UnitsFormat format)
 	{
+		OffsetDateTime now = OffsetDateTime.now().withNano(0);
+		
+		
 		String finalUrl = URL_FORECAST_WEATHER + "&id=" + cityId;
 		
 		if (format != UnitsFormat.KELVIN) {
@@ -388,6 +391,34 @@ public class WeatherUtil
 			
 			if (response.getStatusCode() == 200)
 			{
+//				System.out.println("xxx1");
+				JSONObject respObject = new JSONObject(response.parseAsString());
+				
+				if (!respObject.has("cod") || respObject.isNull("cod"))
+				{
+//					System.out.println("xxx2");
+					response.disconnect();
+					return null;
+				}
+				
+				if (respObject.getInt("cod") != 200)
+				{
+//					System.out.println("xxx3");
+					response.disconnect();
+					logger.error((respObject.has("message") && !respObject.isNull("message")) ? respObject.getInt("cod") + " - " + respObject.getString("message") : "Error: maybe the passed city id was incorrect");
+					return null;
+				}
+				
+				if (respObject.has("list") && !respObject.isNull("list"))
+				{
+					JSONArray forecastArray = respObject.getJSONArray("list");
+				
+					for (int i = 0; i < forecastArray.length(); i++)
+					{
+						JSONObject forecastObject = (JSONObject) forecastArray.get(i);
+					}
+				}
+				
 				return null;
 			}
 			else

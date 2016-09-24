@@ -122,9 +122,8 @@ public class RecipeController
 		return new Response("The recipe has been created successfully", HttpStatus.CREATED.value(), HttpStatus.CREATED.getReasonPhrase());
 	}
 
-	//TODO pare che non funzioni la cancellazione
 	@ResponseStatus(value = HttpStatus.OK)
-	@RequestMapping(value="/delete_recipe/{id}", method=RequestMethod.DELETE)
+	@RequestMapping(value="/delete_recipe/{id}", method=RequestMethod.GET)
 	public Response deleteRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException, NotFoundRecipeException 
 	{
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -132,7 +131,7 @@ public class RecipeController
 		if (auth == null) {
 			throw new NotLoggedInException("ERROR: not loggedIn");
 		}
-		
+	
 		recipeService.deleteRecipe(id, userService.getUserByUsername(auth.getName()));
 		return new Response("The recipe has been deleted successfully", HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase());
 	}
