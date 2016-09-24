@@ -280,7 +280,7 @@ public class FacebookTask {
 									message = actionIngredient.getValue();
 							}
 							try{
-							facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
+								facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
 							}
 							catch(com.restfb.exception.FacebookOAuthException e){
 								//do nothing, it is just spamming

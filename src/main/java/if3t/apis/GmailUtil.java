@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -65,7 +66,8 @@ public class GmailUtil {
 		StringBuilder q = new StringBuilder();
 		for(TriggerIngredient triggerIngredient: triggerIngredients){
 			ParametersTriggers param = triggerIngredient.getParam();
-			q.append(param.getKeyword() + ":" + triggerIngredient.getValue());
+			if(param.getKeyword().equals("from_address"))
+				q.append("from:" + triggerIngredient.getValue());
 		}
 		
 		
@@ -154,5 +156,36 @@ public class GmailUtil {
         Message message = new Message();
         message.setRaw(encodedEmail);
         return message;
+	}
+	
+	private String parseAndValidateString(){
+		return "";
+	}
+	
+	public List<String> parseString(String ingredient){
+		List<String> keywords = new ArrayList<>();
+		
+		int index = 0;
+		
+		while(true){
+			int squareOpenIndex = ingredient.indexOf('[', index);
+			int squareCloseIndex = ingredient.indexOf(']', squareOpenIndex);
+			
+			if(squareOpenIndex == -1 || squareCloseIndex == -1){
+				break;
+			}
+			
+			index = squareCloseIndex + 1;
+			
+			String keyword = ingredient.substring(squareOpenIndex+1, squareCloseIndex);
+			keywords.add(keyword);
+		}
+
+		return keywords;
+	}
+	
+	
+	public String replaceKeywordWithValue(String toReplace, String keyword, String replacement){
+		return toReplace.replace("[" + keyword + "]", replacement);
 	}
 }

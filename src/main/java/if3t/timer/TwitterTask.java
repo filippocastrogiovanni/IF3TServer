@@ -116,7 +116,7 @@ public class TwitterTask
 					{
 						ParametersActions param = ai.getParam();
 						
-						if (param.getKeyword().equals("to")) {
+						if (param.getKeyword().equals("to_address")) {
 							to = ai.getValue();
 						}
 						else if (param.getKeyword().equals("subject")) {
