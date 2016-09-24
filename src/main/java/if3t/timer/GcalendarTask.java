@@ -113,13 +113,6 @@ public class GcalendarTask {
 								switch(actionParam.getKeyword()){
 									case "to_address" :
 										to = actionIngredient.getValue();
-										/*List<String> keywords = parsingUtil.parseString(to);
-										for(String keyword : keywords){
-											if(parsingUtil.validateKeyword(keyword, triggerChannel.getChannelId())){
-												//to.replace("[" + keyword + "]", replacement)
-											}
-										}*/
-										to = "" ;
 										break;
 									case "subject" :
 										subject = actionIngredient.getValue();

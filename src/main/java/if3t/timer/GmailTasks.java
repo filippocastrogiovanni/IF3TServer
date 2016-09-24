@@ -127,101 +127,115 @@ public class GmailTasks {
 					now = Calendar.getInstance();
 					if(actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())
 						continue;
-
-					switch(recipe.getAction().getChannel().getKeyword()){
-					case "gmail" :
-						for(Message message : messages){
-							String to = "";
-							String subject = "";
-							String body = "";
-
-							for(ActionIngredient actionIngredient: actionIngredients){
-								ParametersActions param = actionIngredient.getParam();
-
-								if(param.getKeyword().equals("to_address"))
-									to = actionIngredient.getValue();
-								if(param.getKeyword().equals("subject"))
-									subject = actionIngredient.getValue();
-								if(param.getKeyword().equals("body"))
-									body = actionIngredient.getValue();
-							}
-							gmailUtil.sendEmail(to, subject, body, actionAuth);
-							//System.out.println(messageResponse.getBody());
-						}
-						break;
-					case "calendar" :
-						String title = "";
-						String location = "";
-						String description = "";
-						String startDateString = "";
-						String endDateString = "";
-						String startTimeString = "";
-						String endTimeString = "";
-						
-						for(ActionIngredient actionIngredient: actionIngredients){
-							ParametersActions param = actionIngredient.getParam();
 	
-							switch(param.getKeyword()){
-								case "start_date" :
-									startDateString = actionIngredient.getValue();
-									break;
-								case "end_date" :
-									endDateString = actionIngredient.getValue();
-									break;
-								case "start_time" :
-									startTimeString = actionIngredient.getValue();
-									break;
-								case "end_time" :
-									endTimeString = actionIngredient.getValue();
-									break;
-								case "title" :
-									title = actionIngredient.getValue();
-									break;
-								case "description" :
-									description = actionIngredient.getValue();
-									break;
-								case "location" :
-									location = actionIngredient.getValue();
-									break;
+					switch(recipe.getAction().getChannel().getKeyword()){
+						case "gmail" :
+							for(Message message : messages){
+								String to = "";
+								String subject = "";
+								String body = "";
+	
+								for(ActionIngredient actionIngredient: actionIngredients){
+									ParametersActions actionParam = actionIngredient.getParam();
+	
+									switch(actionParam.getKeyword()){
+										case "to_address" :
+											to = actionIngredient.getValue();
+											break;
+										case "subject" :
+											subject = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											break;
+										case "body" :
+											body = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											break;	
+									}
+								}
+								gmailUtil.sendEmail(to, subject, body, actionAuth);
 							}
-						}
-						
-						SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-
-						String startDate = startDateString + " " + startTimeString;
-						String endDate = endDateString + " " + endTimeString;
-						Calendar start = Calendar.getInstance();
-						Calendar end = Calendar.getInstance();
-						start.setTime(format.parse(startDate));
-						start.setTimeZone(timezone);
-						end.setTime(format.parse(endDate));
-						end.setTimeZone(timezone);
-
-						gCalendarUtil.createEvent(start, end, title, description, location, triggerAuth);
-						break;
-					case "facebook" :
-						String message = "";
-						for(ActionIngredient actionIngredient: actionIngredients){
-							ParametersActions param = actionIngredient.getParam();
-
-							if(param.getKeyword().equals("post"))
-								message = actionIngredient.getValue();
-						}
-						facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
-						break;
-					case "twitter" :
-						String tweet = "";
-						String hashtag = "";
-						for(ActionIngredient actionIngredient: actionIngredients){
-							ParametersActions param = actionIngredient.getParam();
-
-							if(param.getKeyword().equals("tweet"))
-								tweet += actionIngredient.getValue();
-							if(param.getKeyword().equals("hashtag"))
-								hashtag += actionIngredient.getValue();
-						}
-						twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
-						break;
+							break;
+						case "calendar" :
+							for(Message message : messages){
+								String title = "";
+								String location = "";
+								String description = "";
+								String startDateString = "";
+								String endDateString = "";
+								String startTimeString = "";
+								String endTimeString = "";
+								
+								for(ActionIngredient actionIngredient: actionIngredients){
+									ParametersActions actionParam = actionIngredient.getParam();
+			
+									switch(actionParam.getKeyword()){
+										case "start_date" :
+											startDateString = actionIngredient.getValue();
+											break;
+										case "end_date" :
+											endDateString = actionIngredient.getValue();
+											break;
+										case "start_time" :
+											startTimeString = actionIngredient.getValue();
+											break;
+										case "end_time" :
+											endTimeString = actionIngredient.getValue();
+											break;
+										case "title" :
+											title = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											break;
+										case "description" :
+											description = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											break;
+										case "location" :
+											location = actionIngredient.getValue();
+											break;
+									}
+								}
+								
+								SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+		
+								String startDate = startDateString + " " + startTimeString;
+								String endDate = endDateString + " " + endTimeString;
+								Calendar start = Calendar.getInstance();
+								Calendar end = Calendar.getInstance();
+								start.setTime(format.parse(startDate));
+								start.setTimeZone(timezone);
+								end.setTime(format.parse(endDate));
+								end.setTimeZone(timezone);
+		
+								gCalendarUtil.createEvent(start, end, title, description, location, triggerAuth);
+							}
+							break;
+						case "facebook" :
+							for(Message message : messages){
+								String post = "";
+								for(ActionIngredient actionIngredient: actionIngredients){
+									ParametersActions actionParam = actionIngredient.getParam();
+		
+									if(actionParam.getKeyword().equals("post"))
+										post = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+								}
+								facebookUtil.publish_new_post(post, actionAuth.getAccessToken());
+							}
+							break;
+						case "twitter" :
+							for(Message message : messages){
+								String tweet = "";
+								String hashtag = "";
+								for(ActionIngredient actionIngredient: actionIngredients){
+									ParametersActions actionParam = actionIngredient.getParam();
+		
+									switch(actionParam.getKeyword()){
+										case "tweet" :
+											tweet = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											break;
+										case "hashtag" :
+											hashtag = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											break;
+									}
+								}
+								twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
+							}
+							break;
 					}
 				}
 				/*JSONObject obj = new JSONObject(response.getBody());

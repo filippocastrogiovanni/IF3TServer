@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -34,6 +35,7 @@ import com.google.api.services.gmail.Gmail.Users.Messages;
 import com.google.api.services.gmail.Gmail.Users.Messages.Send;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
+import com.google.api.services.gmail.model.MessagePartHeader;
 
 import if3t.entities.Authorization;
 import if3t.entities.ChannelStatus;
@@ -42,6 +44,7 @@ import if3t.entities.Recipe;
 import if3t.entities.TriggerIngredient;
 import if3t.exceptions.InvalidParametersException;
 import if3t.services.ChannelStatusService;
+import if3t.services.CreateRecipeService;
 
 @Component
 public class GmailUtil {
@@ -54,6 +57,9 @@ public class GmailUtil {
 	
 	@Autowired
     private ChannelStatusService channelStatusService;
+	@Autowired
+	private CreateRecipeService createRecipeService;
+	
 	@Value("${app.scheduler.value}")
 	private long rate;
     
@@ -158,14 +164,24 @@ public class GmailUtil {
         return message;
 	}
 	
-	private String parseAndValidateString(){
-		return "";
-	}
-	
-	public List<String> parseString(String ingredient){
-		List<String> keywords = new ArrayList<>();
-		
+	public String validateAndReplaceKeywords(String ingredient, int maxLength, Message message){
+		String ingredientReplaced = ingredient;
+		Set<String> validKeywords = createRecipeService.readChannelKeywords("gmail");
 		int index = 0;
+		
+		String from = "";
+		String to = "";
+		String subject = "";
+		String body = message.getPayload().getBody().getData();
+		
+		for(MessagePartHeader part: message.getPayload().getHeaders()){
+			if(part.getName().equals("Subject"))
+					subject = part.getValue();
+			if(part.getName().equals("From"))
+				subject = part.getValue();
+			if(part.getName().equals("To"))
+				subject = part.getValue();
+		}
 		
 		while(true){
 			int squareOpenIndex = ingredient.indexOf('[', index);
@@ -174,18 +190,30 @@ public class GmailUtil {
 			if(squareOpenIndex == -1 || squareCloseIndex == -1){
 				break;
 			}
-			
+		
 			index = squareCloseIndex + 1;
 			
 			String keyword = ingredient.substring(squareOpenIndex+1, squareCloseIndex);
-			keywords.add(keyword);
+			if(validKeywords.contains(keyword)){
+				switch(keyword){
+					case "from_address" :
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", from);
+						break;
+					case "to_address" :
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", to);
+						break;
+					case "subject" :
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", subject);
+						break;
+					case "body" :
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", body);
+						break;
+				}
+			}
 		}
-
-		return keywords;
-	}
-	
-	
-	public String replaceKeywordWithValue(String toReplace, String keyword, String replacement){
-		return toReplace.replace("[" + keyword + "]", replacement);
+		if(ingredientReplaced.length() > maxLength)
+			ingredientReplaced = ingredientReplaced.substring(0, maxLength - 4) + "...";
+		
+		return ingredientReplaced;
 	}
 }
