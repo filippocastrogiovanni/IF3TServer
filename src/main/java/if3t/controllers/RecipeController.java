@@ -75,6 +75,7 @@ public class RecipeController
 		return recipeService.readPublicRecipes();
 	}
 	
+	//FIXME mettere tutto in una funzione del service per garantire la transazionalità
 	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value="/recipe/{id}", method=RequestMethod.GET)
 	public RecipePOJO readRecipe(@PathVariable Long id) throws NotLoggedInException, NoPermissionException, NotFoundRecipeException 

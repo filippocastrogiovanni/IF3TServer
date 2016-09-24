@@ -38,6 +38,17 @@ public class ChannelStatusServiceImpl implements ChannelStatusService
 	}
 	
 	@Override
+	public void createNewChannelStatus(Long recipeId, Long sinceRef, String pageToken) 
+	{
+		ChannelStatus cs = new ChannelStatus();
+		cs.setRecipe(recipeRepo.findOne(recipeId));
+		cs.setSinceRef(sinceRef);
+		cs.setPageToken(pageToken);
+		channelsStatusesRepo.save(cs);
+		
+	}
+	
+	@Override
 	public ChannelStatus readChannelStatusByRecipeId(Long recipeId) {
 		return channelsStatusesRepo.findByRecipe_Id(recipeId);
 	}
@@ -53,5 +64,5 @@ public class ChannelStatusServiceImpl implements ChannelStatusService
 	@Override
 	public void updateChannelStatus(ChannelStatus channelStatus) {
 		channelsStatusesRepo.save(channelStatus);
-	}
+	}	
 }

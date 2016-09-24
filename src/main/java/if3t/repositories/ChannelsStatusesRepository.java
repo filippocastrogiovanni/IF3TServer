@@ -9,4 +9,5 @@ public interface ChannelsStatusesRepository extends Repository<ChannelStatus, Lo
 	public ChannelStatus findOne(Long id);
 	public ChannelStatus findByRecipe_Id(Long recipeId);
 	public ChannelStatus save(ChannelStatus status);
+	public void deleteByRecipe_id(Long id);
 }

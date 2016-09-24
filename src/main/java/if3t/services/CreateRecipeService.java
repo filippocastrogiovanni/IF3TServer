@@ -1,6 +1,7 @@
 package if3t.services;
 
 import java.util.List;
+import java.util.Set;
 
 import if3t.entities.Action;
 import if3t.entities.ParametersActions;
@@ -19,4 +20,5 @@ public interface CreateRecipeService
 	public List<ParametersActions> readChannelParametersActions(Long actionId, Long channelId);
 	public ParametersTriggers readParameterTrigger(Long id);
 	public ParametersActions readParameterAction(Long id);
+	public Set<String> readChannelKeywords(Long channelId);
 }

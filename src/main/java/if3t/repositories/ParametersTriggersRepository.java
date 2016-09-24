@@ -8,11 +8,12 @@ import if3t.entities.Channel;
 import if3t.entities.ParametersTriggers;
 import if3t.entities.Trigger;
 
-public interface ParametersTriggersRepository extends Repository<ParametersTriggers, Long> {
-
+public interface ParametersTriggersRepository extends Repository<ParametersTriggers, Long> 
+{
 	public Iterable<ParametersTriggers> findAll();
 	public List<ParametersTriggers> findByChannel(Channel channel);
 	public ParametersTriggers findOne(Long id);
 	public List<ParametersTriggers> findByChannelAndType(Channel channel, Byte type);
 	public List<ParametersTriggers> findByTriggerAndChannel(Trigger trigger, Channel channel);
+	public List<ParametersTriggers> findByChannel_channelIdAndIsSendable(Long channelId, boolean isSendable);
 }

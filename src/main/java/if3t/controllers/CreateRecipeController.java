@@ -1,6 +1,8 @@
 package if3t.controllers;
 
 import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,8 +20,8 @@ import if3t.services.CreateRecipeService;
 
 @RestController
 @CrossOrigin
-public class CreateRecipeController {
-
+public class CreateRecipeController 
+{
 	@Autowired
 	private CreateRecipeService createRecipeService;
 	
@@ -69,5 +71,11 @@ public class CreateRecipeController {
 	@RequestMapping(value="/parameters_actions/{channelId}", method=RequestMethod.GET)
 	public List<ParametersActions> getChannelParametersActions(@PathVariable Long channelId) {
 		return createRecipeService.readChannelParametersActions(channelId);
+	}
+	
+	@ResponseStatus(value = HttpStatus.OK)
+	@RequestMapping(value="/channel_keywords/{channelId}", method=RequestMethod.GET)
+	public Set<String> getChannelKeywords(@PathVariable Long channelId) {
+		return createRecipeService.readChannelKeywords(channelId);
 	}
 }

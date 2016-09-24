@@ -5,7 +5,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import if3t.apis.WeatherUtil;
-import if3t.apis.WeatherUtil.EventType;
+import if3t.apis.WeatherUtil.SunriseSunsetMode;
 import if3t.apis.WeatherUtil.UnitsFormat;
 import if3t.entities.Recipe;
 import if3t.services.RecipeService;
@@ -22,15 +22,17 @@ public class WeatherTasks
 	private TriggerIngredientService triggerIngrService;
 	
 	//TODO sistemare questo valore se serve
-//	@Scheduled(fixedRateString = "${app.scheduler.value}")
-//	public void weatherSunriseScheduler()
-//	{
-//		weatherUtil.getCurrentWeatherAtSunriseOrSunset(670801L, 11L, EventType.SUNRISE, UnitsFormat.CELSIUS);
-//		
-//		
-//		for (Recipe recipe : recipeService.getEnabledRecipesByTriggerChannel("weather"))
-//		{
-//			
-//		}
-//	}
+	@Scheduled(fixedRateString = "${app.scheduler.value}")
+	public void weatherSunriseScheduler()
+	{
+		StringBuffer returnMsg = new StringBuffer();
+//		weatherUtil.isSunriseOrSunset(670801L, 11L, SunriseSunsetMode.SUNRISE, UnitsFormat.CELSIUS, returnMsg);
+//		weatherUtil.isTemperatureAboveOrBelow(670801L, recipeId, eventType, threshold, format)
+		
+		
+		for (Recipe recipe : recipeService.getEnabledRecipesByTriggerChannel("weather"))
+		{
+			
+		}
+	}
 }

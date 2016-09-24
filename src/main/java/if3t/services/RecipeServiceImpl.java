@@ -35,14 +35,15 @@ import if3t.models.RecipePOJO;
 import if3t.repositories.ActionIngredientRepository;
 import if3t.repositories.ActionRepository;
 import if3t.repositories.AuthorizationRepository;
+import if3t.repositories.ChannelsStatusesRepository;
 import if3t.repositories.RecipeRepository;
 import if3t.repositories.TriggerIngredientRepository;
 import if3t.repositories.TriggerRepository;
 
 @Service
 @Transactional
-public class RecipeServiceImpl implements RecipeService {
-
+public class RecipeServiceImpl implements RecipeService 
+{
 	@Autowired
 	private RecipeRepository recipeRepository;
 	@Autowired
@@ -57,6 +58,8 @@ public class RecipeServiceImpl implements RecipeService {
 	private TriggerRepository triggerRepository;
 	@Autowired
 	private CreateRecipeService createRecipeService;
+	@Autowired
+	private ChannelsStatusesRepository channelStatusRepo;
 	private static final String EMAIL_PATTERN = "^[-a-z0-9~!$%^&*_=+}{\'?]+(.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(.[-a-z0-9_]+)*.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}))(:[0-9]{1,5})?$";
 	
 	//TODO controllare se quest'annotazione serve anche in altri services
@@ -115,6 +118,7 @@ public class RecipeServiceImpl implements RecipeService {
 				actionIngRepo.delete(ai);
 			}
 			
+			channelStatusRepo.deleteByRecipe_id(rec.getId());
 			recipeRepository.delete(rec);
 		}
 	}
@@ -276,10 +280,12 @@ public class RecipeServiceImpl implements RecipeService {
 				throw new PartialUpdateException("The update has been partial because of some unknown action parameter ids");
 			}
 			
+			channelStatusRepo.deleteByRecipe_id(rec.getId());
 			recipeRepository.save(rec);
 		}
 	}
 	
+	//TODO togliere le println alla fine e magari aggiungere gli errori ad un logger
 	private void validateRecipe(List<Recipe> recipes) throws AddRecipeException
 	{
 		//TODO controlli user ???

@@ -35,8 +35,10 @@ public class WeatherUtil
 	private static final String URL_FORECAST_WEATHER = BASE_WEATHER_URL + "forecast?appid=" + CONSUMER_KEY; 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 	
+	public enum SunriseSunsetMode { SUNRISE, SUNSET }
+	public enum TempAboveBelowMode { ABOVE, BELOW }
 	public enum UnitsFormat { CELSIUS, KELVIN, FAHRENHEIT }
-	public enum EventType { SUNRISE, SUNSET }
+	
 	
 	private HttpResponse executeRequest(String url) throws IOException
 	{
@@ -53,19 +55,18 @@ public class WeatherUtil
 	}
 	
 	//TODO eliminare alla fine i commenti
-	public String getCurrentWeatherAtSunriseOrSunset(Long cityId, Long recipeId, EventType eventType, UnitsFormat format)
+	public boolean isSunriseOrSunset(Long cityId, Long recipeId, SunriseSunsetMode eventType, UnitsFormat format, StringBuffer returnMsg)
 	{
+		String eventName = eventType.toString().toLowerCase();
+		String finalUrl = URL_CURRENT_WEATHER + "&id=" + cityId;
+		
+		if (format != UnitsFormat.KELVIN) {
+			finalUrl += "&units=" + ((format == UnitsFormat.CELSIUS) ? "metric" : "imperial");
+		}
+		
 		try 
-		{
-			String eventName = eventType.toString().toLowerCase();
-			String finalUrl = URL_CURRENT_WEATHER + "&id=" + cityId;
-			
-			if (format != UnitsFormat.KELVIN) {
-				finalUrl += "&units=" + ((format == UnitsFormat.CELSIUS) ? "metric" : "imperial");
-			}
-			
+		{	
 			HttpResponse response = executeRequest(finalUrl);
-			ChannelStatus weatherStatus = channelStatusService.readChannelStatusByRecipeId(recipeId);
 			
 			if (response.getStatusCode() == 200)
 			{
@@ -76,37 +77,39 @@ public class WeatherUtil
 				{
 //					System.out.println("xxx2");
 					response.disconnect();
-					return null;
+					return false;
 				}
 				
 				if (respObject.getInt("cod") != 200)
 				{
 //					System.out.println("xxx3");
 					response.disconnect();
-					logger.error((respObject.has("message") && !respObject.isNull("message")) ? respObject.getInt("cod") + " - " + respObject.getString("message") : "Error: maybe the passed city ID was incorrect");
-					return null;
+					logger.error((respObject.has("message") && !respObject.isNull("message")) ? respObject.getInt("cod") + " - " + respObject.getString("message") : "Error: maybe the passed city id was incorrect");
+					return false;
 				}
 				
 				if (!respObject.has("dt") || respObject.isNull("dt"))
 				{
 //					System.out.println("xxx4");
 					response.disconnect();
-					return null;
+					return false;
 				}
 				
-				// If received JSON file is older then the last read one, than do not continue
+				ChannelStatus weatherStatus = channelStatusService.readChannelStatusByRecipeId(recipeId);
+				
+				// If received JSON file is older (or equal) then the last read one, than do not continue
 				if (weatherStatus != null && respObject.getLong("dt") <= weatherStatus.getSinceRef())
 				{
 //					System.out.println("xxx5");
 					response.disconnect();
-					return null;
+					return false;
 				}
 				
 				if (!respObject.has("sys") || respObject.isNull("sys"))
 				{
 //					System.out.println("xxx6");
 					response.disconnect();
-					return null;
+					return false;
 				}
 				
 				JSONObject sysObject = respObject.getJSONObject("sys");
@@ -115,7 +118,7 @@ public class WeatherUtil
 				{
 //					System.out.println("xxx7");
 					response.disconnect();
-					return null;
+					return false;
 				}
 								
 				OffsetDateTime now = OffsetDateTime.now().withNano(0);
@@ -125,20 +128,21 @@ public class WeatherUtil
 				{
 //					System.out.println("xxx8");
 					response.disconnect();
-					return null;
+					return false;
 				}
 				
-				// WARNING: the field facebookSinceRef is used for store the epoch of the last triggered sunrise/sunset
 				if (weatherStatus != null)
 				{
 //					System.out.println("xxx9");
+					// WARNING: the field facebookSinceRef is used for store the epoch of the last triggered sunrise/sunset
 					OffsetDateTime lastEventOdt = normalizeDate(weatherStatus.getFacebookSinceRef(), now.getOffset());
 					
+					// In a new JSON file (dt > of the old one) the sunrise/sunset it's the same but the relative time is lightly different
 					if (Duration.between(lastEventOdt, eventOdt).abs().toMinutes() < 60)
 					{
 //						System.out.println("xxx10");
 						response.disconnect();
-						return null;
+						return false;
 					}
 				}
 				
@@ -146,7 +150,7 @@ public class WeatherUtil
 				{
 //					System.out.println("xxx11");
 					response.disconnect();
-					return null;
+					return false;
 				}
 				
 				if (weatherStatus == null) 
@@ -168,7 +172,7 @@ public class WeatherUtil
 				String city = (respObject.has("name") && !respObject.isNull("name")) ? respObject.getString("name") : "the city the id of which is " + cityId;
 				logger.info("The sun in " + city + " will " + eventName.substring(3) + " within 15 minutes");
 				
-				StringBuffer message = new StringBuffer("It's " + eventName + ".");
+				returnMsg.append(((returnMsg.length() > 0) ? " It's " : "It's ") + eventName + ".");
 				
 				if (respObject.has("main") && !respObject.isNull("main"))
 				{
@@ -176,8 +180,8 @@ public class WeatherUtil
 					
 					if (mainObject.has("temp") && !mainObject.isNull("temp"))
 					{
-						message.append(" The temperature at the moment is ");
-						message.append(mainObject.getDouble("temp") + " " + format.toString().substring(0, 1) + ".");
+						returnMsg.append(" The temperature at the moment is ");
+						returnMsg.append(mainObject.getDouble("temp") + " " + format.toString().substring(0, 1) + ".");
 					}
 				}
 				
@@ -191,32 +195,176 @@ public class WeatherUtil
 						
 						if (weatherObject.has("description") && !weatherObject.isNull("description"))
 						{
-							message.append(" Current conditions are '");
-							message.append(weatherObject.getString("description") + "'.");
+							returnMsg.append(" Current conditions are '");
+							returnMsg.append(weatherObject.getString("description") + "'.");
 						}
 					}
 				}
 				
 				//FIXME eliminare alla fine
-				System.out.println(message);
-				return message.toString();
+				System.out.println(returnMsg);
+				return true;
 			}
 			else
 			{
 				response.disconnect();
 				logger.error("A problem occurred during the communication with the weather web service");
-				return null;
+				return false;
 			}
 		}
 		catch (JSONException e)
 		{
 			logger.error("A problem occurred during the parsing of the JSON response", e);
-			return null;
+			return false;
 		}
 		catch (IOException e) 
 		{
 			logger.error("Failed to communicate with the weather web service", e);
-			return null;
+			return false;
+		}    	
+	}
+	
+	public boolean isTemperatureAboveOrBelow(Long cityId, Long recipeId, TempAboveBelowMode eventType, double threshold, UnitsFormat format)
+	{
+		String finalUrl = URL_CURRENT_WEATHER + "&id=" + cityId;
+		
+		if (format != UnitsFormat.KELVIN) {
+			finalUrl += "&units=" + ((format == UnitsFormat.CELSIUS) ? "metric" : "imperial");
+		}
+		
+		try 
+		{	
+			HttpResponse response = executeRequest(finalUrl);
+			
+			if (response.getStatusCode() == 200)
+			{
+				System.out.println("xxx1");
+				JSONObject respObject = new JSONObject(response.parseAsString());
+				
+				if (!respObject.has("cod") || respObject.isNull("cod"))
+				{
+					System.out.println("xxx2");
+					response.disconnect();
+					return false;
+				}
+				
+				if (respObject.getInt("cod") != 200)
+				{
+					System.out.println("xxx3");
+					response.disconnect();
+					logger.error((respObject.has("message") && !respObject.isNull("message")) ? respObject.getInt("cod") + " - " + respObject.getString("message") : "Error: maybe the passed city id was incorrect");
+					return false;
+				}
+				
+				if (!respObject.has("dt") || respObject.isNull("dt"))
+				{
+					System.out.println("xxx4");
+					response.disconnect();
+					return false;
+				}
+				
+				ChannelStatus weatherStatus = channelStatusService.readChannelStatusByRecipeId(recipeId);
+				
+				// If received JSON file is older (or equal) then the last read one, than do not continue
+				if (weatherStatus != null && respObject.getLong("dt") <= weatherStatus.getSinceRef())
+				{
+					System.out.println("xxx5");
+					response.disconnect();
+					return false;
+				}
+				
+				if (!respObject.has("main") || respObject.isNull("main"))
+				{
+					System.out.println("xxx6");
+					response.disconnect();
+					return false;
+				}
+					
+				JSONObject mainObject = respObject.getJSONObject("main");
+					
+				if (!mainObject.has("temp") || mainObject.isNull("temp"))
+				{
+					System.out.println("xxx6");
+					response.disconnect();
+					return false;
+				}
+				
+				if (weatherStatus == null) 
+				{
+					// WARNING: the field pageToken is used for store the last read temperature (double)
+					channelStatusService.createNewChannelStatus(recipeId, respObject.getLong("dt"), respObject.getString("temp"));
+					
+					if (eventType == TempAboveBelowMode.ABOVE)
+					{
+						System.out.println("xxx7");
+						if (respObject.getDouble("temp") > threshold)
+						{
+							System.out.println("xxx8");
+							response.disconnect();
+							return true;
+						}
+					}
+					else
+					{
+						System.out.println("xxx9");
+						if (respObject.getDouble("temp") < threshold)
+						{
+							System.out.println("xxx10");
+							response.disconnect();
+							return true;
+						}
+					}
+					
+					response.disconnect();
+					return false;
+				}
+				
+				double lastTemp = Double.parseDouble(weatherStatus.getPageToken());
+				weatherStatus.setSinceRef(respObject.getLong("dt"));
+				// WARNING: the field pageToken is used for store the last read temperature (double)
+				weatherStatus.setPageToken(respObject.getString("temp"));
+				channelStatusService.updateChannelStatus(weatherStatus);
+					
+				if (eventType == TempAboveBelowMode.ABOVE)
+				{
+					System.out.println("xxx11");
+					if (respObject.getDouble("temp") > threshold && lastTemp <= threshold)
+					{
+						System.out.println("xxx12");
+						response.disconnect();
+						return true;
+					}
+				}
+				else
+				{
+					System.out.println("xxx13");
+					if (respObject.getDouble("temp") < threshold && lastTemp >= threshold)
+					{
+						System.out.println("xxx14");
+						response.disconnect();
+						return true;
+					}
+				}
+					
+				response.disconnect();
+				return false;
+			}
+			else
+			{
+				response.disconnect();
+				logger.error("A problem occurred during the communication with the weather web service");
+				return false;
+			}
+		}
+		catch (JSONException e)
+		{
+			logger.error("A problem occurred during the parsing of the JSON response", e);
+			return false;
+		}
+		catch (IOException e) 
+		{
+			logger.error("Failed to communicate with the weather web service", e);
+			return false;
 		}    	
 	}
 }
