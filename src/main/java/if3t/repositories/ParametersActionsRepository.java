@@ -13,5 +13,5 @@ public interface ParametersActionsRepository extends Repository<ParametersAction
 	public ParametersActions findOne(Long id);
 	public List<ParametersActions> findByChannelAndType(Channel channel, Byte type);
 	public List<ParametersActions> findByActionAndChannel(Action action, Channel channel);
-	public List<ParametersActions> findByChannel_channelId(Long channelId);
+	public List<ParametersActions> findByChannel_keyword(String keyword);
 }

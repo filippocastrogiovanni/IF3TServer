@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import if3t.apis.WeatherUtil;
 import if3t.apis.WeatherUtil.SunriseSunsetMode;
+import if3t.apis.WeatherUtil.TempAboveBelowMode;
 import if3t.apis.WeatherUtil.UnitsFormat;
 import if3t.entities.Recipe;
 import if3t.services.RecipeService;
@@ -27,7 +28,7 @@ public class WeatherTasks
 	{
 		StringBuffer returnMsg = new StringBuffer();
 //		weatherUtil.isSunriseOrSunset(670801L, 11L, SunriseSunsetMode.SUNRISE, UnitsFormat.CELSIUS, returnMsg);
-//		weatherUtil.isTemperatureAboveOrBelow(670801L, recipeId, eventType, threshold, format)
+//		weatherUtil.isTemperatureAboveOrBelow(670801L, 12L, TempAboveBelowMode.ABOVE, 5, UnitsFormat.CELSIUS);
 		
 		
 		for (Recipe recipe : recipeService.getEnabledRecipesByTriggerChannel("weather"))

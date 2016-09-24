@@ -15,5 +15,5 @@ public interface ParametersTriggersRepository extends Repository<ParametersTrigg
 	public ParametersTriggers findOne(Long id);
 	public List<ParametersTriggers> findByChannelAndType(Channel channel, Byte type);
 	public List<ParametersTriggers> findByTriggerAndChannel(Trigger trigger, Channel channel);
-	public List<ParametersTriggers> findByChannel_channelIdAndIsSendable(Long channelId, boolean isSendable);
+	public List<ParametersTriggers> findByChannel_keywordAndIsSendable(String keyword, boolean isSendable);
 }

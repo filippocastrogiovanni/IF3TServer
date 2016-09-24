@@ -20,5 +20,5 @@ public interface CreateRecipeService
 	public List<ParametersActions> readChannelParametersActions(Long actionId, Long channelId);
 	public ParametersTriggers readParameterTrigger(Long id);
 	public ParametersActions readParameterAction(Long id);
-	public Set<String> readChannelKeywords(Long channelId);
+	public Set<String> readChannelKeywords(String keyword);
 }

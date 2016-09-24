@@ -281,6 +281,7 @@ public class WeatherUtil
 				}
 					
 				JSONObject mainObject = respObject.getJSONObject("main");
+				System.out.println("ccc");
 					
 				if (!mainObject.has("temp") || mainObject.isNull("temp"))
 				{
@@ -288,11 +289,13 @@ public class WeatherUtil
 					response.disconnect();
 					return false;
 				}
+				System.out.println("ddd");
+				String city = (respObject.has("name") && !respObject.isNull("name")) ? respObject.getString("name") : "the city the id of which is " + cityId;
 				
 				if (weatherStatus == null) 
 				{
 					// WARNING: the field pageToken is used for store the last read temperature (double)
-					channelStatusService.createNewChannelStatus(recipeId, respObject.getLong("dt"), respObject.getString("temp"));
+					channelStatusService.createNewChannelStatus(recipeId, respObject.getLong("dt"), String.valueOf(mainObject.getDouble("temp")));
 					
 					if (eventType == TempAboveBelowMode.ABOVE)
 					{
@@ -301,6 +304,7 @@ public class WeatherUtil
 						{
 							System.out.println("xxx8");
 							response.disconnect();
+							logger.info("The temperature in " + city + " has risen above the threshold");
 							return true;
 						}
 					}
@@ -311,6 +315,7 @@ public class WeatherUtil
 						{
 							System.out.println("xxx10");
 							response.disconnect();
+							logger.info("The temperature in " + city + " has dropped below the threshold");
 							return true;
 						}
 					}
@@ -322,7 +327,7 @@ public class WeatherUtil
 				double lastTemp = Double.parseDouble(weatherStatus.getPageToken());
 				weatherStatus.setSinceRef(respObject.getLong("dt"));
 				// WARNING: the field pageToken is used for store the last read temperature (double)
-				weatherStatus.setPageToken(respObject.getString("temp"));
+				weatherStatus.setPageToken(String.valueOf(mainObject.getDouble("temp")));
 				channelStatusService.updateChannelStatus(weatherStatus);
 					
 				if (eventType == TempAboveBelowMode.ABOVE)
@@ -332,6 +337,7 @@ public class WeatherUtil
 					{
 						System.out.println("xxx12");
 						response.disconnect();
+						logger.info("The temperature in " + city + " has risen above the threshold");
 						return true;
 					}
 				}
@@ -342,6 +348,7 @@ public class WeatherUtil
 					{
 						System.out.println("xxx14");
 						response.disconnect();
+						logger.info("The temperature in " + city + " has dropped below the threshold");
 						return true;
 					}
 				}
