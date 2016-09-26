@@ -9,6 +9,8 @@ import if3t.apis.WeatherUtil.SunriseSunsetMode;
 import if3t.apis.WeatherUtil.TempAboveBelowMode;
 import if3t.apis.WeatherUtil.UnitsFormat;
 import if3t.entities.Recipe;
+import if3t.entities.User;
+import if3t.repositories.RecipeRepository;
 import if3t.services.RecipeService;
 import if3t.services.TriggerIngredientService;
 
@@ -22,6 +24,10 @@ public class WeatherTasks
 	@Autowired
 	private TriggerIngredientService triggerIngrService;
 	
+	
+	@Autowired
+	private RecipeRepository recipeRepo;
+	
 	//TODO sistemare questo valore se serve
 	@Scheduled(fixedRateString = "${app.scheduler.value}")
 	public void weatherSunriseScheduler()
@@ -29,6 +35,8 @@ public class WeatherTasks
 		StringBuffer returnMsg = new StringBuffer();
 //		weatherUtil.isSunriseOrSunset(670801L, 11L, SunriseSunsetMode.SUNRISE, UnitsFormat.CELSIUS, returnMsg);
 //		weatherUtil.isTemperatureAboveOrBelow(670801L, 12L, TempAboveBelowMode.ABOVE, 5, UnitsFormat.CELSIUS);
+//		User user = recipeRepo.findOne(13L).getUser();
+//		weatherUtil.getTomorrowWeatherReport(670801L, 13L, "05:57", user.getTimezone().getZone_id(), UnitsFormat.CELSIUS);
 		
 		
 		for (Recipe recipe : recipeService.getEnabledRecipesByTriggerChannel("weather"))

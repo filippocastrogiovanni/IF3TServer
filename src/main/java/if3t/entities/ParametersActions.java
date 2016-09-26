@@ -11,6 +11,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.Id;
 
 @Entity
@@ -43,6 +46,7 @@ public class ParametersActions {
 	private String keyword;
 	
 	@OneToMany(mappedBy = "param")
+	@JsonBackReference(value="parametersactions-action_ingredients")
 	private Set<ActionIngredient> action_ingredients;
 	
 	@Column(name = "can_receive")

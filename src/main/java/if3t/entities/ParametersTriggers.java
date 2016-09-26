@@ -11,6 +11,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.Id;
 
 @Entity
@@ -43,6 +46,7 @@ public class ParametersTriggers {
 	private String keyword;
 	
 	@OneToMany(mappedBy = "param")
+	@JsonBackReference(value="parameterstriggers-trigger_ingredients")
 	private Set<TriggerIngredient> trigger_ingredients;
 	
 	@Column(name = "is_sendable")

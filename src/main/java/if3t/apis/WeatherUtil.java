@@ -3,8 +3,13 @@ package if3t.apis;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -374,10 +379,36 @@ public class WeatherUtil
 		}    	
 	}
 	
-	public String getTomorrowWeatherReport(Long cityId, Long recipeId, String time, UnitsFormat format)
+	public String getTomorrowWeatherReport(Long cityId, Long recipeId, String time, String zoneId, UnitsFormat format)
 	{
-		OffsetDateTime now = OffsetDateTime.now().withNano(0);
+		ChannelStatus weatherStatus = channelStatusService.readChannelStatusByRecipeId(recipeId);
 		
+		if (weatherStatus != null)
+		{
+//			System.out.println(Duration.between(Instant.now(), Instant.ofEpochSecond(weatherStatus.getSinceRef())).abs().toHours());
+			// WARNING: the field sinceRef is used to store the last time this trigger has fired
+//			if (Duration.between(Instant.now(), Instant.ofEpochSecond(weatherStatus.getSinceRef())).abs().toHours() < 23) {
+//				System.out.println("yyy1");
+//				return null;
+//			}
+		}
+		
+		OffsetTime serverNowTime = OffsetTime.now().withNano(0);
+//		System.out.println("serverNowTime: " + serverNowTime);
+		LocalTime trigLocalTime = LocalTime.parse(time);
+//		System.out.println("trigLocalTime: " + trigLocalTime);
+		OffsetTime userNowTime = OffsetTime.now(ZoneId.of(zoneId)).withNano(0);
+//		System.out.println("userNowTime: " + userNowTime);
+		OffsetTime trigOffsetTime = OffsetTime.of(trigLocalTime, userNowTime.getOffset());
+//		System.out.println("trigOffsetTime: " + trigOffsetTime);
+		OffsetTime normTrigOffsetTime = trigOffsetTime.withOffsetSameInstant(serverNowTime.getOffset());
+//		System.out.println("normTrigOffsetTime: " + normTrigOffsetTime);
+//		System.out.println(Duration.between(serverNowTime, normTrigOffsetTime).abs().toMinutes());
+		
+//		if (Duration.between(serverNowTime, normTrigOffsetTime).abs().toMinutes() > 5) {
+//			System.out.println("yyy2");
+//			return null;
+//		}		
 		
 		String finalUrl = URL_FORECAST_WEATHER + "&id=" + cityId;
 		
@@ -391,35 +422,141 @@ public class WeatherUtil
 			
 			if (response.getStatusCode() == 200)
 			{
-//				System.out.println("xxx1");
+				System.out.println("xxx1");
 				JSONObject respObject = new JSONObject(response.parseAsString());
 				
 				if (!respObject.has("cod") || respObject.isNull("cod"))
 				{
-//					System.out.println("xxx2");
+					System.out.println("xxx2");
 					response.disconnect();
 					return null;
 				}
 				
 				if (respObject.getInt("cod") != 200)
 				{
-//					System.out.println("xxx3");
+					System.out.println("xxx3");
 					response.disconnect();
 					logger.error((respObject.has("message") && !respObject.isNull("message")) ? respObject.getInt("cod") + " - " + respObject.getString("message") : "Error: maybe the passed city id was incorrect");
 					return null;
 				}
 				
-				if (respObject.has("list") && !respObject.isNull("list"))
+				if (!respObject.has("list") || respObject.isNull("list"))
 				{
-					JSONArray forecastArray = respObject.getJSONArray("list");
+					System.out.println("xxx4");
+					response.disconnect();
+					return null;
+				}
 				
-					for (int i = 0; i < forecastArray.length(); i++)
+				OffsetDateTime firstDate = OffsetDateTime.MAX;
+				double maxTemp = Double.MIN_VALUE;
+				double minTemp = Double.MAX_VALUE;
+				Map<String, Integer> weatherStats = new HashMap<String, Integer>();
+				
+				JSONArray forecastArray = respObject.getJSONArray("list");
+				
+				for (int i = 0; i < forecastArray.length(); i++)
+				{
+					JSONObject fcObject = (JSONObject) forecastArray.get(i);
+					
+					if (!fcObject.has("dt") || fcObject.isNull("dt"))
 					{
-						JSONObject forecastObject = (JSONObject) forecastArray.get(i);
+						System.out.println("xxx5");
+						response.disconnect();
+						return null;
+					}
+					
+					// The current day in the specified city is supposed to be in the first object
+					if (i == 0)
+					{
+						firstDate = OffsetDateTime.ofInstant(Instant.ofEpochSecond(fcObject.getLong("dt")), ZoneId.of("Etc/GMT"));
+						System.out.println("firstDate: " + firstDate + " - " + firstDate.getDayOfYear());
+						continue;
+					}
+					
+					OffsetDateTime currentDate = OffsetDateTime.ofInstant(Instant.ofEpochSecond(fcObject.getLong("dt")), ZoneId.of("Etc/GMT"));
+					
+					System.out.println(firstDate.plusDays(1).getDayOfYear());
+					System.out.println(currentDate.getDayOfYear());
+					
+					if (currentDate.getDayOfYear() != firstDate.plusDays(1).getDayOfYear())	{
+						System.out.println("other day " + i + "\n-------");
+						continue;
+					}
+					
+					System.out.println("same day " + i + "\n-------");
+					
+					if (!fcObject.has("main") || fcObject.isNull("main"))
+					{
+						System.out.println("xxx6");
+						response.disconnect();
+						return null;
+					}
+					
+					JSONObject mainObject = fcObject.getJSONObject("main");
+					
+					if (!mainObject.has("temp_min") || mainObject.isNull("temp_min") || !mainObject.has("temp_max") || mainObject.isNull("temp_max"))
+					{
+						System.out.println("xxx7");
+						response.disconnect();
+						return null;
+					}
+					
+					if (!fcObject.has("weather") || fcObject.isNull("weather"))
+					{
+						System.out.println("xxx8");
+						response.disconnect();
+						return null;
+					}
+					
+					JSONArray weatherArray = fcObject.getJSONArray("weather");
+					
+					if (weatherArray.length() == 0)
+					{
+						System.out.println("xxx9");
+						response.disconnect();
+						return null;
+					}
+						
+					JSONObject weatherObject = (JSONObject) weatherArray.get(0);
+					
+					if (!weatherObject.has("main") || weatherObject.isNull("main"))
+					{
+						System.out.println("xxx10");
+						response.disconnect();
+						return null;
+					}
+					
+					if (mainObject.getDouble("temp_min") < minTemp) {
+						minTemp = mainObject.getDouble("temp_min");
+					}
+					
+					if (mainObject.getDouble("temp_max") > maxTemp) {
+						maxTemp = mainObject.getDouble("temp_max");
+					}
+					
+					if (!weatherStats.containsKey(weatherObject.getString("main"))) {
+						weatherStats.put(weatherObject.getString("main"), 1);
+					}
+					else {
+						weatherStats.put(weatherObject.getString("main"), weatherStats.get(weatherObject.getString("main")) + 1);
 					}
 				}
 				
-				return null;
+				// WARNING: the field sinceRef is used to store the last time this trigger has fired
+				if (weatherStatus == null) {
+					channelStatusService.createNewChannelStatus(recipeId, Instant.now().getEpochSecond());
+				}
+				else 
+				{
+					weatherStatus.setSinceRef(Instant.now().getEpochSecond());
+					channelStatusService.updateChannelStatus(weatherStatus);
+				}
+				
+				StringBuffer sb = new StringBuffer("sss");
+				System.out.println("minTemp: " + minTemp);
+				System.out.println("maxTemp: " + maxTemp);
+				System.out.println(weatherStats.size());
+				return sb.toString(); 
 			}
 			else
 			{
