@@ -4,7 +4,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name="timezones")
@@ -13,18 +12,10 @@ public class Timezone {
 	@Id
     @Column(name = "id_timezone", nullable = false)
     private Long id;
-	
-	@NotNull
-	@Column(name = "name", nullable = false)
 	private String name;
-
-	@NotNull
-	@Column(name = "daylight_time", nullable = false)
 	private boolean daylight_time;
-	
-	@NotNull
-	@Column(name = "timezone_value", nullable = false)
 	private int timezone_value;
+	private String zone_id;
 
 	public Long getId() {
 		return id;
@@ -56,6 +47,14 @@ public class Timezone {
 
 	public void setTimezone_value(int timezone_value) {
 		this.timezone_value = timezone_value;
+	}
+	
+	public String getZone_id() {
+		return zone_id;
+	}
+
+	public void setZone_id(String zone_id) {
+		this.zone_id = zone_id;
 	}
 
 	@Override
