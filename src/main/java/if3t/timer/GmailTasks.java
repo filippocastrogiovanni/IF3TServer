@@ -5,16 +5,10 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import com.google.api.services.gmail.model.Message;
 
@@ -27,7 +21,6 @@ import if3t.entities.Authorization;
 import if3t.entities.Channel;
 import if3t.entities.ChannelStatus;
 import if3t.entities.ParametersActions;
-import if3t.entities.ParametersTriggers;
 import if3t.entities.Recipe;
 import if3t.entities.TriggerIngredient;
 import if3t.entities.User;
@@ -66,7 +59,6 @@ public class GmailTasks {
 	@Scheduled(fixedRateString = "${app.scheduler.value}")
 	public void gmailScheduler(){
 		TimeZone timezone = TimeZone.getTimeZone(zone);
-		//RestTemplate restTemplate = new RestTemplate();
 
 		List<Recipe> gmailTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gmail");
 		for(Recipe recipe: gmailTriggerRecipes){
@@ -87,40 +79,22 @@ public class GmailTasks {
 				if(actionAuth == null)
 					continue;
 
-				/*HttpHeaders headers = new HttpHeaders();
-				headers.set("Authorization", triggerAuth.getTokenType() + " " + triggerAuth.getAccessToken());
-				HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
-
-				String url = "https://www.googleapis.com/gmail/v1/users/"
-						+ "me/messages?"
-						+ "q=";
-*/
-				
 				List<TriggerIngredient> triggerIngredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
-				
-				/*for(TriggerIngredient triggerIngredient: triggerIngredients){
-					ParametersTriggers param = triggerIngredient.getParam();
-					if(param.getKeyword().equals("from_address"))
-						url += "from:" + triggerIngredient.getValue();
-				}*/
 
 				Long timestamp = 0l;
 
 				ChannelStatus channelStatus = channelStatusService.readChannelStatusByRecipeId(recipe.getId());
-				if(channelStatus == null)
+				if(channelStatus == null){
 					timestamp = Calendar.getInstance().getTimeInMillis()- (rate);
+					channelStatus = channelStatusService.createNewChannelStatus(recipe.getId(), timestamp);
+				}
 				else
 					timestamp = channelStatus.getSinceRef();
-
-				//url += " after:" + timestamp/1000;
-
-				//HttpEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-
-				List<Message> messages = gmailUtil.checkEmailReceived(triggerAuth, triggerIngredients, timestamp, recipe);
-
-				channelStatusService.updateChannelStatus(user.getId(), timestamp + (1000*60*5));
+	
+				List<Message> messages = gmailUtil.checkEmailReceived(triggerAuth, triggerIngredients, recipe);
 
 				if(messages.size() > 0){
+					messages = gmailUtil.getMessages(triggerAuth, messages);
 					List<ActionIngredient> actionIngredients = actionIngredientService.getRecipeActionIngredients(recipe.getId());
 
 					//Checking if the access token of the action channel is expired
@@ -131,6 +105,7 @@ public class GmailTasks {
 					switch(recipe.getAction().getChannel().getKeyword()){
 						case "gmail" :
 							for(Message message : messages){
+								System.out.println(message.toPrettyString());
 								String to = "";
 								String subject = "";
 								String body = "";
@@ -238,12 +213,6 @@ public class GmailTasks {
 							break;
 					}
 				}
-				/*JSONObject obj = new JSONObject(response.getBody());
-
-				int result = obj.getInt("resultSizeEstimate");
-				if(result > 0){  		      		   
-					
-				}*/
 			}catch (Exception e){
 				e.printStackTrace();
 				continue;

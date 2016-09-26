@@ -2,9 +2,9 @@ package if3t.apis;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -17,11 +17,7 @@ import javax.mail.internet.MimeMessage.RecipientType;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.HttpResponse;
@@ -30,9 +26,8 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.repackaged.org.apache.commons.codec.binary.Base64;
+import com.google.api.client.repackaged.org.apache.commons.codec.binary.StringUtils;
 import com.google.api.services.gmail.Gmail;
-import com.google.api.services.gmail.Gmail.Users.Messages;
-import com.google.api.services.gmail.Gmail.Users.Messages.Send;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePartHeader;
@@ -63,7 +58,26 @@ public class GmailUtil {
 	@Value("${app.scheduler.value}")
 	private long rate;
     
-	public List<Message> checkEmailReceived(Authorization auth, List<TriggerIngredient> triggerIngredients, Long timestamp, Recipe recipe) throws IOException{
+	public List<Message> getMessages(Authorization auth, List<Message> messagesToRetrieve) throws IOException{
+		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
+		Gmail gmail = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
+						.setApplicationName("IF3T")
+						.build();
+		
+		List<Message> messages = new ArrayList<>();
+		
+		for(Message message : messagesToRetrieve){
+			Message targetMessage = gmail.users()
+										.messages()
+										.get("me", message.getId())
+										.execute();
+			messages.add(targetMessage);
+		}
+		
+		return messages;
+	}
+	
+	public List<Message> checkEmailReceived(Authorization auth, List<TriggerIngredient> triggerIngredients, Recipe recipe) throws IOException{
 		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
 		Gmail gmail = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
 						.setApplicationName("IF3T")
@@ -74,38 +88,33 @@ public class GmailUtil {
 			ParametersTriggers param = triggerIngredient.getParam();
 			if(param.getKeyword().equals("from_address"))
 				q.append("from:" + triggerIngredient.getValue());
+			else
+				q.append(param.getKeyword() + ":" + triggerIngredient.getValue());
 		}
 		
-		
+		Long timestamp = 0L;
 		ChannelStatus channelStatus = channelStatusService.readChannelStatusByRecipeId(recipe.getId());
+		if(channelStatus == null){
+			timestamp = Calendar.getInstance().getTimeInMillis() - (rate);
+			channelStatus = channelStatusService.createNewChannelStatus(recipe.getId(), timestamp);
+		}
 		
 		ListMessagesResponse messageList = new ListMessagesResponse();
 		
 		if(channelStatus.getPageToken() == null){
-			q.append(" after:" + timestamp/1000);
+			q.append(" after:" + channelStatus.getSinceRef()/1000);
 			messageList = gmail.users()
 								.messages()
 								.list("me")
 								.setQ(q.toString())
 								.execute();
 		}
-		else{
-			messageList = gmail.users()
-								.messages()
-								.list("me")
-								.setPageToken(channelStatus.getPageToken())
-								.setQ(q.toString())
-								.execute();
-		}
-		
-		if(messageList.getNextPageToken() != null)
-			channelStatus.setPageToken(messageList.getNextPageToken());
 		
 		timestamp += rate;
 		channelStatus.setSinceRef(timestamp);
 		channelStatusService.updateChannelStatus(channelStatus);
 		
-		List<Message> messages = messageList.getMessages();
+		List<Message> messages = messageList.getMessages() == null? new ArrayList<Message>() : messageList.getMessages();
 		
 		return messages;
 	}
@@ -130,18 +139,6 @@ public class GmailUtil {
 		response.disconnect();
 		return (response.getStatusCode() < 300 && response.getStatusCode()>= 200)? true : false;
 		
-		/*String ReqBody = "{\"raw\":\"" + email.getRaw() +"\"}";
-		MediaType mediaType = new MediaType("application", "json");
-
-		RequestEntity<String> request = RequestEntity
-				.post(new URI("https://www.googleapis.com/gmail/v1/users/me/messages/send"))
-				.contentLength(email.getRaw().getBytes().length)
-				.contentType(mediaType)
-				.header("Authorization", auth.getTokenType() + " " + auth.getAccessToken())
-				.body(ReqBody);
-
-		ResponseEntity<String> messageResponse = restTemplate.exchange(request, String.class);
-		return messageResponse.getBody();*/
 	}
 	
 	private Message createEmail(String to, String from, String subject, String bodyText) throws MessagingException, IOException {
@@ -172,15 +169,15 @@ public class GmailUtil {
 		String from = "";
 		String to = "";
 		String subject = "";
-		String body = message.getPayload().getBody().getData();
-		
+		String body = StringUtils.newStringUtf8(Base64.decodeBase64(message.getPayload().getParts().get(0).getBody().getData()));
+
 		for(MessagePartHeader part: message.getPayload().getHeaders()){
 			if(part.getName().equals("Subject"))
-					subject = part.getValue();
+				subject = part.getValue();
 			if(part.getName().equals("From"))
-				subject = part.getValue();
+				from = part.getValue();
 			if(part.getName().equals("To"))
-				subject = part.getValue();
+				to = part.getValue();
 		}
 		
 		while(true){
@@ -190,17 +187,18 @@ public class GmailUtil {
 			if(squareOpenIndex == -1 || squareCloseIndex == -1){
 				break;
 			}
-		
+			
 			index = squareCloseIndex + 1;
 			
 			String keyword = ingredient.substring(squareOpenIndex+1, squareCloseIndex);
+			
 			if(validKeywords.contains(keyword)){
 				switch(keyword){
-					case "from_address" :
-						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", from);
+					case "from" :
+						ingredientReplaced = ingredientReplaced.replace("[from]", from);
 						break;
-					case "to_address" :
-						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", to);
+					case "to" :
+						ingredientReplaced = ingredientReplaced.replace("[to]", to);
 						break;
 					case "subject" :
 						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", subject);
@@ -211,6 +209,7 @@ public class GmailUtil {
 				}
 			}
 		}
+
 		if(ingredientReplaced.length() > maxLength)
 			ingredientReplaced = ingredientReplaced.substring(0, maxLength - 4) + "...";
 		

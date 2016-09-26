@@ -27,7 +27,6 @@ import if3t.entities.TriggerIngredient;
 import if3t.entities.User;
 import if3t.services.ActionIngredientService;
 import if3t.services.AuthorizationService;
-import if3t.services.ChannelStatusService;
 import if3t.services.RecipeService;
 import if3t.services.TriggerIngredientService;
 
@@ -50,8 +49,6 @@ public class GcalendarTask {
 	private ActionIngredientService actionIngredientService;
 	@Autowired
 	private AuthorizationService authService;
-	@Autowired
-	private ChannelStatusService channelStatusService;
 	@Value("${app.scheduler.value}")
 	private long rate;
 	@Value("${app.timezone}")
@@ -71,10 +68,8 @@ public class GcalendarTask {
 				
 				//Checking if the access token of the trigger channel is expired
 				Calendar now = Calendar.getInstance();
-				if(triggerAuth == null || triggerAuth.getExpireDate()*1000 <= now.getTimeInMillis()){
-					//System.out.println("scaduto");
+				if(triggerAuth == null || triggerAuth.getExpireDate()*1000 <= now.getTimeInMillis())
 					continue;
-				}
 				
 				//Checking if the access token of the action channel is not present
 				if(actionAuth == null)
@@ -103,99 +98,107 @@ public class GcalendarTask {
 					
 					switch(recipe.getAction().getChannel().getKeyword()){
 						case "gmail" :
-							String to = "";
-							String subject = "";
-							String body = "";
-							
-							for(ActionIngredient actionIngredient: actionIngredients){
-								ParametersActions actionParam = actionIngredient.getParam();
-	
-								switch(actionParam.getKeyword()){
-									case "to_address" :
-										to = actionIngredient.getValue();
-										break;
-									case "subject" :
-										subject = actionIngredient.getValue();
-										break;
-									case "body" :
-										body = actionIngredient.getValue();
-										break;
-								}		
+							for(Event event : events){
+								String to = "";
+								String subject = "";
+								String body = "";
+								
+								for(ActionIngredient actionIngredient: actionIngredients){
+									ParametersActions actionParam = actionIngredient.getParam();
+		
+									switch(actionParam.getKeyword()){
+										case "to_address" :
+											to = actionIngredient.getValue();
+											break;
+										case "subject" :
+											subject = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											break;
+										case "body" :
+											body = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											break;
+									}		
+								}
+								gmailUtil.sendEmail(to, subject, body, actionAuth);
 							}
-							gmailUtil.sendEmail(to, subject, body, actionAuth);
 							break;
 						case "calendar" :
-							String title = "";
-							String location = "";
-							String description = "";
-							String startDateString = "";
-							String endDateString = "";
-							String startTimeString = "";
-							String endTimeString = "";
-							
-							for(ActionIngredient actionIngredient: actionIngredients){
-								ParametersActions param = actionIngredient.getParam();
-		
-								switch(param.getKeyword()){
-									case "start_date" :
-										startDateString = actionIngredient.getValue();
-										break;
-									case "end_date" :
-										endDateString = actionIngredient.getValue();
-										break;
-									case "start_time" :
-										startTimeString = actionIngredient.getValue();
-										break;
-									case "end_time" :
-										endTimeString = actionIngredient.getValue();
-										break;
-									case "title" :
-										title = actionIngredient.getValue();
-										break;
-									case "description" :
-										description = actionIngredient.getValue();
-										break;
-									case "location" :
-										location = actionIngredient.getValue();
-										break;
+							for(Event event : events){
+								String title = "";
+								String location = "";
+								String description = "";
+								String startDateString = "";
+								String endDateString = "";
+								String startTimeString = "";
+								String endTimeString = "";
+								
+								for(ActionIngredient actionIngredient: actionIngredients){
+									ParametersActions actionParam = actionIngredient.getParam();
+			
+									switch(actionParam.getKeyword()){
+										case "start_date" :
+											startDateString = actionIngredient.getValue();
+											break;
+										case "end_date" :
+											endDateString = actionIngredient.getValue();
+											break;
+										case "start_time" :
+											startTimeString = actionIngredient.getValue();
+											break;
+										case "end_time" :
+											endTimeString = actionIngredient.getValue();
+											break;
+										case "title" :
+											title = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											break;
+										case "description" :
+											description = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											break;
+										case "location" :
+											location = actionIngredient.getValue();
+											break;
+									}
 								}
+								
+								SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+	
+								String startDate = startDateString + " " + startTimeString;
+								String endDate = endDateString + " " + endTimeString;
+								Calendar start = Calendar.getInstance();
+								Calendar end = Calendar.getInstance();
+								start.setTime(format.parse(startDate));
+								start.setTimeZone(timezone);
+								end.setTime(format.parse(endDate));
+								end.setTimeZone(timezone);
+	
+								gCalendarUtil.createEvent(start, end, title, description, location, triggerAuth);
 							}
-							
-							SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-
-							String startDate = startDateString + " " + startTimeString;
-							String endDate = endDateString + " " + endTimeString;
-							Calendar start = Calendar.getInstance();
-							Calendar end = Calendar.getInstance();
-							start.setTime(format.parse(startDate));
-							start.setTimeZone(timezone);
-							end.setTime(format.parse(endDate));
-							end.setTimeZone(timezone);
-
-							gCalendarUtil.createEvent(start, end, title, description, location, triggerAuth);
 							break;
 						case "facebook" :
-							String message = "";
-							for(ActionIngredient actionIngredient: actionIngredients){
-								ParametersActions param = actionIngredient.getParam();
-	
-								if(param.getKeyword().equals("post"))
-									message = actionIngredient.getValue();
+							for(Event event : events){
+								String post = "";
+								for(ActionIngredient actionIngredient: actionIngredients){
+									ParametersActions actionParam = actionIngredient.getParam();
+		
+									if(actionParam.getKeyword().equals("post"))
+										post = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+								}
+								facebookUtil.publish_new_post(post, actionAuth.getAccessToken());
 							}
-							facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
 							break;
 						case "twitter" :
-							String tweet = "";
-							String hashtag = "";
-							for(ActionIngredient actionIngredient: actionIngredients){
-								ParametersActions param = actionIngredient.getParam();
-	
-								if(param.getKeyword().equals("tweet"))
-									tweet += actionIngredient.getValue();
-								if(param.getKeyword().equals("hashtag"))
-									hashtag += actionIngredient.getValue();
+							for(Event event : events){
+								String tweet = "";
+								String hashtag = "";
+								for(ActionIngredient actionIngredient: actionIngredients){
+									ParametersActions actionParam = actionIngredient.getParam();
+		
+									if(actionParam.getKeyword().equals("tweet"))
+										tweet = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+									if(actionParam.getKeyword().equals("hashtag"))
+										hashtag += actionIngredient.getValue();
+								}
+								twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
 							}
-							twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
 							break;
 					}
 				}

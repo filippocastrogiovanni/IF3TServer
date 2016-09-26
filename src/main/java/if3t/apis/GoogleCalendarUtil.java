@@ -2,16 +2,16 @@ package if3t.apis;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
@@ -27,9 +27,8 @@ import if3t.entities.Authorization;
 import if3t.entities.ChannelStatus;
 import if3t.entities.Recipe;
 import if3t.exceptions.InvalidParametersException;
-import if3t.models.GCalendarDatePOJO;
-import if3t.models.GCalendarEventPOJO;
 import if3t.services.ChannelStatusService;
+import if3t.services.CreateRecipeService;
 
 @Component
 public class GoogleCalendarUtil {
@@ -42,6 +41,8 @@ public class GoogleCalendarUtil {
     
     @Autowired
     private ChannelStatusService channelStatusService;
+	@Autowired
+	private CreateRecipeService createRecipeService;
     @Value("${app.scheduler.value}")
 	private long rate;
     
@@ -105,8 +106,10 @@ public class GoogleCalendarUtil {
 		ChannelStatus channelStatus = channelStatusService.readChannelStatusByRecipeId(recipe.getId());
 		
 		Long timestamp = 0L;
-		if(channelStatus == null)
+		if(channelStatus == null){
+			channelStatus = channelStatusService.createNewChannelStatus(recipe.getId(), timestamp/1000);
 			timestamp = Calendar.getInstance().getTimeInMillis() - (rate);
+		}
 		else
 			timestamp = channelStatus.getSinceRef();
 		
@@ -153,6 +156,68 @@ public class GoogleCalendarUtil {
         }
         
         return targetEvents;
+	}
+	
+	public String validateAndReplaceKeywords(String ingredient, int maxLength, Event event){
+		String ingredientReplaced = ingredient;
+		Set<String> validKeywords = createRecipeService.readChannelKeywords("gcalendar");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+		int index = 0;
+		
+		String title = event.getSummary() == null? "" : event.getSummary();
+		String description = event.getDescription()== null? "" : event.getDescription();
+		String location = event.getLocation()== null? "" : event.getLocation();
+		Calendar startDate = Calendar.getInstance();
+		Calendar endDate = Calendar.getInstance();
+		if(event.getStart() != null && event.getStart().getDateTime() != null)
+			startDate.setTimeInMillis(event.getStart().getDateTime().getValue());
+		if(event.getEnd() != null && event.getEnd().getDateTime() != null)
+			endDate.setTimeInMillis(event.getEnd().getDateTime().getValue());
+		
+		while(true){
+			int squareOpenIndex = ingredient.indexOf('[', index);
+			int squareCloseIndex = ingredient.indexOf(']', squareOpenIndex);
+			
+			if(squareOpenIndex == -1 || squareCloseIndex == -1){
+				break;
+			}
+			
+			index = squareCloseIndex + 1;
+			
+			String keyword = ingredient.substring(squareOpenIndex+1, squareCloseIndex);
+			
+			if(validKeywords.contains(keyword)){
+				switch(keyword){
+					case "description" :
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", description);
+						break;
+					case "title" :
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", title);
+						break;
+					case "location" :
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", location);
+						break;
+					case "start_date" :
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", dateFormat.format(startDate.getTime()));
+						break;
+					case "start_time" :
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", timeFormat.format(startDate.getTime()));
+						break;
+					case "end_date" :
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", dateFormat.format(endDate.getTime()));
+						break;
+					case "end_time" :
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", timeFormat.format(endDate.getTime()));
+						break;
+				}
+			}
+		}
+
+		if(ingredientReplaced.length() > maxLength)
+			ingredientReplaced = ingredientReplaced.substring(0, maxLength - 4) + "...";
+		
+		return ingredientReplaced;
 	}
 	
 	public List<Event> checkEventsStarted(Authorization auth, Recipe recipe, String ingredientValue) throws IOException{
