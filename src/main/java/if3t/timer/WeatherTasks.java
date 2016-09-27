@@ -58,8 +58,7 @@ public class WeatherTasks
 	private ActionIngredientService actionIngrService;
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 	
-	//TODO sistemare questo valore se serve (va messo a 5 minuti) e mettere l'initial delay diverso in ogni task per distribuire il workload
-	@Scheduled(fixedRateString = "${app.scheduler.value.weather}")
+	@Scheduled(initialDelay = 2 * 30 * 1000, fixedRateString = "${app.scheduler.value.weather}")
 	public void tomorrowWeatherScheduler()
 	{		
 		for (Recipe recipe : recipeService.getEnabledRecipesByTriggerChannel("weather"))

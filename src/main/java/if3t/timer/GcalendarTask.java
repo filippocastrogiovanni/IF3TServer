@@ -52,7 +52,7 @@ public class GcalendarTask {
 	@Value("${app.scheduler.value}")
 	private long rate;
 	
-	@Scheduled(fixedRateString = "${app.scheduler.value}")
+	@Scheduled(initialDelay = 4 * 30 * 1000, fixedRateString = "${app.scheduler.value}")
 	public void gCalendarScheduler(){
 		List<Recipe> gCalendarTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gcalendar");
 		for(Recipe recipe: gCalendarTriggerRecipes){

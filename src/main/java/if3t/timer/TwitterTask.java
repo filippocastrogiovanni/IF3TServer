@@ -54,10 +54,7 @@ public class TwitterTask
 	private AuthorizationService authService;
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 	
-	
-	//TODO diversificare i fixedRate dei vari task per non creare dei picchi di lavoro estremi intervallati dal nulla
-	//TODO quello da far partire per primo è quello relativo al refresh
-	@Scheduled(fixedRateString = "${app.scheduler.value}")
+	@Scheduled(initialDelay = 1 * 30 * 1000, fixedRateString = "${app.scheduler.value}")
     public void twitterScheduler() 
 	{		
 		for (Recipe recipe : recipeService.getEnabledRecipesByTriggerChannel("twitter"))
