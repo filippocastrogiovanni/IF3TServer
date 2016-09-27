@@ -97,7 +97,7 @@ public class GmailTasks {
 
 					//Checking if the access token of the action channel is expired
 					now = Calendar.getInstance();
-					if(actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())
+					if(actionAuth.getExpireDate() == null || actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())
 						continue;
 	
 					switch(recipe.getAction().getChannel().getKeyword()){
@@ -116,10 +116,16 @@ public class GmailTasks {
 											to = actionIngredient.getValue();
 											break;
 										case "subject" :
-											subject = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											if(actionParam.getCanReceive())
+												subject = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											else
+												subject = actionIngredient.getValue();
 											break;
 										case "body" :
-											body = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											if(actionParam.getCanReceive())
+												body = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											else
+												body = actionIngredient.getValue();
 											break;	
 									}
 								}
@@ -175,7 +181,7 @@ public class GmailTasks {
 								end.setTime(format.parse(endDate));
 								end.setTimeZone(timezone);
 		
-								gCalendarUtil.createEvent(start, end, title, description, location, triggerAuth);
+								gCalendarUtil.createEvent(start, end, title, description, location, actionAuth);
 							}
 							break;
 						case "facebook" :

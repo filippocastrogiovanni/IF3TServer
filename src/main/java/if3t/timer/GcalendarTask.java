@@ -92,7 +92,7 @@ public class GcalendarTask {
 					
 					//Checking if the access token of the action channel is expired
 					now = Calendar.getInstance();
-					if(actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())
+					if(actionAuth.getExpireDate() == null || actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())
 						continue;
 					
 					switch(recipe.getAction().getChannel().getKeyword()){
@@ -147,10 +147,16 @@ public class GcalendarTask {
 											endTimeString = actionIngredient.getValue();
 											break;
 										case "title" :
-											title = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											if(actionParam.getCanReceive())
+												title = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											else
+												title = actionIngredient.getValue();
 											break;
 										case "description" :
-											description = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											if(actionParam.getCanReceive())
+												description = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											else
+												description = actionIngredient.getValue();
 											break;
 										case "location" :
 											location = actionIngredient.getValue();
@@ -169,7 +175,7 @@ public class GcalendarTask {
 								end.setTime(format.parse(endDate));
 								end.setTimeZone(timezone);
 	
-								gCalendarUtil.createEvent(start, end, title, description, location, triggerAuth);
+								gCalendarUtil.createEvent(start, end, title, description, location, actionAuth);
 							}
 							break;
 						case "facebook" :

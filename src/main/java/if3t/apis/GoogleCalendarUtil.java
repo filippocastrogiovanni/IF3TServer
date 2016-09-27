@@ -279,7 +279,7 @@ public class GoogleCalendarUtil {
 			}
 		}
 
-		if(ingredientReplaced.length() > maxLength)
+		if(ingredientReplaced.length() > maxLength && (maxLength - 4) > 0)
 			ingredientReplaced = ingredientReplaced.substring(0, maxLength - 4) + "...";
 		
 		return ingredientReplaced;

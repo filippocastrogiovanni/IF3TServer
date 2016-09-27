@@ -1,16 +1,15 @@
 package if3t.timer;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import com.google.api.services.calendar.model.Event;
 
 import if3t.apis.FacebookUtil;
 import if3t.apis.GmailUtil;
@@ -20,19 +19,13 @@ import if3t.entities.ActionIngredient;
 import if3t.entities.Authorization;
 import if3t.entities.Channel;
 import if3t.entities.ParametersActions;
-import if3t.entities.ParametersTriggers;
 import if3t.entities.Recipe;
 import if3t.entities.TriggerIngredient;
 import if3t.entities.User;
-import if3t.repositories.ParametersTriggersRepository;
 import if3t.services.ActionIngredientService;
 import if3t.services.AuthorizationService;
-import if3t.services.ChannelStatusService;
 import if3t.services.RecipeService;
 import if3t.services.TriggerIngredientService;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 
 @Component
 public class FacebookTask {
@@ -58,7 +51,6 @@ public class FacebookTask {
 	private ConcurrentHashMap<String, String> couples_access_token_profile_pictures = new ConcurrentHashMap<String, String>();
 	private ConcurrentHashMap<String, String> couples_access_token_locations = new ConcurrentHashMap<String, String>();
 
-	
 	@Scheduled(fixedRateString = "${app.scheduler.value}")
 	public void gmailScheduler(){
 		List<Recipe> facebookTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("facebook");
@@ -337,7 +329,7 @@ public class FacebookTask {
 						end.setTime(format.parse(endDate));
 						end.setTimeZone(timezone);
 
-						gCalendarUtil.createEvent(start, end, title, description, location, triggerAuth);
+						gCalendarUtil.createEvent(start, end, title, description, location, actionAuth);
 						break;
 					case "twitter" :
 						String tweet = "";
@@ -448,7 +440,7 @@ public class FacebookTask {
 								end.setTime(format.parse(endDate));
 								end.setTimeZone(timezone);
 	
-								gCalendarUtil.createEvent(start, end, title, description, location, triggerAuth);
+								gCalendarUtil.createEvent(start, end, title, description, location, actionAuth);
 							}
 							break;
 						case "twitter" :
