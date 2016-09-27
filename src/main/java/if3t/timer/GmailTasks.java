@@ -111,7 +111,6 @@ public class GmailTasks {
 					switch(recipe.getAction().getChannel().getKeyword()){
 						case "gmail" :
 							for(Message message : messages){
-								System.out.println(message.toPrettyString());
 								String to = "";
 								String subject = "";
 								String body = "";
