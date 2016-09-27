@@ -1,7 +1,10 @@
 package if3t.timer;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.restfb.exception.FacebookOAuthException;
+
+import if3t.apis.FacebookUtil;
 import if3t.apis.GmailUtil;
+import if3t.apis.GoogleCalendarUtil;
 import if3t.apis.TwitterUtil;
 import if3t.entities.ActionIngredient;
 import if3t.entities.Authorization;
@@ -33,6 +40,10 @@ public class TwitterTask
 	private TwitterUtil twitterUtil;
 	@Autowired
 	private GmailUtil gmailUtil;
+	@Autowired
+	private FacebookUtil facebookUtil;
+	@Autowired
+	private GoogleCalendarUtil gcalendarUtil;
 	@Autowired
     private RecipeService recipeService;
 	@Autowired
@@ -79,8 +90,9 @@ public class TwitterTask
 			}
 			
 			String hashtagTrigger = null, fromUser = null;
+			List<TriggerIngredient> trigIngrList = triggerIngrService.getRecipeTriggerIngredients(recipe.getId());
 			
-			for (TriggerIngredient ti : triggerIngrService.getRecipeTriggerIngredients(recipe.getId()))
+			for (TriggerIngredient ti : trigIngrList)
 			{
 				ParametersTriggers param = ti.getParam();
 				
@@ -106,36 +118,125 @@ public class TwitterTask
 			
 			List<ActionIngredient> actionIngredients = actionIngrService.getRecipeActionIngredients(recipe.getId());
 			
-			//TODO aggiornare il db con le keyword dei parametri e caricarlo sul drive
-			//TODO estendere considerando i possibili valori dei campi del trigger (tabella Alessio)
-			//TODO creare la tabella per i logs e riempirla qui. Serve inoltre un task separato che cancella le tuple antecedenti una certa data
 			switch (recipe.getAction().getChannel().getKeyword())
 			{
-				case "gmail":
-				{					
-					String to = "", subject = "", body = "";
-					
-					for (ActionIngredient ai : actionIngredients)
-					{
-						ParametersActions param = ai.getParam();
+				case "facebook":
+				{
+					for (Status tweet : newUsefulTweets)
+					{	
+						String post = "";
 						
-						if (param.getKeyword().equals("to_address")) {
-							to = ai.getValue();
+						for (ActionIngredient ai: actionIngredients)
+						{
+							ParametersActions param = ai.getParam();
+		
+							if (param.getKeyword().equals("post")) {
+								post = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+							}
 						}
-						else if (param.getKeyword().equals("subject")) {
-							subject = ai.getValue();
+						
+						try
+						{
+							facebookUtil.publish_new_post(post, authAction.getAccessToken());
+							logger.info("A new post has been submitted on the Facebook page of the user " + user.getUsername());
 						}
-						else if (param.getKeyword().equals("body")) {
-							body = ai.getValue();
+						catch (FacebookOAuthException e)
+						{
+							logger.error("Too many post in a short time on the Facebook page of the user " + user.getUsername(), e);
+						}
+						catch (Throwable t)
+						{
+							logger.error(t.getClass().getCanonicalName(), t);
 						}
 					}
 					
+					break;
+				}
+				case "gcalendar":
+				{
 					for (Status tweet : newUsefulTweets)
-					{
-						//TODO da fare solo quando specificato in fase di creazione della ricetta
-						//TODO inserire anche altre cose tipo l'utente che ha twittato etc
-						body = twitterUtil.addTriggeredTweetToAction(tweet, body);
+					{	
+						String title = "", location = "", description = "";
+						String startDateString = "", endDateString = "", startTimeString = "", endTimeString = "";
 						
+						for (ActionIngredient ai: actionIngredients)
+						{
+							ParametersActions param = ai.getParam();
+	
+							switch (param.getKeyword())
+							{
+								case "start_date" :
+									startDateString = ai.getValue();
+									break;
+								case "end_date" :
+									endDateString = ai.getValue();
+									break;
+								case "start_time" :
+									startTimeString = ai.getValue();
+									break;
+								case "end_time" :
+									endTimeString = ai.getValue();
+									break;
+								case "title" :
+									title = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+									break;
+								case "description" :
+									description = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+									break;
+								case "location" :
+									location = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+									break;
+							}
+						}
+						
+						try
+						{
+							TimeZone timezone = TimeZone.getTimeZone(user.getTimezone().getZone_id());
+							SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+		
+							String startDate = startDateString + " " + startTimeString;
+							String endDate = endDateString + " " + endTimeString;
+							Calendar start = Calendar.getInstance();
+							Calendar end = Calendar.getInstance();
+							start.setTime(format.parse(startDate));
+							start.setTimeZone(timezone);
+							end.setTime(format.parse(endDate));
+							end.setTimeZone(timezone);
+		
+							gcalendarUtil.createEvent(start, end, title, description, location, authAction);
+							logger.info("Event created on the calendar of the user " + user.getUsername());
+							
+						}
+						catch (Throwable t)
+						{
+							logger.error(t.getClass().getCanonicalName(), t);
+						}
+					}
+					
+					break;
+				}
+	
+				case "gmail":
+				{	
+					for (Status tweet : newUsefulTweets)
+					{	
+						String to = "", subject = "", body = "";
+						
+						for (ActionIngredient ai : actionIngredients)
+						{
+							ParametersActions param = ai.getParam();
+							
+							if (param.getKeyword().equals("to_address")) {
+								to = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+							}
+							else if (param.getKeyword().equals("subject")) {
+								subject = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+							}
+							else if (param.getKeyword().equals("body")) {
+								body = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+							}
+						}
+							
 						try
 						{
 							gmailUtil.sendEmail(to, subject, body, authAction);
@@ -149,31 +250,29 @@ public class TwitterTask
 						{
 							logger.error(t.getClass().getCanonicalName(), t);
 						}
+					
 					}
 					
 					break;
 				}
 				case "twitter":
 				{
-					String tweetAction = "", hashtagAction = "";
-					
-					for (ActionIngredient ai : actionIngredients)
-					{
-						ParametersActions param = ai.getParam();
-						
-						if (param.getKeyword().equals("tweet")) {
-							tweetAction = ai.getValue();
-						}
-						else if (param.getKeyword().equals("hashtag")) {
-							hashtagAction = ai.getValue();
-						}
-					}
-					
 					for (Status tweet : newUsefulTweets)
 					{
-						//TODO da fare solo quando specificato in fase di creazione della ricetta
-						//TODO inserire anche altre cose tipo l'utente che ha twittato etc
-						tweetAction = twitterUtil.addTriggeredTweetToAction(tweet, tweetAction);
+						String tweetAction = "", hashtagAction = "";
+						
+						for (ActionIngredient ai : actionIngredients)
+						{
+							ParametersActions param = ai.getParam();
+							
+							if (param.getKeyword().equals("tweet")) {
+								tweetAction = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+							}
+							else if (param.getKeyword().equals("hashtag")) {
+								hashtagAction = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+							}
+						}
+					
 						twitterUtil.postTweet(user.getId(), authAction, tweetAction, hashtagAction);
 					}
 					

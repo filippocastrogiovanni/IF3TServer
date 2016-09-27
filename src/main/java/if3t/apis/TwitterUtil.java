@@ -3,6 +3,7 @@ package if3t.apis;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,9 @@ import org.springframework.stereotype.Component;
 
 import if3t.entities.Authorization;
 import if3t.entities.ChannelStatus;
+import if3t.entities.TriggerIngredient;
 import if3t.services.ChannelStatusService;
+import if3t.services.CreateRecipeService;
 import twitter4j.HashtagEntity;
 import twitter4j.Paging;
 import twitter4j.ResponseList;
@@ -26,6 +29,8 @@ public class TwitterUtil
 {	
 	@Autowired
 	private ChannelStatusService channelStatusService;
+	@Autowired
+	private CreateRecipeService createRecipeService;
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 	
 	//FIXME settare il debug a false alla fine
@@ -33,7 +38,7 @@ public class TwitterUtil
 	private Twitter getTwitterInstance(Long userId, Authorization auth)
 	{
 		ConfigurationBuilder conf = new ConfigurationBuilder();
-		conf.setDebugEnabled(true).setOAuthConsumerKey("rLWBxF1x5DwCgMhtFzGckQytZ").
+		conf.setDebugEnabled(false).setOAuthConsumerKey("rLWBxF1x5DwCgMhtFzGckQytZ").
 		setOAuthConsumerSecret("HYAWanoKCvBHTdw7hSjMj8LPvpbwJ2MPCADgTEuhubbgTXGDW2");
 		
 		return new TwitterFactory(conf.build()).getInstance(new AccessToken(auth.getAccessToken(), auth.getRefreshToken(), userId));
@@ -131,13 +136,36 @@ public class TwitterUtil
 		}
 	}
 	
-	public String addTriggeredTweetToAction(Status tweet, String message)
+	private String printTriggeredTweet(Status tweet)
 	{
-		StringBuffer sb = new StringBuffer(message);
+		StringBuffer sb = new StringBuffer();
 		sb.append("\n------------------------------------------------------------");
 		sb.append("\nFrom: @" + tweet.getUser().getScreenName());
 		sb.append("\nCreated at: " + tweet.getCreatedAt().toString());
 		sb.append("\nContent of the tweet:\n\n" + tweet.getText());
+		sb.append("\n------------------------------------------------------------");
 		return sb.toString();
+	}
+	
+	public String replaceKeywords(String text, List<TriggerIngredient> trigIngrList, Status tweet, int maxLength)
+	{
+		String target;
+		Set<String> validKeywords = createRecipeService.readChannelKeywords("twitter");
+		
+		for (String vk : validKeywords)
+		{
+			target = "[" + vk + "]";
+			
+			for (TriggerIngredient ti: trigIngrList)
+			{
+				if (ti.getParam().getKeyword().equals(vk))
+				{
+					text = text.replace(target, !vk.equals("tweet") ? ti.getValue() : printTriggeredTweet(tweet));
+					break;
+				}
+			}
+		}
+		
+		return (maxLength < 0 || text.length() <= maxLength) ? text : text.substring(0, maxLength - 4).concat(" ...");
 	}
 }

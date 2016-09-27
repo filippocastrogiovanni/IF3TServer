@@ -59,15 +59,11 @@ public class WeatherTasks
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 	
 	//TODO sistemare questo valore se serve (va messo a 5 minuti) e mettere l'initial delay diverso in ogni task per distribuire il workload
-	@Scheduled(fixedRateString = "${app.scheduler.value}")
+	@Scheduled(fixedRateString = "${app.scheduler.value.weather}")
 	public void tomorrowWeatherScheduler()
 	{		
 		for (Recipe recipe : recipeService.getEnabledRecipesByTriggerChannel("weather"))
-		{
-			if (recipe.getTrigger().getId() != 4) {
-				continue;
-			}
-			
+		{			
 			User user = recipe.getUser();
 			Channel triggerChannel = recipe.getTrigger().getChannel();
 			Authorization authTrigger = authService.getAuthorization(user.getId(), triggerChannel.getKeyword());
@@ -87,18 +83,69 @@ public class WeatherTasks
 				continue;
 			}
 			
-			String time = "";
+			String report = null;
 			List<TriggerIngredient> trigIngrList = triggerIngrService.getRecipeTriggerIngredients(recipe.getId());
 			
-			for (TriggerIngredient ti : trigIngrList)
-			{				
-				if (ti.getParam().getKeyword().equals("time")) {
-					time = ti.getValue();
+			if (recipe.getTrigger().getId() == 4) 
+			{
+				String time = "";
+				
+				for (TriggerIngredient ti : trigIngrList)
+				{				
+					if (ti.getParam().getKeyword().equals("time")) {
+						time = ti.getValue();
+					}
 				}
+				
+				// WARNING: the access_token field is used to store the id of the location associated with the weather channel
+				report = weatherUtil.getTomorrowReport(Long.parseLong(authTrigger.getAccessToken()), recipe.getId(), time, user.getTimezone().getZone_id(), UnitsFormat.CELSIUS);
+			}
+			else if (recipe.getTrigger().getId() == 5) 
+			{
+				String below = "", above = "", temperature = "";
+				
+				for (TriggerIngredient ti : trigIngrList)
+				{				
+					if (ti.getParam().getKeyword().equals("below")) {
+						below = ti.getValue();
+					}
+					else if (ti.getParam().getKeyword().equals("above")) {
+						above = ti.getValue();
+					}
+					else if (ti.getParam().getKeyword().equals("temperature")) {
+						temperature = ti.getValue();
+					}
+				}
+				
+				TempAboveBelowMode mode = (below.equals("below") && !above.equals("above")) ? TempAboveBelowMode.BELOW : TempAboveBelowMode.ABOVE;
+				// WARNING: the access_token field is used to store the id of the location associated with the weather channel
+				report = weatherUtil.getEventTemperatureAboveOrBelow(Long.parseLong(authTrigger.getAccessToken()), recipe.getId(), mode, Double.parseDouble(temperature), UnitsFormat.CELSIUS);
+				
+			}
+			else if (recipe.getTrigger().getId() == 6) 
+			{
+				String sunrise = "", sunset = "";
+				
+				for (TriggerIngredient ti : trigIngrList)
+				{				
+					if (ti.getParam().getKeyword().equals("sunrise")) {
+						sunrise = ti.getValue();
+					}
+					else if (ti.getParam().getKeyword().equals("sunset")) {
+						sunset = ti.getValue();
+					}
+				}
+				
+				SunriseSunsetMode mode = (sunrise.equals("sunrise") && !sunset.equals("sunset")) ? SunriseSunsetMode.SUNRISE : SunriseSunsetMode.SUNSET;
+				// WARNING: the access_token field is used to store the id of the location associated with the weather channel
+				report = weatherUtil.getReportOnSunriseOrSunset(Long.parseLong(authTrigger.getAccessToken()), recipe.getId(), mode, UnitsFormat.CELSIUS);
+			}
+			else 
+			{
+				logger.error("This trigger is not associated with the weather channel!");
+				continue;
 			}
 			
-			// WARNING: the access_token field is used to store the id of the location associated with the weather channel
-			String report = weatherUtil.getTomorrowWeatherReport(Long.parseLong(authTrigger.getAccessToken()), recipe.getId(), time, user.getTimezone().getZone_id(), UnitsFormat.CELSIUS);
 			
 			if (report == null) {
 				continue;
@@ -131,6 +178,7 @@ public class WeatherTasks
 					{
 						post += "\n-------------------------------\n" + report;
 						facebookUtil.publish_new_post(post, authAction.getAccessToken());
+						logger.info("A new post has been submitted on the Facebook page of the user " + user.getUsername());
 					}
 					catch (FacebookOAuthException e)
 					{
@@ -223,10 +271,9 @@ public class WeatherTasks
 						}
 					}
 					
-					body += "\n-------------------------------\n" + report;
-					
 					try
 					{
+						body += "\n-------------------------------\n" + report;
 						gmailUtil.sendEmail(to, subject, body, authAction);
 						logger.info("Email sent from Gmail account of " + user.getUsername() + " to " + to);
 					}

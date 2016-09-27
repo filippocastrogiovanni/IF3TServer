@@ -66,7 +66,7 @@ public class WeatherUtil
 	}
 	
 	//TODO eliminare alla fine i commenti
-	public boolean isSunriseOrSunset(Long cityId, Long recipeId, SunriseSunsetMode eventType, UnitsFormat format, StringBuffer returnMsg)
+	public String getReportOnSunriseOrSunset(Long cityId, Long recipeId, SunriseSunsetMode eventType, UnitsFormat format)
 	{
 		String eventName = eventType.toString().toLowerCase();
 		String finalUrl = URL_CURRENT_WEATHER + "&id=" + cityId;
@@ -88,7 +88,7 @@ public class WeatherUtil
 				{
 //					System.out.println("xxx2");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				if (respObject.getInt("cod") != 200)
@@ -96,14 +96,14 @@ public class WeatherUtil
 //					System.out.println("xxx3");
 					response.disconnect();
 					logger.error((respObject.has("message") && !respObject.isNull("message")) ? respObject.getInt("cod") + " - " + respObject.getString("message") : "Error: maybe the passed city id was incorrect");
-					return false;
+					return null;
 				}
 				
 				if (!respObject.has("dt") || respObject.isNull("dt"))
 				{
 //					System.out.println("xxx4");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				ChannelStatus weatherStatus = channelStatusService.readChannelStatusByRecipeId(recipeId);
@@ -113,14 +113,14 @@ public class WeatherUtil
 				{
 //					System.out.println("xxx5");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				if (!respObject.has("sys") || respObject.isNull("sys"))
 				{
 //					System.out.println("xxx6");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				JSONObject sysObject = respObject.getJSONObject("sys");
@@ -129,7 +129,7 @@ public class WeatherUtil
 				{
 //					System.out.println("xxx7");
 					response.disconnect();
-					return false;
+					return null;
 				}
 								
 				OffsetDateTime now = OffsetDateTime.now().withNano(0);
@@ -139,7 +139,7 @@ public class WeatherUtil
 				{
 //					System.out.println("xxx8");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				if (weatherStatus != null)
@@ -153,7 +153,7 @@ public class WeatherUtil
 					{
 //						System.out.println("xxx10");
 						response.disconnect();
-						return false;
+						return null;
 					}
 				}
 				
@@ -161,7 +161,7 @@ public class WeatherUtil
 				{
 //					System.out.println("xxx11");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				if (weatherStatus == null) 
@@ -183,6 +183,7 @@ public class WeatherUtil
 				String city = (respObject.has("name") && !respObject.isNull("name")) ? respObject.getString("name") : "the city the id of which is " + cityId;
 				logger.info("The sun in " + city + " will " + eventName.substring(3) + " within 15 minutes");
 				
+				StringBuffer returnMsg = new StringBuffer();
 				returnMsg.append(((returnMsg.length() > 0) ? " It's " : "It's ") + eventName + ".");
 				
 				if (respObject.has("main") && !respObject.isNull("main"))
@@ -212,30 +213,28 @@ public class WeatherUtil
 					}
 				}
 				
-				//FIXME eliminare alla fine
-				System.out.println(returnMsg);
-				return true;
+				return returnMsg.toString();
 			}
 			else
 			{
 				response.disconnect();
 				logger.error("A problem occurred during the communication with the weather web service");
-				return false;
+				return null;
 			}
 		}
 		catch (JSONException e)
 		{
 			logger.error("A problem occurred during the parsing of the JSON response", e);
-			return false;
+			return null;
 		}
 		catch (IOException e) 
 		{
 			logger.error("Failed to communicate with the weather web service", e);
-			return false;
+			return null;
 		}    	
 	}
 	
-	public boolean isTemperatureAboveOrBelow(Long cityId, Long recipeId, TempAboveBelowMode eventType, double threshold, UnitsFormat format)
+	public String getEventTemperatureAboveOrBelow(Long cityId, Long recipeId, TempAboveBelowMode eventType, double threshold, UnitsFormat format)
 	{
 		String finalUrl = URL_CURRENT_WEATHER + "&id=" + cityId;
 		
@@ -256,7 +255,7 @@ public class WeatherUtil
 				{
 //					System.out.println("xxx2");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				if (respObject.getInt("cod") != 200)
@@ -264,14 +263,14 @@ public class WeatherUtil
 //					System.out.println("xxx3");
 					response.disconnect();
 					logger.error((respObject.has("message") && !respObject.isNull("message")) ? respObject.getInt("cod") + " - " + respObject.getString("message") : "Error: maybe the passed city id was incorrect");
-					return false;
+					return null;
 				}
 				
 				if (!respObject.has("dt") || respObject.isNull("dt"))
 				{
 //					System.out.println("xxx4");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				ChannelStatus weatherStatus = channelStatusService.readChannelStatusByRecipeId(recipeId);
@@ -281,14 +280,14 @@ public class WeatherUtil
 				{
 //					System.out.println("xxx5");
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				if (!respObject.has("main") || respObject.isNull("main"))
 				{
 //					System.out.println("xxx6");
 					response.disconnect();
-					return false;
+					return null;
 				}
 					
 				JSONObject mainObject = respObject.getJSONObject("main");
@@ -297,9 +296,10 @@ public class WeatherUtil
 				{
 //					System.out.println("xxx7");
 					response.disconnect();
-					return false;
+					return null;
 				}
 			
+				String message;
 				String city = (respObject.has("name") && !respObject.isNull("name")) ? respObject.getString("name") : "the city the id of which is " + cityId;
 				
 				if (weatherStatus == null) 
@@ -314,8 +314,9 @@ public class WeatherUtil
 						{
 //							System.out.println("xxx9");
 							response.disconnect();
-							logger.info("The temperature in " + city + " has risen above the threshold of " + threshold + format.toString().substring(0, 1));
-							return true;
+							message = "The temperature in " + city + " has risen above the threshold of " + threshold + format.toString().substring(0, 1);
+							logger.info(message);
+							return message;
 						}
 					}
 					else
@@ -325,13 +326,14 @@ public class WeatherUtil
 						{
 //							System.out.println("xxx11");
 							response.disconnect();
-							logger.info("The temperature in " + city + " has dropped below the threshold of " + threshold + format.toString().substring(0, 1));
-							return true;
+							message = "The temperature in " + city + " has dropped below the threshold of " + threshold + format.toString().substring(0, 1);
+							logger.info(message);
+							return message;
 						}
 					}
 					
 					response.disconnect();
-					return false;
+					return null;
 				}
 				
 				double lastTemp = Double.parseDouble(weatherStatus.getPageToken());
@@ -347,8 +349,9 @@ public class WeatherUtil
 					{
 //						System.out.println("xxx13");
 						response.disconnect();
-						logger.info("The temperature in " + city + " has risen above the threshold of " + threshold + format.toString().substring(0, 1));
-						return true;
+						message = "The temperature in " + city + " has risen above the threshold of " + threshold + format.toString().substring(0, 1);
+						logger.info(message);
+						return message;
 					}
 				}
 				else
@@ -358,34 +361,35 @@ public class WeatherUtil
 					{
 //						System.out.println("xxx15");
 						response.disconnect();
-						logger.info("The temperature in " + city + " has dropped below the threshold of " + threshold + format.toString().substring(0, 1));
-						return true;
+						message = "The temperature in " + city + " has dropped below the threshold of " + threshold + format.toString().substring(0, 1);
+						logger.info(message);
+						return message;
 					}
 				}
 					
 				response.disconnect();
-				return false;
+				return null;
 			}
 			else
 			{
 				response.disconnect();
 				logger.error("A problem occurred during the communication with the weather web service");
-				return false;
+				return null;
 			}
 		}
 		catch (JSONException e)
 		{
 			logger.error("A problem occurred during the parsing of the JSON response", e);
-			return false;
+			return null;
 		}
 		catch (IOException e) 
 		{
 			logger.error("Failed to communicate with the weather web service", e);
-			return false;
+			return null;
 		}    	
 	}
 	
-	public String getTomorrowWeatherReport(Long cityId, Long recipeId, String time, String zoneId, UnitsFormat format)
+	public String getTomorrowReport(Long cityId, Long recipeId, String time, String zoneId, UnitsFormat format)
 	{
 		ChannelStatus weatherStatus = channelStatusService.readChannelStatusByRecipeId(recipeId);
 		
