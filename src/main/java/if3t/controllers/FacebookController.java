@@ -56,7 +56,7 @@ public class FacebookController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value = "/facebook/auth", method = RequestMethod.GET)
 	public Response facebookAuth() throws NotLoggedInException, NoPermissionException {
-		System.out.println("Server has received a token request");
+//		System.out.println("Server has received a token request");
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth == null)
@@ -89,7 +89,7 @@ public class FacebookController {
 			@RequestParam(value = "error", required = false) String error)
 			throws NotLoggedInException, NoPermissionException, URISyntaxException {
 		
-		System.out.println("Server has received a authresponse from Facebook");
+//		System.out.println("Server has received a authresponse from Facebook");
 
 		if (error != null) {
 			// TODO creare GMAil exception
@@ -138,7 +138,7 @@ public class FacebookController {
 		        entity, 
 		        String.class);
 		FacebookTokenResponse facebookRS = new FacebookTokenResponse(response.getBody());
-		System.out.println(response.getBody());
+//		System.out.println(response.getBody());
 
 
 		if(!facebookRS.isValid())

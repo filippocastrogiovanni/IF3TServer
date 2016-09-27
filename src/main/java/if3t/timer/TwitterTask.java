@@ -1,6 +1,6 @@
 package if3t.timer;
 
-import java.util.Calendar;
+import java.time.Instant;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -19,6 +19,7 @@ import if3t.entities.ParametersTriggers;
 import if3t.entities.Recipe;
 import if3t.entities.TriggerIngredient;
 import if3t.entities.User;
+import if3t.exceptions.InvalidParametersException;
 import if3t.services.ActionIngredientService;
 import if3t.services.AuthorizationService;
 import if3t.services.RecipeService;
@@ -97,22 +98,24 @@ public class TwitterTask
 				continue;
 			}
 			
+			if (authAction.getExpireDate() != null && authAction.getExpireDate() <= Instant.now().getEpochSecond())
+			{
+				logger.info("Action channel (" + actionChannel.getKeyword() + "): token expired for the user " + user.getUsername());
+				continue;
+			}
+			
+			List<ActionIngredient> actionIngredients = actionIngrService.getRecipeActionIngredients(recipe.getId());
+			
 			//TODO aggiornare il db con le keyword dei parametri e caricarlo sul drive
 			//TODO estendere considerando i possibili valori dei campi del trigger (tabella Alessio)
 			//TODO creare la tabella per i logs e riempirla qui. Serve inoltre un task separato che cancella le tuple antecedenti una certa data
 			switch (recipe.getAction().getChannel().getKeyword())
 			{
 				case "gmail":
-				{
-					if (authAction.getExpireDate() * 1000 <= Calendar.getInstance().getTimeInMillis())
-					{
-						logger.info("Action channel (" + actionChannel.getKeyword() + "): token expired for the user " + user.getUsername());
-						break;
-					}
+				{					
+					String to = "", subject = "", body = "";
 					
-					String to = null, subject = "", body = "";
-					
-					for (ActionIngredient ai : actionIngrService.getRecipeActionIngredients(recipe.getId()))
+					for (ActionIngredient ai : actionIngredients)
 					{
 						ParametersActions param = ai.getParam();
 						
@@ -138,6 +141,10 @@ public class TwitterTask
 							gmailUtil.sendEmail(to, subject, body, authAction);
 							logger.info("Email sent from Gmail account of " + user.getUsername() + " to " + to);
 						}
+						catch (InvalidParametersException e)
+						{
+							logger.error("Recipe " + recipe.getId() + ": " + e.getMessage());
+						}
 						catch (Throwable t)
 						{
 							logger.error(t.getClass().getCanonicalName(), t);
@@ -150,7 +157,7 @@ public class TwitterTask
 				{
 					String tweetAction = "", hashtagAction = "";
 					
-					for (ActionIngredient ai : actionIngrService.getRecipeActionIngredients(recipe.getId()))
+					for (ActionIngredient ai : actionIngredients)
 					{
 						ParametersActions param = ai.getParam();
 						

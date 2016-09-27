@@ -9,7 +9,9 @@ import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,13 +29,17 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 
 import if3t.entities.ChannelStatus;
+import if3t.entities.TriggerIngredient;
 import if3t.services.ChannelStatusService;
+import if3t.services.CreateRecipeService;
 
 @Component
 public class WeatherUtil 
 {
 	@Autowired
 	private ChannelStatusService channelStatusService;
+	@Autowired
+	private CreateRecipeService createRecipeService;
 	private static final String CONSUMER_KEY = "6a8e03e09652ab40025542b5fcd803e6";
 	private static final String BASE_WEATHER_URL = "http://api.openweathermap.org/data/2.5/";
 	private static final String URL_CURRENT_WEATHER = BASE_WEATHER_URL + "weather?appid=" + CONSUMER_KEY;
@@ -385,30 +391,21 @@ public class WeatherUtil
 		
 		if (weatherStatus != null)
 		{
-//			System.out.println(Duration.between(Instant.now(), Instant.ofEpochSecond(weatherStatus.getSinceRef())).abs().toHours());
 			// WARNING: the field sinceRef is used to store the last time this trigger has fired
-//			if (Duration.between(Instant.now(), Instant.ofEpochSecond(weatherStatus.getSinceRef())).abs().toHours() < 23) {
-//				System.out.println("yyy1");
-//				return null;
-//			}
+			if (Duration.between(Instant.now(), Instant.ofEpochSecond(weatherStatus.getSinceRef())).abs().toHours() < 23) {
+				return null;
+			}
 		}
 		
 		OffsetTime serverNowTime = OffsetTime.now().withNano(0);
-//		System.out.println("serverNowTime: " + serverNowTime);
 		LocalTime trigLocalTime = LocalTime.parse(time);
-//		System.out.println("trigLocalTime: " + trigLocalTime);
 		OffsetTime userNowTime = OffsetTime.now(ZoneId.of(zoneId)).withNano(0);
-//		System.out.println("userNowTime: " + userNowTime);
 		OffsetTime trigOffsetTime = OffsetTime.of(trigLocalTime, userNowTime.getOffset());
-//		System.out.println("trigOffsetTime: " + trigOffsetTime);
 		OffsetTime normTrigOffsetTime = trigOffsetTime.withOffsetSameInstant(serverNowTime.getOffset());
-//		System.out.println("normTrigOffsetTime: " + normTrigOffsetTime);
-//		System.out.println(Duration.between(serverNowTime, normTrigOffsetTime).abs().toMinutes());
 		
-//		if (Duration.between(serverNowTime, normTrigOffsetTime).abs().toMinutes() > 5) {
-//			System.out.println("yyy2");
-//			return null;
-//		}		
+		if (Duration.between(serverNowTime, normTrigOffsetTime).abs().toMinutes() > 5) {
+			return null;
+		}		
 		
 		String finalUrl = URL_FORECAST_WEATHER + "&id=" + cityId;
 		
@@ -422,19 +419,19 @@ public class WeatherUtil
 			
 			if (response.getStatusCode() == 200)
 			{
-				System.out.println("xxx1");
+//				System.out.println("xxx1");
 				JSONObject respObject = new JSONObject(response.parseAsString());
 				
 				if (!respObject.has("cod") || respObject.isNull("cod"))
 				{
-					System.out.println("xxx2");
+//					System.out.println("xxx2");
 					response.disconnect();
 					return null;
 				}
 				
 				if (respObject.getInt("cod") != 200)
 				{
-					System.out.println("xxx3");
+//					System.out.println("xxx3");
 					response.disconnect();
 					logger.error((respObject.has("message") && !respObject.isNull("message")) ? respObject.getInt("cod") + " - " + respObject.getString("message") : "Error: maybe the passed city id was incorrect");
 					return null;
@@ -442,7 +439,7 @@ public class WeatherUtil
 				
 				if (!respObject.has("list") || respObject.isNull("list"))
 				{
-					System.out.println("xxx4");
+//					System.out.println("xxx4");
 					response.disconnect();
 					return null;
 				}
@@ -450,7 +447,7 @@ public class WeatherUtil
 				OffsetDateTime firstDate = OffsetDateTime.MAX;
 				double maxTemp = Double.MIN_VALUE;
 				double minTemp = Double.MAX_VALUE;
-				Map<String, Integer> weatherStats = new HashMap<String, Integer>();
+				HashMap<String, Integer> weatherStats = new HashMap<String, Integer>();
 				
 				JSONArray forecastArray = respObject.getJSONArray("list");
 				
@@ -460,7 +457,7 @@ public class WeatherUtil
 					
 					if (!fcObject.has("dt") || fcObject.isNull("dt"))
 					{
-						System.out.println("xxx5");
+//						System.out.println("xxx5");
 						response.disconnect();
 						return null;
 					}
@@ -469,25 +466,18 @@ public class WeatherUtil
 					if (i == 0)
 					{
 						firstDate = OffsetDateTime.ofInstant(Instant.ofEpochSecond(fcObject.getLong("dt")), ZoneId.of("Etc/GMT"));
-						System.out.println("firstDate: " + firstDate + " - " + firstDate.getDayOfYear());
 						continue;
 					}
 					
 					OffsetDateTime currentDate = OffsetDateTime.ofInstant(Instant.ofEpochSecond(fcObject.getLong("dt")), ZoneId.of("Etc/GMT"));
 					
-					System.out.println(firstDate.plusDays(1).getDayOfYear());
-					System.out.println(currentDate.getDayOfYear());
-					
 					if (currentDate.getDayOfYear() != firstDate.plusDays(1).getDayOfYear())	{
-						System.out.println("other day " + i + "\n-------");
 						continue;
 					}
 					
-					System.out.println("same day " + i + "\n-------");
-					
 					if (!fcObject.has("main") || fcObject.isNull("main"))
 					{
-						System.out.println("xxx6");
+//						System.out.println("xxx6");
 						response.disconnect();
 						return null;
 					}
@@ -496,14 +486,14 @@ public class WeatherUtil
 					
 					if (!mainObject.has("temp_min") || mainObject.isNull("temp_min") || !mainObject.has("temp_max") || mainObject.isNull("temp_max"))
 					{
-						System.out.println("xxx7");
+//						System.out.println("xxx7");
 						response.disconnect();
 						return null;
 					}
 					
 					if (!fcObject.has("weather") || fcObject.isNull("weather"))
 					{
-						System.out.println("xxx8");
+//						System.out.println("xxx8");
 						response.disconnect();
 						return null;
 					}
@@ -512,7 +502,7 @@ public class WeatherUtil
 					
 					if (weatherArray.length() == 0)
 					{
-						System.out.println("xxx9");
+//						System.out.println("xxx9");
 						response.disconnect();
 						return null;
 					}
@@ -521,7 +511,7 @@ public class WeatherUtil
 					
 					if (!weatherObject.has("main") || weatherObject.isNull("main"))
 					{
-						System.out.println("xxx10");
+//						System.out.println("xxx10");
 						response.disconnect();
 						return null;
 					}
@@ -552,10 +542,44 @@ public class WeatherUtil
 					channelStatusService.updateChannelStatus(weatherStatus);
 				}
 				
-				StringBuffer sb = new StringBuffer("sss");
-				System.out.println("minTemp: " + minTemp);
-				System.out.println("maxTemp: " + maxTemp);
-				System.out.println(weatherStats.size());
+				String cityName = "";
+				StringBuffer sb = new StringBuffer("");
+				
+				if (respObject.has("city") && !respObject.isNull("city"))
+				{
+					JSONObject cityObject = respObject.getJSONObject("city");
+					
+					if (cityObject.has("name") && !cityObject.isNull("name")) {
+						cityName = cityObject.getString("name");
+					}
+				}
+				
+				if (weatherStats.size() > 0)
+				{
+					TreeMap<Integer, String> sortedWeatherStats = new TreeMap<Integer, String>();
+					
+					for (String key : weatherStats.keySet())
+					{
+						sortedWeatherStats.put(weatherStats.get(key), key);
+					}
+					
+					if (sortedWeatherStats.size() > 1) {
+						sb.append("Mostly ");
+					}
+					
+					sb.append(sortedWeatherStats.lastEntry().getValue());
+					sb.append(" tomorrow");
+					sb.append((cityName.length() > 0 ? " in " + cityName : "") + "!");
+				}
+				
+				if (minTemp != Double.MAX_VALUE && maxTemp != Double.MIN_VALUE)
+				{
+					sb.append("\nWith a high of " + maxTemp + format.toString().substring(0, 1));
+					sb.append(" and a low of " + minTemp + format.toString().substring(0, 1) + ".");
+				}
+				
+				response.disconnect();
+				logger.info((cityName.length() > 0 ? cityName : "City the id of which is " + cityId) + ": " + sb.toString().substring(0, sb.indexOf(" tomorrow") + 9) + "!");
 				return sb.toString(); 
 			}
 			else
@@ -575,5 +599,27 @@ public class WeatherUtil
 			logger.error("Failed to communicate with the weather web service", e);
 			return null;
 		}   
+	}
+	
+	public String replaceKeywords(String text, List<TriggerIngredient> trigIngrList, int maxLength)
+	{
+		String target;
+		Set<String> validKeywords = createRecipeService.readChannelKeywords("weather");
+		
+		for (String vk : validKeywords)
+		{
+			target = "[" + vk + "]";
+			
+			for (TriggerIngredient ti: trigIngrList)
+			{
+				if (ti.getParam().getKeyword().equals(vk))
+				{
+					text = text.replace(target, ti.getValue());
+					break;
+				}
+			}
+		}
+		
+		return (maxLength < 0 || text.length() <= maxLength) ? text : text.substring(0, maxLength - 4).concat(" ...");
 	}
 }
