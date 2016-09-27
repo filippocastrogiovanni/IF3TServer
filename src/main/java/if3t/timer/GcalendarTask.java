@@ -110,17 +110,23 @@ public class GcalendarTask {
 											to = actionIngredient.getValue();
 											break;
 										case "subject" :
-											subject = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											if(actionParam.getCanReceive())
+												subject = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											else
+												subject = actionIngredient.getValue();
 											break;
 										case "body" :
-											body = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											if(actionParam.getCanReceive())
+												body = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											else
+												body = actionIngredient.getValue();
 											break;
 									}		
 								}
 								gmailUtil.sendEmail(to, subject, body, actionAuth);
 							}
 							break;
-						case "calendar" :
+						case "gcalendar" :
 							for(Event event : events){
 								String title = "";
 								String location = "";
@@ -184,10 +190,20 @@ public class GcalendarTask {
 								for(ActionIngredient actionIngredient: actionIngredients){
 									ParametersActions actionParam = actionIngredient.getParam();
 		
-									if(actionParam.getKeyword().equals("post"))
-										post = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+									if(actionParam.getKeyword().equals("post")){
+										if(actionParam.getCanReceive())
+											post = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+										else
+											post = actionIngredient.getValue();
+									}		
 								}
-								facebookUtil.publish_new_post(post, actionAuth.getAccessToken());
+								try{
+									facebookUtil.publish_new_post(post, actionAuth.getAccessToken());
+								}
+								catch(com.restfb.exception.FacebookOAuthException e){
+									//do nothing, it is just spamming
+									System.out.println("FACEBOOK SPAMMING");
+								}
 							}
 							break;
 						case "twitter" :
@@ -197,10 +213,20 @@ public class GcalendarTask {
 								for(ActionIngredient actionIngredient: actionIngredients){
 									ParametersActions actionParam = actionIngredient.getParam();
 		
-									if(actionParam.getKeyword().equals("tweet"))
-										tweet = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
-									if(actionParam.getKeyword().equals("hashtag"))
-										hashtag += actionIngredient.getValue();
+									switch(actionParam.getKeyword()){
+									case "tweet" :
+										if(actionParam.getCanReceive())
+											tweet = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+										else
+											tweet = actionIngredient.getValue();
+										break;
+									case "hashtag" :
+										if(actionParam.getCanReceive())
+											hashtag = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+										else
+											hashtag = actionIngredient.getValue();
+										break;
+								}
 								}
 								twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
 							}

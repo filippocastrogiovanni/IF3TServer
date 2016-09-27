@@ -132,7 +132,7 @@ public class GmailTasks {
 								gmailUtil.sendEmail(to, subject, body, actionAuth);
 							}
 							break;
-						case "calendar" :
+						case "gcalendar" :
 							for(Message message : messages){
 								String title = "";
 								String location = "";
@@ -159,10 +159,16 @@ public class GmailTasks {
 											endTimeString = actionIngredient.getValue();
 											break;
 										case "title" :
-											title = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											if(actionParam.getCanReceive())
+												title = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											else
+												title = actionIngredient.getValue();
 											break;
 										case "description" :
-											description = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											if(actionParam.getCanReceive())
+												description = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											else
+												description = actionIngredient.getValue();
 											break;
 										case "location" :
 											location = actionIngredient.getValue();
@@ -190,10 +196,20 @@ public class GmailTasks {
 								for(ActionIngredient actionIngredient: actionIngredients){
 									ParametersActions actionParam = actionIngredient.getParam();
 		
-									if(actionParam.getKeyword().equals("post"))
-										post = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+									if(actionParam.getKeyword().equals("post")){
+										if(actionParam.getCanReceive())
+											post = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+										else
+											post = actionIngredient.getValue();
+									}
 								}
-								facebookUtil.publish_new_post(post, actionAuth.getAccessToken());
+								try{
+									facebookUtil.publish_new_post(post, actionAuth.getAccessToken());
+								}
+								catch(com.restfb.exception.FacebookOAuthException e){
+									//do nothing, it is just spamming
+									System.out.println("FACEBOOK SPAMMING");
+								}
 							}
 							break;
 						case "twitter" :
@@ -205,10 +221,16 @@ public class GmailTasks {
 		
 									switch(actionParam.getKeyword()){
 										case "tweet" :
-											tweet = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											if(actionParam.getCanReceive())
+												tweet = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											else
+												tweet = actionIngredient.getValue();
 											break;
 										case "hashtag" :
-											hashtag = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											if(actionParam.getCanReceive())
+												hashtag = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											else
+												hashtag = actionIngredient.getValue();
 											break;
 									}
 								}

@@ -281,7 +281,7 @@ public class FacebookTask {
 						}
 						gmailUtil.sendEmail(to, subject, body, actionAuth);
 						break;
-					case "calendar" :
+					case "gcalendar" :
 						String title = "";
 						String location = "";
 						String description = "";
