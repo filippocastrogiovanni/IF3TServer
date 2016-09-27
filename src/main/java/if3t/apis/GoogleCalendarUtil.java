@@ -107,8 +107,8 @@ public class GoogleCalendarUtil {
 		
 		Long timestamp = 0L;
 		if(channelStatus == null){
-			channelStatus = channelStatusService.createNewChannelStatus(recipe.getId(), timestamp/1000);
 			timestamp = Calendar.getInstance().getTimeInMillis() - (rate);
+			channelStatus = channelStatusService.createNewChannelStatus(recipe.getId(), timestamp/1000);
 		}
 		else
 			timestamp = channelStatus.getSinceRef();
@@ -145,6 +145,71 @@ public class GoogleCalendarUtil {
 		List<Event> items = events.getItems();
         if (items.size() == 0)
             return items;
+
+        List<Event> targetEvents = new ArrayList<>();
+        for (Event event : items) {
+            if(	(event.getSummary() != null && event.getSummary().contains(ingredientValue)) ||
+            	(event.getDescription() != null &&event.getDescription().contains(ingredientValue)) ||
+            	(event.getLocation() != null && event.getLocation().contains(ingredientValue)))
+            	
+            	targetEvents.add(event);
+        }
+        
+        return targetEvents;
+	}
+	
+	public List<Event> checkEventsStarted(Authorization auth, Recipe recipe, String ingredientValue) throws IOException{
+		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
+		com.google.api.services.calendar.Calendar calendar = 
+				 new com.google.api.services.calendar.Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
+				 .setApplicationName("IF3T")
+				 .build();
+		
+		ChannelStatus channelStatus = channelStatusService.readChannelStatusByRecipeId(recipe.getId());
+		
+		Long timestamp = 0L;
+		if(channelStatus == null){
+			timestamp = Calendar.getInstance().getTimeInMillis() - (rate);
+			channelStatus = channelStatusService.createNewChannelStatus(recipe.getId(), timestamp);
+		}
+		else
+			timestamp = channelStatus.getSinceRef();
+		
+		DateTime dateMin = new DateTime(timestamp);
+		Events events = null;
+		if(channelStatus.getPageToken() == null){
+			events = calendar.events()
+							.list("primary")
+							.setMaxResults(50)
+							.setOrderBy("startTime")
+							.setSingleEvents(true)
+							.setTimeMin(dateMin)
+							.execute();
+		}
+		else{
+			events = calendar.events()
+							.list("primary")
+							.setMaxResults(50)
+							.setOrderBy("startTime")
+							.setPageToken(channelStatus.getPageToken())
+							.setSingleEvents(true)
+							.setTimeMin(dateMin)
+							.execute();
+		}
+		
+		if(events.getNextPageToken() != null)
+			channelStatus.setPageToken(events.getNextPageToken());
+		
+		timestamp += rate;
+		channelStatus.setSinceRef(timestamp);
+		
+		channelStatusService.updateChannelStatus(channelStatus);
+		
+		List<Event> items = events.getItems();
+        if (items.size() == 0)
+            return items;
+        if(ingredientValue == null || ingredientValue.equals(""))
+        	return items;
 
         List<Event> targetEvents = new ArrayList<>();
         for (Event event : items) {
@@ -218,69 +283,6 @@ public class GoogleCalendarUtil {
 			ingredientReplaced = ingredientReplaced.substring(0, maxLength - 4) + "...";
 		
 		return ingredientReplaced;
-	}
-	
-	public List<Event> checkEventsStarted(Authorization auth, Recipe recipe, String ingredientValue) throws IOException{
-		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
-		com.google.api.services.calendar.Calendar calendar = 
-				 new com.google.api.services.calendar.Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
-				 .setApplicationName("IF3T")
-				 .build();
-		
-		ChannelStatus channelStatus = channelStatusService.readChannelStatusByRecipeId(recipe.getId());
-		
-		Long timestamp = 0L;
-		if(channelStatus == null)
-			timestamp = Calendar.getInstance().getTimeInMillis() - (rate);
-		else
-			timestamp = channelStatus.getSinceRef();
-		
-		DateTime dateMin = new DateTime(timestamp/*1473976800000l*/);
-		Events events = null;
-		if(channelStatus.getPageToken() == null){
-			events = calendar.events()
-							.list("primary")
-							.setMaxResults(50)
-							.setOrderBy("startTime")
-							.setSingleEvents(true)
-							.setTimeMin(dateMin)
-							.execute();
-		}
-		else{
-			events = calendar.events()
-							.list("primary")
-							.setMaxResults(50)
-							.setOrderBy("startTime")
-							.setPageToken(channelStatus.getPageToken())
-							.setSingleEvents(true)
-							.setTimeMin(dateMin)
-							.execute();
-		}
-		
-		if(events.getNextPageToken() != null)
-			channelStatus.setPageToken(events.getNextPageToken());
-		
-		timestamp += rate;
-		channelStatus.setSinceRef(timestamp);
-		
-		channelStatusService.updateChannelStatus(channelStatus);
-		
-		List<Event> items = events.getItems();
-        if (items.size() == 0)
-            return items;
-        if(ingredientValue == null || ingredientValue.equals(""))
-        	return items;
-
-        List<Event> targetEvents = new ArrayList<>();
-        for (Event event : items) {
-            if(	(event.getSummary() != null && event.getSummary().contains(ingredientValue)) ||
-            	(event.getDescription() != null &&event.getDescription().contains(ingredientValue)) ||
-            	(event.getLocation() != null && event.getLocation().contains(ingredientValue)))
-            	
-            	targetEvents.add(event);
-        }
-        
-        return targetEvents;
 	}
 	
 	/*private static String createJsonBody(String start, String end, String title, String location, String description) throws JsonProcessingException {

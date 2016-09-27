@@ -51,16 +51,14 @@ public class GcalendarTask {
 	private AuthorizationService authService;
 	@Value("${app.scheduler.value}")
 	private long rate;
-	@Value("${app.timezone}")
-	private String zone;
 	
 	@Scheduled(fixedRateString = "${app.scheduler.value}")
 	public void gCalendarScheduler(){
-		TimeZone timezone = TimeZone.getTimeZone(zone);
 		List<Recipe> gCalendarTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gcalendar");
 		for(Recipe recipe: gCalendarTriggerRecipes){
 			try{
 				User user = recipe.getUser();
+				TimeZone timezone = TimeZone.getTimeZone(user.getTimezone().getZone_id());
 				Channel triggerChannel = recipe.getTrigger().getChannel();
 				Channel actionChannel = recipe.getAction().getChannel();
 				Authorization triggerAuth = authService.getAuthorization(user.getId(), triggerChannel.getKeyword());
@@ -85,6 +83,7 @@ public class GcalendarTask {
 						events = gCalendarUtil.checkEventsAdded(triggerAuth, recipe, triggerIngredient.getValue());
 						break;
 					case "start" :
+						events = gCalendarUtil.checkEventsStarted(triggerAuth, recipe, triggerIngredient.getValue());
 						break;
 				}
 				

@@ -2,6 +2,7 @@ package if3t.timer;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +10,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.google.api.services.calendar.model.Event;
+
 import if3t.apis.FacebookUtil;
 import if3t.apis.GmailUtil;
 import if3t.apis.GoogleCalendarUtil;
+import if3t.apis.TwitterUtil;
 import if3t.entities.ActionIngredient;
 import if3t.entities.Authorization;
 import if3t.entities.Channel;
@@ -26,13 +30,21 @@ import if3t.services.AuthorizationService;
 import if3t.services.ChannelStatusService;
 import if3t.services.RecipeService;
 import if3t.services.TriggerIngredientService;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 @Component
 public class FacebookTask {
 
 	@Autowired
+	private GmailUtil gmailUtil;
+	@Autowired
+	private GoogleCalendarUtil gCalendarUtil;
+	@Autowired
 	private FacebookUtil facebookUtil;
+	@Autowired
+	private TwitterUtil twitterUtil;
 	@Autowired
     private RecipeService recipeService;
 	@Autowired
@@ -41,11 +53,6 @@ public class FacebookTask {
 	private ActionIngredientService actionIngredientService;
 	@Autowired
 	private AuthorizationService authService;
-	@Autowired
-	private ChannelStatusService channelStatusService;	
-	@Autowired
-	private ParametersTriggersRepository parametersTriggerRepository;
-
 	
 	private ConcurrentHashMap<String, String> couples_access_token_full_names = new ConcurrentHashMap<String, String>();
 	private ConcurrentHashMap<String, String> couples_access_token_profile_pictures = new ConcurrentHashMap<String, String>();
@@ -54,11 +61,11 @@ public class FacebookTask {
 	
 	@Scheduled(fixedRateString = "${app.scheduler.value}")
 	public void gmailScheduler(){
-	
 		List<Recipe> facebookTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("facebook");
 		for(Recipe recipe: facebookTriggerRecipes){
 			try{
 				User user = recipe.getUser();
+				TimeZone timezone = TimeZone.getTimeZone(user.getTimezone().getZone_id());
 				Channel triggerChannel = recipe.getTrigger().getChannel();
 				Channel actionChannel = recipe.getAction().getChannel();
 				Authorization triggerAuth = authService.getAuthorization(user.getId(), triggerChannel.getKeyword());
@@ -250,44 +257,216 @@ public class FacebookTask {
 						for(ActionIngredient actionIngredient: actionIngredients){
 							ParametersActions param = actionIngredient.getParam();
 	
-							//there are no other possible actions
-							//if(param.getKeyword().equals("post"))
+							if(param.getKeyword().equals("post"))
 								message = actionIngredient.getValue();
 						}
 						try{
 							facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
+						}catch(com.restfb.exception.FacebookOAuthException e){
+							//do nothing, it is just spamming
+							System.out.println("FACEBOOK SPAMMING");
+						}
+						break;
+					case "gmail" :
+						String to = "";
+						String subject = "";
+						String body = "";
+						
+						for(ActionIngredient actionIngredient: actionIngredients){
+							ParametersActions actionParam = actionIngredient.getParam();
+
+							switch(actionParam.getKeyword()){
+								case "to_address" :
+									to = actionIngredient.getValue();
+									break;
+								case "subject" :
+									subject = actionIngredient.getValue();
+									break;
+								case "body" :
+									body = actionIngredient.getValue();
+									break;
+							}		
+						}
+						gmailUtil.sendEmail(to, subject, body, actionAuth);
+						break;
+					case "calendar" :
+						String title = "";
+						String location = "";
+						String description = "";
+						String startDateString = "";
+						String endDateString = "";
+						String startTimeString = "";
+						String endTimeString = "";
+						
+						for(ActionIngredient actionIngredient: actionIngredients){
+							ParametersActions actionParam = actionIngredient.getParam();
+	
+							switch(actionParam.getKeyword()){
+								case "start_date" :
+									startDateString = actionIngredient.getValue();
+									break;
+								case "end_date" :
+									endDateString = actionIngredient.getValue();
+									break;
+								case "start_time" :
+									startTimeString = actionIngredient.getValue();
+									break;
+								case "end_time" :
+									endTimeString = actionIngredient.getValue();
+									break;
+								case "title" :
+									title = actionIngredient.getValue();
+									break;
+								case "description" :
+									description = actionIngredient.getValue();
+									break;
+								case "location" :
+									location = actionIngredient.getValue();
+									break;
 							}
-							catch(com.restfb.exception.FacebookOAuthException e){
-								//do nothing, it is just spamming
-								System.out.println("FACEBOOK SPAMMING");
-							}
-							break;
-					
+						}
+						
+						SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+
+						String startDate = startDateString + " " + startTimeString;
+						String endDate = endDateString + " " + endTimeString;
+						Calendar start = Calendar.getInstance();
+						Calendar end = Calendar.getInstance();
+						start.setTime(format.parse(startDate));
+						start.setTimeZone(timezone);
+						end.setTime(format.parse(endDate));
+						end.setTimeZone(timezone);
+
+						gCalendarUtil.createEvent(start, end, title, description, location, triggerAuth);
+						break;
+					case "twitter" :
+						String tweet = "";
+						String hashtag = "";
+						for(ActionIngredient actionIngredient: actionIngredients){
+							ParametersActions actionParam = actionIngredient.getParam();
+
+							if(actionParam.getKeyword().equals("tweet"))
+								tweet = actionIngredient.getValue();
+							if(actionParam.getKeyword().equals("hashtag"))
+								hashtag += actionIngredient.getValue();
+						}
+						twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
+						break;
 					}
 				}
 				else{
-					for(String s : new_posts){
-						
-						switch(recipe.getAction().getChannel().getKeyword()){
-						
+					switch(recipe.getAction().getChannel().getKeyword()){
 						case "facebook" :
-							String message = "";
-							for(ActionIngredient actionIngredient: actionIngredients){
-								ParametersActions param = actionIngredient.getParam();
-		
-								//there are no other possible actions
-								//if(param.getKeyword().equals("post"))
-									message = actionIngredient.getValue();
-							}
-							try{
-								facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
-							}
-							catch(com.restfb.exception.FacebookOAuthException e){
-								//do nothing, it is just spamming
-								System.out.println("FACEBOOK SPAMMING");
+							for(String post : new_posts){
+								String message = "";
+								for(ActionIngredient actionIngredient: actionIngredients){
+									ParametersActions param = actionIngredient.getParam();
+	
+									if(param.getKeyword().equals("post"))
+										message = actionIngredient.getValue();
+								}
+								try{
+									facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
+								}
+								catch(com.restfb.exception.FacebookOAuthException e){
+									//do nothing, it is just spamming
+									System.out.println("FACEBOOK SPAMMING");
+								}
 							}
 							break;
-						}
+						case "gmail" :
+							for(String post : new_posts){
+								String to = "";
+								String subject = "";
+								String body = "";
+								
+								for(ActionIngredient actionIngredient: actionIngredients){
+									ParametersActions actionParam = actionIngredient.getParam();
+	
+									switch(actionParam.getKeyword()){
+										case "to_address" :
+											to = actionIngredient.getValue();
+											break;
+										case "subject" :
+											subject = actionIngredient.getValue();
+											break;
+										case "body" :
+											body = actionIngredient.getValue();
+											break;
+									}		
+								}
+								gmailUtil.sendEmail(to, subject, body, actionAuth);
+							}
+							break;
+						case "calendar" :
+							for(String post : new_posts){
+								String title = "";
+								String location = "";
+								String description = "";
+								String startDateString = "";
+								String endDateString = "";
+								String startTimeString = "";
+								String endTimeString = "";
+								
+								for(ActionIngredient actionIngredient: actionIngredients){
+									ParametersActions actionParam = actionIngredient.getParam();
+			
+									switch(actionParam.getKeyword()){
+										case "start_date" :
+											startDateString = actionIngredient.getValue();
+											break;
+										case "end_date" :
+											endDateString = actionIngredient.getValue();
+											break;
+										case "start_time" :
+											startTimeString = actionIngredient.getValue();
+											break;
+										case "end_time" :
+											endTimeString = actionIngredient.getValue();
+											break;
+										case "title" :
+											title = actionIngredient.getValue();
+											break;
+										case "description" :
+											description = actionIngredient.getValue();
+											break;
+										case "location" :
+											location = actionIngredient.getValue();
+											break;
+									}
+								}
+								
+								SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+	
+								String startDate = startDateString + " " + startTimeString;
+								String endDate = endDateString + " " + endTimeString;
+								Calendar start = Calendar.getInstance();
+								Calendar end = Calendar.getInstance();
+								
+								start.setTime(format.parse(startDate));
+								start.setTimeZone(timezone);
+								end.setTime(format.parse(endDate));
+								end.setTimeZone(timezone);
+	
+								gCalendarUtil.createEvent(start, end, title, description, location, triggerAuth);
+							}
+							break;
+						case "twitter" :
+							for(String post : new_posts){
+								String tweet = "";
+								String hashtag = "";
+								
+								for(ActionIngredient actionIngredient: actionIngredients){
+									ParametersActions actionParam = actionIngredient.getParam();
+	
+									if(actionParam.getKeyword().equals("tweet"))
+										tweet = actionIngredient.getValue();
+									if(actionParam.getKeyword().equals("hashtag"))
+										hashtag += actionIngredient.getValue();
+								}
+								twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
+							}
+							break;
 					}	
 				}
 				

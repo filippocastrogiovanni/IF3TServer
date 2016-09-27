@@ -53,17 +53,15 @@ public class GmailTasks {
 	private ChannelStatusService channelStatusService;
 	@Value("${app.scheduler.value}")
 	private long rate;
-	@Value("${app.timezone}")
-	private String zone;
 
 	@Scheduled(fixedRateString = "${app.scheduler.value}")
 	public void gmailScheduler(){
-		TimeZone timezone = TimeZone.getTimeZone(zone);
 
 		List<Recipe> gmailTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gmail");
 		for(Recipe recipe: gmailTriggerRecipes){
 			try{
 				User user = recipe.getUser();
+				TimeZone timezone = TimeZone.getTimeZone(user.getTimezone().getZone_id());
 				Channel triggerChannel = recipe.getTrigger().getChannel();
 				Channel actionChannel = recipe.getAction().getChannel();
 				Authorization triggerAuth = authService.getAuthorization(user.getId(), triggerChannel.getKeyword());
