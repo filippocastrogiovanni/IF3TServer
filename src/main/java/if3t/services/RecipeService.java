@@ -16,6 +16,7 @@ public interface RecipeService {
 	public List<Recipe> readUserRecipes(Long userId);
 	public List<Recipe> readPublicRecipes();
 	public List<Recipe> readRecipe(Long id, User loggedUser) throws NoPermissionException, NotFoundRecipeException;
+	public RecipePOJO readRecipePOJO(Long id, User loggedUser) throws NoPermissionException, NotFoundRecipeException;
 	public List<Recipe> getEnabledRecipesByTriggerChannel(String channelKeyword);
 	public void deleteRecipe(Long id, User loggedUser) throws NoPermissionException, NotFoundRecipeException;
 	public void addRecipe(List<Recipe> recipe, User loggedUser) throws AddRecipeException;

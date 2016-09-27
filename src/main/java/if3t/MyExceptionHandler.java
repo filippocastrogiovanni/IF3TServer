@@ -2,6 +2,8 @@ package if3t;
 
 import java.util.Locale;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
@@ -36,6 +38,7 @@ public class MyExceptionHandler
 	private MessageSource msgSource;
 	private final static String VAL_ERROR = "There has been an error during the validation phase";
 	private final static String GENERIC_VAL_ERROR = "There have been some errors during the validation phase";
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 	
     @ResponseStatus(value = HttpStatus.FORBIDDEN)  
     @ExceptionHandler(value = ChannelNotAuthorizedException.class)  
@@ -49,7 +52,6 @@ public class MyExceptionHandler
     	return new Response(e.getMessage(), HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
     }
     
-    //Cambiato 401 in 400 (lo segnalo perchè magari aveva un scopo preciso)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)  
     @ExceptionHandler(value = AddRecipeException.class)  
     public Response handleAddRecipeException(AddRecipeException e){
@@ -118,10 +120,11 @@ public class MyExceptionHandler
     	return new Response((sb.length() == 0) ? GENERIC_VAL_ERROR : sb.toString(), HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase());
     }
     
-    //FIXME alla fine togliere il t.getMessage() e sostituire con ""
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR) 
     @ExceptionHandler(value = Throwable.class)  
-    public Response handleException(Throwable t) {
-    	return new Response(t.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
+    public Response handleException(Throwable t) 
+    {
+    	logger.error(t.getMessage(), t);
+    	return new Response("", HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
     } 
 }  

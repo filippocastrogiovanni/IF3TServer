@@ -2,14 +2,18 @@ package if3t.services;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -32,6 +36,7 @@ import if3t.exceptions.PartialUpdateException;
 import if3t.models.ActionPOJO;
 import if3t.models.ParametersPOJO;
 import if3t.models.RecipePOJO;
+import if3t.models.TriggerPOJO;
 import if3t.repositories.ActionIngredientRepository;
 import if3t.repositories.ActionRepository;
 import if3t.repositories.AuthorizationRepository;
@@ -60,9 +65,14 @@ public class RecipeServiceImpl implements RecipeService
 	private CreateRecipeService createRecipeService;
 	@Autowired
 	private ChannelsStatusesRepository channelStatusRepo;
+	@Autowired
+	private TriggerIngredientService triggerIngrService;
+	@Autowired
+	private ActionIngredientService actionIngrService;
 	private static final String EMAIL_PATTERN = "^[-a-z0-9~!$%^&*_=+}{\'?]+(.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(.[-a-z0-9_]+)*.(aero|arpa|biz|com|coop|edu|gov|info|int|mil|museum|name|net|org|pro|travel|mobi|[a-z][a-z])|([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}))(:[0-9]{1,5})?$";
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 	
-	//TODO controllare se quest'annotazione serve anche in altri services
+	@Override
 	@PreAuthorize("hasRole('USER')")
 	public List<Recipe> readUserRecipes(Long userId) {
 		return recipeRepository.findByUser_Id(userId);
@@ -72,6 +82,7 @@ public class RecipeServiceImpl implements RecipeService
 		return recipeRepository.findByIsPublic(true);
 	}
 
+	@Override
 	@PreAuthorize("hasRole('USER')")
 	public List<Recipe> readRecipe(Long id, User loggedUser) throws NoPermissionException, NotFoundRecipeException 
 	{
@@ -85,7 +96,9 @@ public class RecipeServiceImpl implements RecipeService
 		
 		for (Recipe recipe: recipeList)
 		{
-			if (!recipe.getUser().equals(loggedUser)) {
+			if (!recipe.getUser().equals(loggedUser)) 
+			{
+				logger.error("The user " + loggedUser.getUsername() + " doesn't have permissions to read the recipe!");
 				throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 			}
 		}
@@ -93,6 +106,7 @@ public class RecipeServiceImpl implements RecipeService
 		return recipeList;
 	}
 
+	@Override
 	@PreAuthorize("hasRole('USER')")
 	public void deleteRecipe(Long id, User loggedUser) throws NoPermissionException, NotFoundRecipeException 
 	{
@@ -102,7 +116,9 @@ public class RecipeServiceImpl implements RecipeService
 			throw new NotFoundRecipeException("The requested recipe was not found");
 		}		
 		
-		if (!recipe.getUser().getId().equals(loggedUser.getId())) {
+		if (!recipe.getUser().getId().equals(loggedUser.getId())) 
+		{
+			logger.error("The user " + loggedUser.getUsername() + " doesn't have permissions to delete the recipe!");
 			throw new NoPermissionException("ERROR: You don't have permissions to perform this action!");
 		}
 		
@@ -123,10 +139,11 @@ public class RecipeServiceImpl implements RecipeService
 		}
 	}
 
+	@Override
 	@PreAuthorize("hasRole('USER')")
 	public void addRecipe(List<Recipe> recipes, User loggedUser) throws AddRecipeException
 	{		
-		System.out.println("Saving recipe");
+//		System.out.println("Saving recipe");
 		validateRecipe(recipes);
 		
 		for (Recipe r : recipes)
@@ -136,9 +153,9 @@ public class RecipeServiceImpl implements RecipeService
 			r.setGroupId(UUID.randomUUID().toString());	
 			r.setUser(loggedUser);
 			
-			System.out.println("Recipe ready to save");
+//			System.out.println("Recipe ready to save");
 			recipeRepository.save(r);
-			System.out.println("Recipe saved");
+//			System.out.println("Recipe saved");
 
 			/*if(r.getParameters_keyword()!=null)
 				for(ParametersKeyword pk : r.getParameters_keyword()){
@@ -146,23 +163,25 @@ public class RecipeServiceImpl implements RecipeService
 					parameterKeywordRepository.save(pk);
 				}*/
 			
-			//Il salvataggio degli ingredienti va fatto qui (e non nel controller) per garantire la transazionalità
 			for (TriggerIngredient ti : r.getTrigger_ingredients())
 			{
 				ti.setRecipe(r);
 				triggerIngRepo.save(ti);
 			}
-			System.out.println("Trigger ingredients saved");
+			
+//			System.out.println("Trigger ingredients saved");
 			
 			for (ActionIngredient ai : r.getAction_ingredients())
 			{
 				ai.setRecipe(r);
 				actionIngRepo.save(ai);
 			}
-			System.out.println("Action ingredient saved");
+			
+//			System.out.println("Action ingredient saved");
 		}
 	}
 
+	@Override
 	@PreAuthorize("hasRole('USER')")
 	public void toggleIsPublicRecipe(Recipe recipe) 
 	{
@@ -170,6 +189,7 @@ public class RecipeServiceImpl implements RecipeService
 		recipeRepository.save(recipe);
 	}
 
+	@Override
 	@PreAuthorize("hasRole('USER')")
 	public void toggleIsEnabledRecipe(List<Recipe> recipes, User user) throws ChannelNotAuthorizedException 
 	{		
@@ -197,8 +217,6 @@ public class RecipeServiceImpl implements RecipeService
 			}
 		}
 		
-		//TODO controllare questa affermazione che forse è falsa per via del @Transactional, quindi magari si può risparmiare un ciclo for
-		//Solo se tutti i canali sono autorizzati vanno fatte le modifiche alle ricette altrimenti si potrebbero avere modifiche parziali
 		for (Recipe rec : recipes)
 		{
 			rec.setIsEnabled(!rec.getIsEnabled());
@@ -206,11 +224,11 @@ public class RecipeServiceImpl implements RecipeService
 		}
 	}
 
+	@Override
 	public List<Recipe> getEnabledRecipesByTriggerChannel(String channelKeyword) {
 		return recipeRepository.findByIsEnabledAndTrigger_Channel_Keyword(true, channelKeyword);
 	}
-
-	//FIXME println to remove
+	
 	@Override
 	public void updateRecipe(RecipePOJO recipe) throws NotFoundRecipeException, PartialUpdateException 
 	{
@@ -285,18 +303,16 @@ public class RecipeServiceImpl implements RecipeService
 		}
 	}
 	
-	//TODO togliere le println alla fine e magari aggiungere gli errori ad un logger
 	private void validateRecipe(List<Recipe> recipes) throws AddRecipeException
 	{
-		//TODO controlli user ???
-		System.out.println("ADDING RECIPE, CONTROLLING THE RECIPE LIST");
+//		System.out.println("ADDING RECIPE, CONTROLLING THE RECIPE LIST");
 		//checks on recipes
 		for (Recipe r : recipes)
 		{
-			System.out.println("CONTROLLING A RECIPE");
+//			System.out.println("CONTROLLING A RECIPE");
 			if (r.getAction() != null && r.getAction_ingredients() != null && r.getTrigger() != null && r.getTrigger_ingredients() != null && r.getDescription() != null)
 			{
-				System.out.println("ALL FIELDS ARE DIFFERENT FROM NULL");
+//				System.out.println("ALL FIELDS ARE DIFFERENT FROM NULL");
 				//check if parameters are valid
 				boolean are_all_instances = true;
 				boolean are_all_valid = true;
@@ -326,45 +342,51 @@ public class RecipeServiceImpl implements RecipeService
 					
 					if (actionRespository.findOne(r.getAction().getId()) != null && triggerRepository.findOne(r.getTrigger().getId()) != null)
 					{
-						System.out.println("ACTION AND TRIGGER ARE VALID");
+//						System.out.println("ACTION AND TRIGGER ARE VALID");
 						
-						//FIXME alla fine mettere il break ed eliminare i messaggi sotto
 						for (TriggerIngredient ti : r.getTrigger_ingredients())
 						{
-							if (!validate_ingredient(ti)) {
+							if (!validate_ingredient(ti)) 
+							{
 								are_all_valid = false;
+								logger.error("Invalid ingredient: " + ti);
+								break;
 							}
 							
-							if (are_all_valid) {
-								System.out.println("This trigger ingredient is valid");
-							}
-							else {
-								System.err.println(ti);
-								System.err.println("This trigger ingredient is not valid");
-							}
+//							if (are_all_valid) {
+//								System.out.println("This trigger ingredient is valid");
+//							}
+//							else {
+//								System.err.println(ti);
+//								System.err.println("This trigger ingredient is not valid");
+//							}
 						}
 						
-						//FIXME alla fine mettere il break ed eliminare i messaggi sotto
-						//FIXME inoltre è bene eseguire questo for solo se are_all_valid == true
-						for (ActionIngredient ai : r.getAction_ingredients())
+						if (are_all_valid == true)
 						{
-							if (!validate_ingredient(ai)) {
-								are_all_valid = false;
-							}
-							
-							if (are_all_valid) {
-								System.out.println("This action ingredient is valid");
-							}
-							else {
-								System.err.println(ai);
-								System.err.println("This action ingredient is not valid");
+							for (ActionIngredient ai : r.getAction_ingredients())
+							{
+								if (!validate_ingredient(ai)) 
+								{
+									are_all_valid = false;
+									logger.error("Invalid ingredient: " + ai);
+									break;
+								}
+								
+//								if (are_all_valid) {
+//									System.out.println("This action ingredient is valid");
+//								}
+//								else {
+//									System.err.println(ai);
+//									System.err.println("This action ingredient is not valid");
+//								}
 							}
 						}
 						
-						//FIXME sembra che nonostante l'eccezione lanciata, il db viene modificato
 						if (!are_all_instances || !are_all_valid)
 						{
-							System.out.println("Invalid data in recipe sent (2)");
+//							System.out.println("Invalid data in recipe sent (2)");
+							logger.error("Invalid data in recipe sent (2)");
 							throw new AddRecipeException("ERROR: Invalid data in recipe sent");
 						}
 						
@@ -387,19 +409,22 @@ public class RecipeServiceImpl implements RecipeService
 					}
 					else
 					{
-						System.out.println("At least one among trigger and action is not valid");
+//						System.out.println("At least one among trigger and action is not valid");
+						logger.error("At least one among trigger and action is not valid");
 						throw new AddRecipeException("ERROR: At least one among trigger and action is not valid");
 					}
 				}
 				else
 				{
-					System.out.println("Invalid data in recipe sent (1)");
+//					System.out.println("Invalid data in recipe sent (1)");
+					logger.error("Invalid data in recipe sent (1)");
 					throw new AddRecipeException("ERROR: Invalid data in recipe sent");
 				}
 			}
 			else
 			{
-				System.out.println("At least one recipe sent misses a field");
+//				System.out.println("At least one recipe sent misses a field");
+				logger.error("At least one recipe sent misses a field");
 				throw new AddRecipeException("ERROR: At least one recipe sent misses a field");
 			}
 		}
@@ -454,7 +479,6 @@ public class RecipeServiceImpl implements RecipeService
 		return false;
 	}
 	
-	//FIXME bisogna controllare che nel radio 1 e 1 sola opzione sia settata e nel checkbox almeno 1
 	private boolean is_radio_type_or_checkbox_valid(Object value, Object ingredient)
 	{
 		Long param_id;
@@ -515,5 +539,26 @@ public class RecipeServiceImpl implements RecipeService
 		}
 		
 		return false;
+	}
+
+	@Override
+	public RecipePOJO readRecipePOJO(Long id, User loggedUser) throws NoPermissionException, NotFoundRecipeException
+	{
+		List<Recipe> recList = readRecipe(id, loggedUser);
+		Trigger trig = recList.get(0).getTrigger();
+		List<ParametersTriggers> ptList = createRecipeService.readChannelParametersTriggers(trig.getId(), trig.getChannel().getChannelId());
+		Map<Long, TriggerIngredient> tiMap = triggerIngrService.getRecipeTriggerIngredientsMap(recList.get(0).getGroupId());
+		TriggerPOJO trigPOJO = new TriggerPOJO(trig, ptList, tiMap);
+		List<ActionPOJO> actPOJOList = new ArrayList<ActionPOJO>();
+		
+		for (Recipe rec : readRecipe(id, loggedUser))
+		{
+			Action act = rec.getAction();
+			List<ParametersActions> paList = createRecipeService.readChannelParametersActions(act.getId(), act.getChannel().getChannelId());
+			Map<Long, ActionIngredient> aiMap = actionIngrService.getRecipeActionIngredientsMap(rec.getId());
+			actPOJOList.add(new ActionPOJO(act, paList, aiMap));
+		}		
+		
+		return new RecipePOJO(readRecipe(id, loggedUser), trigPOJO, actPOJOList);
 	}
 }
