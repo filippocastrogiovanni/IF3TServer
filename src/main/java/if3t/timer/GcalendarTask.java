@@ -240,19 +240,4 @@ public class GcalendarTask {
 			}
 		}
 	}
-		
-		/*TimeZone zone = TimeZone.getTimeZone("GMT-3");
-		Calendar c = Calendar.getInstance();
-		c.setTimeInMillis(1473863892389l);
-		c.setTimeZone(zone);
-		System.out.println(c.get(Calendar.ZONE_OFFSET));
-		try {
-			GoogleCalendarUtil.createEvent(c, c, "Prova", "ciao ciao", "Torino");
-		} catch (JsonProcessingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (InvalidParametersException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}*/
 }

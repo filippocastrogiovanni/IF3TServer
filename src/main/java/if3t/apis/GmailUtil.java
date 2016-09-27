@@ -195,10 +195,10 @@ public class GmailUtil {
 			if(validKeywords.contains(keyword)){
 				switch(keyword){
 					case "from" :
-						ingredientReplaced = ingredientReplaced.replace("[from]", from);
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", from);
 						break;
 					case "to" :
-						ingredientReplaced = ingredientReplaced.replace("[to]", to);
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", to);
 						break;
 					case "subject" :
 						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", subject);

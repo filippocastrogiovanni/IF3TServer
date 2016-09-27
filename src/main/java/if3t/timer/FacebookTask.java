@@ -337,10 +337,14 @@ public class FacebookTask {
 						for(ActionIngredient actionIngredient: actionIngredients){
 							ParametersActions actionParam = actionIngredient.getParam();
 
-							if(actionParam.getKeyword().equals("tweet"))
-								tweet = actionIngredient.getValue();
-							if(actionParam.getKeyword().equals("hashtag"))
-								hashtag += actionIngredient.getValue();
+							switch(actionParam.getKeyword()){
+								case "tweet" :
+									tweet = actionIngredient.getValue();
+									break;
+								case "hashtag" :
+									hashtag = actionIngredient.getValue();
+									break;
+							}
 						}
 						twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
 						break;
@@ -352,10 +356,14 @@ public class FacebookTask {
 							for(String post : new_posts){
 								String message = "";
 								for(ActionIngredient actionIngredient: actionIngredients){
-									ParametersActions param = actionIngredient.getParam();
+									ParametersActions actionParam = actionIngredient.getParam();
 	
-									if(param.getKeyword().equals("post"))
-										message = actionIngredient.getValue();
+									if(actionParam.getKeyword().equals("post")){
+										if(actionParam.getCanReceive())
+											message = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), post);
+										else
+											message = actionIngredient.getValue();
+									}
 								}
 								try{
 									facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
@@ -380,7 +388,10 @@ public class FacebookTask {
 											to = actionIngredient.getValue();
 											break;
 										case "subject" :
-											subject = actionIngredient.getValue();
+											if(actionParam.getCanReceive())
+												subject = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), post);
+											else
+												subject = actionIngredient.getValue();
 											break;
 										case "body" :
 											body = actionIngredient.getValue();
@@ -417,10 +428,16 @@ public class FacebookTask {
 											endTimeString = actionIngredient.getValue();
 											break;
 										case "title" :
-											title = actionIngredient.getValue();
+											if(actionParam.getCanReceive())
+												title = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), post);
+											else
+												title = actionIngredient.getValue();
 											break;
 										case "description" :
-											description = actionIngredient.getValue();
+											if(actionParam.getCanReceive())
+												description = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), post);
+											else
+												description = actionIngredient.getValue();
 											break;
 										case "location" :
 											location = actionIngredient.getValue();
@@ -451,10 +468,20 @@ public class FacebookTask {
 								for(ActionIngredient actionIngredient: actionIngredients){
 									ParametersActions actionParam = actionIngredient.getParam();
 	
-									if(actionParam.getKeyword().equals("tweet"))
-										tweet = actionIngredient.getValue();
-									if(actionParam.getKeyword().equals("hashtag"))
-										hashtag += actionIngredient.getValue();
+									switch(actionParam.getKeyword()){
+										case "tweet" :
+											if(actionParam.getCanReceive())
+												tweet = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), post);
+											else
+												tweet = actionIngredient.getValue();
+											break;
+										case "hashtag" :
+											if(actionParam.getCanReceive())
+												hashtag = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), post);
+											else
+												hashtag = actionIngredient.getValue();
+											break;
+									}
 								}
 								twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
 							}

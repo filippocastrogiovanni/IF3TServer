@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import if3t.entities.Channel;
 import if3t.entities.User;
 import if3t.exceptions.NotLoggedInException;
-import if3t.models.Response;
 import if3t.services.ChannelService;
 import if3t.services.UserService;
 

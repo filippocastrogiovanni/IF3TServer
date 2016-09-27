@@ -6,7 +6,7 @@ import if3t.entities.User;
 
 public class FacebookAuthRequest {
 
-	private String client_id, state, access_type, prompt, 
+	private String client_id, state, 
 	scope, response_type, redirect_uri;
 
 

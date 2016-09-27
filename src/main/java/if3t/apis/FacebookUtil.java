@@ -2,6 +2,7 @@ package if3t.apis;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONArray;
@@ -19,19 +20,22 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
 import com.restfb.Parameter;
-import com.restfb.json.JsonArray;
-import com.restfb.json.JsonObject;
+import com.restfb.Version;
 import com.restfb.types.FacebookType;
 import com.restfb.types.User;
 
 import if3t.entities.ChannelStatus;
 import if3t.services.ChannelStatusService;
+import if3t.services.CreateRecipeService;
 
 @Component
 public class FacebookUtil {
 
 	@Autowired
 	private ChannelStatusService channelStatusService;	
+	@Autowired
+	private CreateRecipeService createRecipeService;
+	
 	@Value("${app.scheduler.value}")
 	private long fixedRateString;
 	
@@ -66,7 +70,6 @@ public class FacebookUtil {
 		        String.class);
 		JSONObject json_response = new JSONObject(response.getBody());
 		JSONArray data_json_response = (JSONArray)json_response.get("data");
-		int new_posts_by_user_number = 0;
 		for(int i=0; i<data_json_response.length(); i++){
 			JSONObject data_element_json_object = data_json_response.getJSONObject(i);
 			if(data_element_json_object.get("type").equals("status") && data_element_json_object.get("message")!=null && !data_element_json_object.get("message").equals("")){
@@ -83,7 +86,7 @@ public class FacebookUtil {
 	
 	//TRIGGER: CHANGE OF FULL NAME
 	public boolean is_full_name_changed(String access_token, ConcurrentHashMap<String, String> couples_access_token_full_names, Long recipe_id)  throws Exception{
-		FacebookClient fbClient = new DefaultFacebookClient(access_token);
+		FacebookClient fbClient = new DefaultFacebookClient(access_token, Version.VERSION_2_6);
 		User me = fbClient.fetchObject("me", User.class);
 		String fetched_full_name = me.getName();
 		if(fetched_full_name==null)
@@ -210,9 +213,41 @@ public class FacebookUtil {
 	
 	//ACTION: PUBLISH NEW POST BY USER
 	public String publish_new_post(String content_message, String access_token) throws Exception{
-		FacebookClient fbClient = new DefaultFacebookClient(access_token);
+		FacebookClient fbClient = new DefaultFacebookClient(access_token, Version.VERSION_2_6);
 		FacebookType publishMessageResponse= fbClient.publish("me/feed", FacebookType.class,
 		         Parameter.with("message", content_message));
 		return publishMessageResponse.getType();
+	}
+	
+	public String validateAndReplaceKeywords(String ingredient, int maxLength, String post){
+		String ingredientReplaced = ingredient;
+		Set<String> validKeywords = createRecipeService.readChannelKeywords("facebook");
+		int index = 0;
+		
+		while(true){
+			int squareOpenIndex = ingredient.indexOf('[', index);
+			int squareCloseIndex = ingredient.indexOf(']', squareOpenIndex);
+			
+			if(squareOpenIndex == -1 || squareCloseIndex == -1){
+				break;
+			}
+			
+			index = squareCloseIndex + 1;
+			
+			String keyword = ingredient.substring(squareOpenIndex+1, squareCloseIndex);
+			
+			if(validKeywords.contains(keyword)){
+				switch(keyword){
+					case "post" :
+						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", post);
+						break;
+				}
+			}
+		}
+
+		if(ingredientReplaced.length() > maxLength && (maxLength - 4) > 0)
+			ingredientReplaced = ingredientReplaced.substring(0, maxLength - 4) + "...";
+		
+		return ingredientReplaced;
 	}
 }

@@ -22,11 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.restfb.DefaultFacebookClient;
-import com.restfb.DefaultLegacyFacebookClient;
-import com.restfb.FacebookClient;
-import com.restfb.Parameter;
-
 import if3t.apis.FacebookAuthRequest;
 import if3t.apis.FacebookTokenRequest;
 import if3t.apis.FacebookTokenResponse;
@@ -199,6 +194,7 @@ public class FacebookController {
 		HttpEntity<?> entity = new HttpEntity<>(headers);
 
 		RestTemplate restTemplate = new RestTemplate();
+		@SuppressWarnings("unused")
 		HttpEntity<String> response = restTemplate.exchange(
 		        builder.build().encode().toUri(), 
 		        HttpMethod.DELETE, 
