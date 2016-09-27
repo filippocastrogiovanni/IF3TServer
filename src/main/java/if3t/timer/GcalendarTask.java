@@ -6,12 +6,15 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.google.api.services.calendar.model.Event;
+import com.restfb.exception.FacebookOAuthException;
 
 import if3t.apis.FacebookUtil;
 import if3t.apis.GmailUtil;
@@ -51,6 +54,7 @@ public class GcalendarTask {
 	private AuthorizationService authService;
 	@Value("${app.scheduler.value}")
 	private long rate;
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 	
 	@Scheduled(initialDelay = 4 * 30 * 1000, fixedRateString = "${app.scheduler.value}")
 	public void gCalendarScheduler(){
@@ -66,12 +70,16 @@ public class GcalendarTask {
 				
 				//Checking if the access token of the trigger channel is expired
 				Calendar now = Calendar.getInstance();
-				if(triggerAuth == null || triggerAuth.getExpireDate()*1000 <= now.getTimeInMillis())
+				if(triggerAuth == null || triggerAuth.getExpireDate()*1000 <= now.getTimeInMillis()){
+					logger.info("Gmail channel not authorized or expired for the user " + user.getUsername());
 					continue;
+				}
 				
 				//Checking if the access token of the action channel is not present
-				if(actionAuth == null)
+				if(actionAuth == null){
+					logger.info("Action channel (" + actionChannel.getKeyword() + ") is not enabled for the user " + user.getUsername());
 					continue;
+				}
 				
 				List<TriggerIngredient> triggerIngredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
 				TriggerIngredient triggerIngredient = triggerIngredients.get(0);
@@ -92,9 +100,11 @@ public class GcalendarTask {
 					
 					//Checking if the access token of the action channel is expired
 					now = Calendar.getInstance();
-					if(actionAuth.getExpireDate() == null || actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())
+					if(actionAuth.getExpireDate() == null || actionAuth.getExpireDate()*1000 <= now.getTimeInMillis()){
+						logger.info("Action channel (" + actionChannel.getKeyword() + "): token expired for the user " + user.getUsername());
 						continue;
-					
+					}
+				
 					switch(recipe.getAction().getChannel().getKeyword()){
 						case "gmail" :
 							for(Event event : events){
@@ -124,6 +134,7 @@ public class GcalendarTask {
 									}		
 								}
 								gmailUtil.sendEmail(to, subject, body, actionAuth);
+								logger.info("Email sent from Gmail account of " + user.getUsername() + " to " + to);
 							}
 							break;
 						case "gcalendar" :
@@ -182,6 +193,7 @@ public class GcalendarTask {
 								end.setTimeZone(timezone);
 	
 								gCalendarUtil.createEvent(start, end, title, description, location, actionAuth);
+								logger.info("Event created on the calendar of the user " + user.getUsername());
 							}
 							break;
 						case "facebook" :
@@ -199,10 +211,10 @@ public class GcalendarTask {
 								}
 								try{
 									facebookUtil.publish_new_post(post, actionAuth.getAccessToken());
+									logger.info("A new post has been submitted on the Facebook page of the user " + user.getUsername());
 								}
-								catch(com.restfb.exception.FacebookOAuthException e){
-									//do nothing, it is just spamming
-									System.out.println("FACEBOOK SPAMMING");
+								catch(FacebookOAuthException e){
+									logger.error("Too many post in a short time on the Facebook page of the user " + user.getUsername(), e);
 								}
 							}
 							break;
@@ -214,19 +226,19 @@ public class GcalendarTask {
 									ParametersActions actionParam = actionIngredient.getParam();
 		
 									switch(actionParam.getKeyword()){
-									case "tweet" :
-										if(actionParam.getCanReceive())
-											tweet = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
-										else
-											tweet = actionIngredient.getValue();
-										break;
-									case "hashtag" :
-										if(actionParam.getCanReceive())
-											hashtag = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
-										else
-											hashtag = actionIngredient.getValue();
-										break;
-								}
+										case "tweet" :
+											if(actionParam.getCanReceive())
+												tweet = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											else
+												tweet = actionIngredient.getValue();
+											break;
+										case "hashtag" :
+											if(actionParam.getCanReceive())
+												hashtag = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											else
+												hashtag = actionIngredient.getValue();
+											break;
+									}
 								}
 								twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
 							}
@@ -235,7 +247,7 @@ public class GcalendarTask {
 				}
 				
 			}catch(Exception e){
-				e.printStackTrace();
+				logger.error(e.getMessage(), e);
 				continue;
 			}
 		}

@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.google.api.services.gmail.model.Message;
+import com.restfb.exception.FacebookOAuthException;
 
 import if3t.apis.FacebookUtil;
 import if3t.apis.GmailUtil;
@@ -216,7 +217,7 @@ public class GmailTasks {
 									facebookUtil.publish_new_post(post, actionAuth.getAccessToken());
 									logger.info("A new post has been submitted on the Facebook page of the user " + user.getUsername());
 								}
-								catch(com.restfb.exception.FacebookOAuthException e){
+								catch(FacebookOAuthException e){
 									logger.error("Too many post in a short time on the Facebook page of the user " + user.getUsername(), e);
 								}
 							}

@@ -7,9 +7,13 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import com.restfb.exception.FacebookOAuthException;
 
 import if3t.apis.FacebookUtil;
 import if3t.apis.GmailUtil;
@@ -46,6 +50,8 @@ public class FacebookTask {
 	private ActionIngredientService actionIngredientService;
 	@Autowired
 	private AuthorizationService authService;
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
+
 	
 	private ConcurrentHashMap<String, String> couples_access_token_full_names = new ConcurrentHashMap<String, String>();
 	private ConcurrentHashMap<String, String> couples_access_token_profile_pictures = new ConcurrentHashMap<String, String>();
@@ -66,12 +72,15 @@ public class FacebookTask {
 				//Checking if the access token of the trigger channel is expired
 				Calendar now = Calendar.getInstance();
 				if(triggerAuth == null || triggerAuth.getExpireDate()*1000 <= now.getTimeInMillis()){
+					logger.info("Gmail channel not authorized or expired for the user " + user.getUsername());
 					continue;
 				}
 
 				//Checking if the access token of the action channel is not present
-				if(actionAuth == null)
+				if(actionAuth == null){
+					logger.info("Action channel (" + actionChannel.getKeyword() + ") is not enabled for the user " + user.getUsername());
 					continue;
+				}
 				
 				//take the trigger ingredients related to this facebook trigger
 				//List<TriggerIngredient> related_facebook_ingredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
@@ -115,123 +124,61 @@ public class FacebookTask {
 				
 				//the server should never stop, so I do not need to have a table in the DB with full_name, profile_picture, location history
 				
-				switch(situation){
-				//the server can not wait for the verification of all the conditions because they could never happen, so we just take into account a moment, if in that moment the conditions are verified, then we proceed with the action
-				case 0://new post
-					try {
-						new_posts = facebookUtil.calculate_new_posts_by_user_number(access_token, recipe.getId());
-					} catch (Exception e) {
-						System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
-						e.printStackTrace();
-					}	
-				   	if(new_posts.size()<=0)
-				   		continue; 	
-					break;
-				case 1://every one
-				   	   //TO DO substitute the following token with the real user one
-				   	   try {
+				try{
+					switch(situation){
+						//the server can not wait for the verification of all the conditions because they could never happen, so we just take into account a moment, if in that moment the conditions are verified, then we proceed with the action
+						case 0://new post
+							new_posts = facebookUtil.calculate_new_posts_by_user_number(access_token, recipe.getId());
+						   	if(new_posts.size() <= 0)
+						   		continue; 	
+							break;
+						case 1://every one
 							full_name_changed = facebookUtil.is_full_name_changed(access_token, couples_access_token_full_names, recipe.getId());
-						} catch (Exception e) {
-							System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
-							e.printStackTrace();
-						}		
-					   	try {
 							profile_picture_changed = facebookUtil.is_profile_picture_changed(access_token, couples_access_token_profile_pictures, recipe.getId());
-						} catch (Exception e) {
-							System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
-							e.printStackTrace();
-						}
-					   	try {
 							location_changed = facebookUtil.is_location_changed(access_token, couples_access_token_locations, recipe.getId());;
-						} catch (Exception e) {
-							System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
-							e.printStackTrace();
-						}
-					   	if(!(full_name_changed&&profile_picture_changed&&location_changed))
-					   		continue;
-						break;
-				case 2://full_name
-						try {
+						   	if(!(full_name_changed && profile_picture_changed && location_changed))
+						   		continue;
+							break;
+						case 2://full_name
 							full_name_changed = facebookUtil.is_full_name_changed(access_token, couples_access_token_full_names, recipe.getId());
-						} catch (Exception e) {
-							System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
-							e.printStackTrace();
-						}	
-					   	if(!(full_name_changed))
-					   		continue;
-						break;
-				case 3://profile_picture
-						try {
+						   	if(!full_name_changed)
+						   		continue;
+							break;
+						case 3://profile_picture
 							profile_picture_changed = facebookUtil.is_profile_picture_changed(access_token, couples_access_token_profile_pictures, recipe.getId());
-						} catch (Exception e) {
-							System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
-							e.printStackTrace();
-						}
-					   	if(!(profile_picture_changed))
-					   		continue;
-						break;
-				case 4://location
-						try {
+						   	if(!profile_picture_changed)
+						   		continue;
+							break;
+						case 4://location
 							location_changed = facebookUtil.is_location_changed(access_token, couples_access_token_locations, recipe.getId());
-						} catch (Exception e) {
-							System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
-							e.printStackTrace();
-						}
-					   	if(!(location_changed))
-					   		continue;					
-						break;
-				case 5://full_name, profile_picture
-						try {
+						   	if(!(location_changed))
+						   		continue;					
+							break;
+						case 5://full_name, profile_picture
 							full_name_changed = facebookUtil.is_full_name_changed(access_token, couples_access_token_full_names, recipe.getId());
-						} catch (Exception e) {
-							System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
-							e.printStackTrace();
-						}	
-						try {
 							profile_picture_changed = facebookUtil.is_profile_picture_changed(access_token, couples_access_token_profile_pictures, recipe.getId());
-						} catch (Exception e) {
-							System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
-							e.printStackTrace();
-						}
-					   	if(!(full_name_changed&&profile_picture_changed))
-					   		continue;
-						break;
-				case 6://full_name, location
-						try {
+						   	if(!(full_name_changed && profile_picture_changed))
+						   		continue;
+							break;
+						case 6://full_name, location
 							full_name_changed = facebookUtil.is_full_name_changed(access_token, couples_access_token_full_names, recipe.getId());
-						} catch (Exception e) {
-							System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
-							e.printStackTrace();
-						}		
-						try {
 							location_changed = facebookUtil.is_location_changed(access_token, couples_access_token_locations, recipe.getId());
-						} catch (Exception e) {
-							System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
-							e.printStackTrace();
-						}
-					   	if(!(full_name_changed&&location_changed))
-					   		continue;
-						break;		
-				case 7://profile_picture, location
-						try {
+						   	if(!(full_name_changed && location_changed))
+						   		continue;
+							break;		
+						case 7://profile_picture, location
 							profile_picture_changed = facebookUtil.is_profile_picture_changed(access_token, couples_access_token_profile_pictures, recipe.getId());
-						} catch (Exception e) {
-							System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
-							e.printStackTrace();
-						}		
-						try {
 							location_changed = facebookUtil.is_location_changed(access_token, couples_access_token_locations, recipe.getId());
-						} catch (Exception e) {
-							System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
-							e.printStackTrace();
-						}
-					   	if(!(profile_picture_changed&&location_changed))
-					   		continue;
-						break;	
+						   	if(!(profile_picture_changed && location_changed))
+						   		continue;
+							break;	
+					}
+				}catch(Exception e){
+					//System.out.println("A server error occurred (very likely a JSONException due to the fact that the user removed the needed permission.");
+					logger.error(e.getMessage(), e);
 				}
 				
 				//here the trigger has been happened, so we can proceed with the action
-				//TODO add action management when is ready
 				List<ActionIngredient> actionIngredients = actionIngredientService.getRecipeActionIngredients(recipe.getId());
 
 				//Checking if the access token of the action channel is expired
@@ -254,9 +201,9 @@ public class FacebookTask {
 						}
 						try{
 							facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
-						}catch(com.restfb.exception.FacebookOAuthException e){
-							//do nothing, it is just spamming
-							System.out.println("FACEBOOK SPAMMING");
+							logger.info("A new post has been submitted on the Facebook page of the user " + user.getUsername());
+						}catch(FacebookOAuthException e){
+							logger.error("Too many post in a short time on the Facebook page of the user " + user.getUsername(), e);
 						}
 						break;
 					case "gmail" :
@@ -280,6 +227,7 @@ public class FacebookTask {
 							}		
 						}
 						gmailUtil.sendEmail(to, subject, body, actionAuth);
+						logger.info("Email sent from Gmail account of " + user.getUsername() + " to " + to);
 						break;
 					case "gcalendar" :
 						String title = "";
@@ -330,6 +278,7 @@ public class FacebookTask {
 						end.setTimeZone(timezone);
 
 						gCalendarUtil.createEvent(start, end, title, description, location, actionAuth);
+						logger.info("Event created on the calendar of the user " + user.getUsername());
 						break;
 					case "twitter" :
 						String tweet = "";
@@ -367,10 +316,11 @@ public class FacebookTask {
 								}
 								try{
 									facebookUtil.publish_new_post(message, actionAuth.getAccessToken());
+									logger.info("A new post has been submitted on the Facebook page of the user " + user.getUsername());
+
 								}
-								catch(com.restfb.exception.FacebookOAuthException e){
-									//do nothing, it is just spamming
-									System.out.println("FACEBOOK SPAMMING");
+								catch(FacebookOAuthException e){
+									logger.error("Too many post in a short time on the Facebook page of the user " + user.getUsername(), e);
 								}
 							}
 							break;
@@ -399,9 +349,10 @@ public class FacebookTask {
 									}		
 								}
 								gmailUtil.sendEmail(to, subject, body, actionAuth);
+								logger.info("Email sent from Gmail account of " + user.getUsername() + " to " + to);
 							}
 							break;
-						case "calendar" :
+						case "gcalendar" :
 							for(String post : new_posts){
 								String title = "";
 								String location = "";
@@ -458,6 +409,7 @@ public class FacebookTask {
 								end.setTimeZone(timezone);
 	
 								gCalendarUtil.createEvent(start, end, title, description, location, actionAuth);
+								logger.info("Event created on the calendar of the user " + user.getUsername());
 							}
 							break;
 						case "twitter" :
@@ -490,7 +442,7 @@ public class FacebookTask {
 				}
 				
 			}catch (Exception e){
-				e.printStackTrace();
+				logger.error(e.getMessage(), e);
 				continue;
 			}
 		}
