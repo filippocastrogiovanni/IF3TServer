@@ -45,9 +45,9 @@ public class FacebookUtil {
 		ChannelStatus css = channelStatusService.readChannelStatusByRecipeId(recipe_id);
 		if(css == null){
 			Long timestamp = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
-			channelStatusService.createNewChannelStatus(recipe_id, timestamp);
+			css = channelStatusService.createNewChannelStatus(recipe_id, timestamp);
 		}
-		ChannelStatus old_cs = channelStatusService.readChannelStatusByRecipeId(recipe_id);
+		//ChannelStatus old_cs = channelStatusService.readChannelStatusByRecipeId(recipe_id);
 		Long since_ref = css.getFacebookSinceRef();
 		if(since_ref == null || since_ref == 0){
 			since_ref = css.getSinceRef();	
@@ -78,8 +78,8 @@ public class FacebookUtil {
 		}
 		
 		since_ref = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
-		old_cs.setFacebookSinceRef(since_ref);	
-		channelStatusService.updateChannelStatus(old_cs);	
+		css.setFacebookSinceRef(since_ref);	
+		channelStatusService.updateChannelStatus(css);	
 		
 		return new_posts;
 	}
