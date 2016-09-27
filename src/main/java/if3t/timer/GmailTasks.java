@@ -5,6 +5,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -53,6 +55,7 @@ public class GmailTasks {
 	private ChannelStatusService channelStatusService;
 	@Value("${app.scheduler.value}")
 	private long rate;
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 
 	@Scheduled(fixedRateString = "${app.scheduler.value}")
 	public void gmailScheduler(){
@@ -70,12 +73,15 @@ public class GmailTasks {
 				//Checking if the access token of the trigger channel is expired
 				Calendar now = Calendar.getInstance();
 				if(triggerAuth == null || triggerAuth.getExpireDate()*1000 <= now.getTimeInMillis()){
+					logger.info("Gmail channel not authorized or expired for the user " + user.getUsername());
 					continue;
 				}
 
 				//Checking if the access token of the action channel is not present
-				if(actionAuth == null)
+				if(actionAuth == null){
+					logger.info("Action channel (" + actionChannel.getKeyword() + ") is not enabled for the user " + user.getUsername());
 					continue;
+				}
 
 				List<TriggerIngredient> triggerIngredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
 
@@ -97,9 +103,10 @@ public class GmailTasks {
 
 					//Checking if the access token of the action channel is expired
 					now = Calendar.getInstance();
-					if(actionAuth.getExpireDate() == null || actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())
+					if(actionAuth.getExpireDate() == null || actionAuth.getExpireDate()*1000 <= now.getTimeInMillis()){
+						logger.info("Action channel (" + actionChannel.getKeyword() + "): token expired for the user " + user.getUsername());
 						continue;
-	
+					}
 					switch(recipe.getAction().getChannel().getKeyword()){
 						case "gmail" :
 							for(Message message : messages){
@@ -130,6 +137,7 @@ public class GmailTasks {
 									}
 								}
 								gmailUtil.sendEmail(to, subject, body, actionAuth);
+								logger.info("Email sent from Gmail account of " + user.getUsername() + " to " + to);
 							}
 							break;
 						case "gcalendar" :
@@ -188,6 +196,7 @@ public class GmailTasks {
 								end.setTimeZone(timezone);
 		
 								gCalendarUtil.createEvent(start, end, title, description, location, actionAuth);
+								logger.info("Event created on the calendar of the user " + user.getUsername());
 							}
 							break;
 						case "facebook" :
@@ -205,10 +214,10 @@ public class GmailTasks {
 								}
 								try{
 									facebookUtil.publish_new_post(post, actionAuth.getAccessToken());
+									logger.info("A new post has been submitted on the Facebook page of the user " + user.getUsername());
 								}
 								catch(com.restfb.exception.FacebookOAuthException e){
-									//do nothing, it is just spamming
-									System.out.println("FACEBOOK SPAMMING");
+									logger.error("Too many post in a short time on the Facebook page of the user " + user.getUsername(), e);
 								}
 							}
 							break;
@@ -240,7 +249,7 @@ public class GmailTasks {
 					}
 				}
 			}catch (Exception e){
-				e.printStackTrace();
+				logger.error(e.getMessage(), e);
 				continue;
 			}
 		}
