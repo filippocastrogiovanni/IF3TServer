@@ -469,7 +469,7 @@ public class RecipeServiceImpl implements RecipeService
 			} 
 			catch (ParseException ex) 
 			{
-			    System.err.println(ex.getMessage());
+			    logger.error((ex.getMessage()));
 			    return false;
 			}
 			
