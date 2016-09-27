@@ -22,11 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.restfb.DefaultFacebookClient;
-import com.restfb.DefaultLegacyFacebookClient;
-import com.restfb.FacebookClient;
-import com.restfb.Parameter;
-
 import if3t.apis.FacebookAuthRequest;
 import if3t.apis.FacebookTokenRequest;
 import if3t.apis.FacebookTokenResponse;
@@ -61,7 +56,7 @@ public class FacebookController {
 	@ResponseStatus(value = HttpStatus.OK)
 	@RequestMapping(value = "/facebook/auth", method = RequestMethod.GET)
 	public Response facebookAuth() throws NotLoggedInException, NoPermissionException {
-		System.out.println("Server has received a token request");
+//		System.out.println("Server has received a token request");
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth == null)
@@ -94,7 +89,7 @@ public class FacebookController {
 			@RequestParam(value = "error", required = false) String error)
 			throws NotLoggedInException, NoPermissionException, URISyntaxException {
 		
-		System.out.println("Server has received a authresponse from Facebook");
+//		System.out.println("Server has received a authresponse from Facebook");
 
 		if (error != null) {
 			// TODO creare GMAil exception
@@ -143,7 +138,7 @@ public class FacebookController {
 		        entity, 
 		        String.class);
 		FacebookTokenResponse facebookRS = new FacebookTokenResponse(response.getBody());
-		System.out.println(response.getBody());
+//		System.out.println(response.getBody());
 
 
 		if(!facebookRS.isValid())
