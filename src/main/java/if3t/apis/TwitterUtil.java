@@ -146,7 +146,7 @@ public class TwitterUtil
 	
 	public String replaceKeywords(String text, Long triggerId, List<TriggerIngredient> trigIngrList, Status tweet, int maxLength)
 	{
-		String target;
+		String target, value;
 		Set<String> validKeywords = createRecipeService.readChannelKeywords(triggerId, "twitter");
 		
 		for (String vk : validKeywords)
@@ -157,12 +157,23 @@ public class TwitterUtil
 			{
 				if (ti.getParam().getKeyword().equals(vk))
 				{
-					text = text.replace(target, !vk.equals("tweet") ? ti.getValue() : printTriggeredTweet(tweet));
+					if (vk.equals("hashtag")) {
+						value = (!ti.getValue().startsWith("#")) ? "#" + ti.getValue() : ti.getValue();
+					}
+					else if (vk.equals("user")) {
+						value = (!ti.getValue().startsWith("@")) ? "#" + ti.getValue() : ti.getValue();
+					}
+					else {
+						value = ti.getValue();
+					}
+					
+					text = text.replace(target, value);
 					break;
 				}
 			}
 		}
 		
+		text = text.replace("[tweet]", printTriggeredTweet(tweet));
 		return (maxLength < 0 || text.length() <= maxLength) ? text : text.substring(0, maxLength - 4).concat(" ...");
 	}
 }
