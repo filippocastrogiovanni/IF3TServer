@@ -88,11 +88,9 @@ public class GcalendarTask {
 				List<Event> events = new ArrayList<>();
 				switch(triggerParam.getKeyword()){
 					case "add" :
-						System.out.println("add case");
 						events = gCalendarUtil.checkEventsAdded(triggerAuth, recipe, triggerIngredient.getValue());
 						break;
 					case "start" :
-						System.out.println("start case");
 						events = gCalendarUtil.checkEventsStarted(triggerAuth, recipe, triggerIngredient.getValue());
 						break;
 				}
