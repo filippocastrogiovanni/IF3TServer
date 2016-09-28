@@ -1,5 +1,7 @@
 package if3t.entities;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -7,8 +9,11 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name="timezones")
-public class Timezone {
+public class Timezone implements Serializable{
 
+
+	private static final long serialVersionUID = -1040739051293049626L;
+	
 	@Id
     @Column(name = "id_timezone", nullable = false)
     private Long id;
