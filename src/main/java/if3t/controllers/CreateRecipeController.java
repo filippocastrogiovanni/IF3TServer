@@ -74,7 +74,7 @@ public class CreateRecipeController
 	}
 	
 	@ResponseStatus(value = HttpStatus.OK)
-	@RequestMapping(value="/channel_keywords/{keyword}", method=RequestMethod.GET)
+	@RequestMapping(value="/channel_keywords/{triggerId}/{keyword}", method=RequestMethod.GET)
 	public Set<String> getChannelKeywords(@PathVariable Long triggerId, @PathVariable String keyword) {
 		return createRecipeService.readChannelKeywords(triggerId, keyword);
 	}
