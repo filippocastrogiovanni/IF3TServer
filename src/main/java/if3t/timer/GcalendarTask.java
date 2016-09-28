@@ -58,7 +58,6 @@ public class GcalendarTask {
 	
 	@Scheduled(/*initialDelay = 4 * 30 * 1000,*/ fixedRateString = "${app.scheduler.value}")
 	public void gCalendarScheduler(){
-		logger.info("Google Calendar Task started");
 		List<Recipe> gCalendarTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gcalendar");
 		for(Recipe recipe: gCalendarTriggerRecipes){
 			try{
@@ -99,6 +98,7 @@ public class GcalendarTask {
 				}
 				if(events.isEmpty())
 					logger.info("Google Calendar Task: found 0 events");
+				
 				if(!events.isEmpty()){
 					logger.info("Google Calendar Task: found " + events.size() + " events");
 					List<ActionIngredient> actionIngredients = actionIngredientService.getRecipeActionIngredients(recipe.getId());

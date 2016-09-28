@@ -72,7 +72,7 @@ public class FacebookTask {
 				//Checking if the access token of the trigger channel is expired
 				Calendar now = Calendar.getInstance();
 				if(triggerAuth == null || triggerAuth.getExpireDate()*1000 <= now.getTimeInMillis()){
-					logger.info("Gmail channel not authorized or expired for the user " + user.getUsername());
+					logger.info("Facebook channel not authorized or expired for the user " + user.getUsername());
 					continue;
 				}
 

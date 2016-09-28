@@ -98,8 +98,12 @@ public class GmailTasks {
 					timestamp = channelStatus.getSinceRef();
 	
 				List<Message> messages = gmailUtil.checkEmailReceived(triggerAuth, triggerIngredients, recipe);
-
+				
+				if(messages.isEmpty())
+					logger.info("Gmail Task: found 0 events");
+				
 				if(messages.size() > 0){
+					logger.info("Gmail Task: found " + messages.size() + " events");
 					messages = gmailUtil.getMessages(triggerAuth, messages);
 					List<ActionIngredient> actionIngredients = actionIngredientService.getRecipeActionIngredients(recipe.getId());
 
