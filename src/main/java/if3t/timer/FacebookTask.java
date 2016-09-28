@@ -348,7 +348,10 @@ public class FacebookTask {
 												subject = actionIngredient.getValue();
 											break;
 										case "body" :
-											body = actionIngredient.getValue();
+											if(actionParam.getCanReceive())
+												body = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), post);
+											else
+												body = actionIngredient.getValue();
 											break;
 									}		
 								}

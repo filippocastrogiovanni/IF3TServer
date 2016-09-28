@@ -42,7 +42,17 @@ public class FacebookUtil {
 	//TRIGGER: NEW POST BY USER
 	public ArrayList<String> calculate_new_posts_by_user_number(String access_token, Long recipe_id) throws Exception{
 		ArrayList<String> new_posts = new ArrayList<String>();
-		ChannelStatus css = channelStatusService.readChannelStatusByRecipeId(recipe_id);
+		
+		Long timestamp = 0L;
+		ChannelStatus channelStatus = channelStatusService.readChannelStatusByRecipeId(recipe_id);
+		if(channelStatus == null){
+			timestamp = Calendar.getInstance().getTimeInMillis() - (fixedRateString);
+			channelStatus = channelStatusService.createNewChannelStatus(recipe_id, timestamp);
+		}
+		else
+			timestamp = channelStatus.getSinceRef();
+		
+		/*ChannelStatus css = channelStatusService.readChannelStatusByRecipeId(recipe_id);
 		if(css == null){
 			Long timestamp = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
 			css = channelStatusService.createNewChannelStatus(recipe_id, timestamp);
@@ -51,12 +61,12 @@ public class FacebookUtil {
 		Long since_ref = css.getFacebookSinceRef();
 		if(since_ref == null || since_ref == 0){
 			since_ref = css.getSinceRef();	
-		}
+		}*/
 		
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(
-			"https://graph.facebook.com/v2.7/me/posts?fields=message,type&since="+ since_ref + "&access_token="+access_token);
+			"https://graph.facebook.com/v2.7/me/posts?fields=message,type&since="+ timestamp/1000 + "&access_token="+access_token);
 		/*
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(
 			 "https://graph.facebook.com/v2.7/me/posts?fields=message,type&since=1470000000&access_token="+access_token);
@@ -77,9 +87,13 @@ public class FacebookUtil {
 			}
 		}
 		
-		since_ref = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
+		timestamp += fixedRateString;
+		channelStatus.setSinceRef(timestamp);
+		channelStatusService.updateChannelStatus(channelStatus);
+		
+		/*since_ref = ( Calendar.getInstance().getTimeInMillis() - (fixedRateString) ) / 1000;
 		css.setFacebookSinceRef(since_ref);	
-		channelStatusService.updateChannelStatus(css);	
+		channelStatusService.updateChannelStatus(css);	*/
 		
 		return new_posts;
 	}
@@ -223,7 +237,7 @@ public class FacebookUtil {
 		String ingredientReplaced = ingredient;
 		Set<String> validKeywords = createRecipeService.readChannelKeywords(triggerId, "facebook");
 		int index = 0;
-		
+
 		while(true){
 			int squareOpenIndex = ingredient.indexOf('[', index);
 			int squareCloseIndex = ingredient.indexOf(']', squareOpenIndex);
