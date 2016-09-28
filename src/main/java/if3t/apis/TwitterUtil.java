@@ -47,8 +47,14 @@ public class TwitterUtil
 		String screenName = null;
 		Twitter twitter = getTwitterInstance(userId, auth);
 		
-		if (hashtag != null && hashtag.length() > 0) {
-			tweet.concat((hashtag.startsWith("#") ? " " : " #") + hashtag);
+		if (hashtag != null && hashtag.length() > 0) 
+		{
+			hashtag = hashtag.startsWith("#") ? hashtag : "#" + hashtag;
+			tweet += " " + hashtag;
+			
+			if (tweet.length() > 140) {
+				tweet = tweet.substring(0, 136).concat(" ...");
+			}
 		}
 		   
 		try 
@@ -161,7 +167,7 @@ public class TwitterUtil
 						value = (!ti.getValue().startsWith("#")) ? "#" + ti.getValue() : ti.getValue();
 					}
 					else if (vk.equals("user")) {
-						value = (!ti.getValue().startsWith("@")) ? "#" + ti.getValue() : ti.getValue();
+						value = (!ti.getValue().startsWith("@")) ? "@" + ti.getValue() : ti.getValue();
 					}
 					else {
 						value = ti.getValue();
