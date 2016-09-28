@@ -403,7 +403,7 @@ public class FacebookTask {
 									}
 								}
 								
-								SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+								SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 	
 								String startDate = startDateString + " " + startTimeString;
 								String endDate = endDateString + " " + endTimeString;
