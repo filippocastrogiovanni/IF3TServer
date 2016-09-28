@@ -77,23 +77,6 @@ public class GoogleCalendarUtil {
 		
 		response.disconnect();
 		return (response.getStatusCode() < 300 && response.getStatusCode()>= 200)? true : false;
-		
-		/*String start = createUsableDateTime(startDate);
-		String end = createUsableDateTime(endDate);
-		String body = createJsonBody(start, end, title, location, description);
-		
-		RestTemplate restTemplate = new RestTemplate();
-		MediaType mediaType = new MediaType("application", "json");
-
-		RequestEntity<String> request = RequestEntity
-				.post(new URI("https://www.googleapis.com/calendar/v3/calendars/primary/events"))
-				.contentLength(body.getBytes().length)
-				.contentType(mediaType)
-				.header("Authorization", auth.getTokenType() + " " + auth.getAccessToken())
-				.body(body);
-
-		ResponseEntity<String> messageResponse = restTemplate.exchange(request, String.class);
-		return messageResponse.getStatusCode().is2xxSuccessful()? true : false;*/
 	}
 	
 	public List<Event> checkEventsAdded(Authorization auth, Recipe recipe, String ingredientValue) throws IOException{
@@ -223,9 +206,9 @@ public class GoogleCalendarUtil {
         return targetEvents;
 	}
 	
-	public String validateAndReplaceKeywords(String ingredient, int maxLength, Event event){
+	public String validateAndReplaceKeywords(String ingredient, int maxLength, Event event, Long triggerId){
 		String ingredientReplaced = ingredient;
-		Set<String> validKeywords = createRecipeService.readChannelKeywords("gcalendar");
+		Set<String> validKeywords = createRecipeService.readChannelKeywords(triggerId, "gcalendar");
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 		int index = 0;
@@ -284,44 +267,4 @@ public class GoogleCalendarUtil {
 		
 		return ingredientReplaced;
 	}
-	
-	/*private static String createJsonBody(String start, String end, String title, String location, String description) throws JsonProcessingException {
-		GCalendarDatePojo startPOJO = new GCalendarDatePojo();
-		startPOJO.setDateTime(start);
-		GCalendarDatePojo endPOJO = new GCalendarDatePojo();
-		endPOJO.setDateTime(end);
-		
-		GCalendarEventPOJO eventPOJO = new GCalendarEventPOJO();
-		eventPOJO.setStart(startPOJO);
-		eventPOJO.setEnd(endPOJO);
-		if(title != null && !title.equals(""))
-			eventPOJO.setTitle(title);
-		if(location != null && !location.equals(""))
-			eventPOJO.setLocation(location);
-		if(description != null && !description.equals(""))
-			eventPOJO.setDescription(description);
-		
-		ObjectMapper mapper = new ObjectMapper();
-		return mapper.writeValueAsString(eventPOJO);
-	}
-
-	private static String createUsableDateTime(Calendar startDate) {
-		StringBuilder startBuilder = new StringBuilder();
-		startBuilder.append(startDate.get(Calendar.YEAR));
-		startBuilder.append("-");
-		startBuilder.append(startDate.get(Calendar.MONTH) + 1);
-		startBuilder.append("-");
-		startBuilder.append(startDate.get(Calendar.DAY_OF_MONTH));
-		startBuilder.append("T");
-		startBuilder.append(startDate.get(Calendar.HOUR_OF_DAY));
-		startBuilder.append(":");
-		startBuilder.append(startDate.get(Calendar.MINUTE));
-		startBuilder.append(":");
-		startBuilder.append(startDate.get(Calendar.SECOND));
-		int timeZone = startDate.get(Calendar.ZONE_OFFSET)/60/60/1000;
-		startBuilder.append(timeZone > 0? "+" + timeZone : timeZone);
-		startBuilder.append(":00");
-		
-		return startBuilder.toString();
-	}*/
 }

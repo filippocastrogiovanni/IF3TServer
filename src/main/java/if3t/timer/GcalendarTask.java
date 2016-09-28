@@ -58,6 +58,7 @@ public class GcalendarTask {
 	
 	@Scheduled(initialDelay = 4 * 30 * 1000, fixedRateString = "${app.scheduler.value}")
 	public void gCalendarScheduler(){
+		logger.info("Google Calendat Task started");
 		List<Recipe> gCalendarTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gcalendar");
 		for(Recipe recipe: gCalendarTriggerRecipes){
 			try{
@@ -96,6 +97,7 @@ public class GcalendarTask {
 				}
 				
 				if(!events.isEmpty()){
+					logger.info("Google Calendat Task: found " + events.size() + " events");
 					List<ActionIngredient> actionIngredients = actionIngredientService.getRecipeActionIngredients(recipe.getId());
 					
 					//Checking if the access token of the action channel is expired
@@ -104,7 +106,9 @@ public class GcalendarTask {
 						logger.info("Action channel (" + actionChannel.getKeyword() + "): token expired for the user " + user.getUsername());
 						continue;
 					}
-				
+					
+					Long triggerId = recipe.getTrigger().getId();
+					
 					switch(recipe.getAction().getChannel().getKeyword()){
 						case "gmail" :
 							for(Event event : events){
@@ -121,13 +125,13 @@ public class GcalendarTask {
 											break;
 										case "subject" :
 											if(actionParam.getCanReceive())
-												subject = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+												subject = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event, triggerId);
 											else
 												subject = actionIngredient.getValue();
 											break;
 										case "body" :
 											if(actionParam.getCanReceive())
-												body = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+												body = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event, triggerId);
 											else
 												body = actionIngredient.getValue();
 											break;
@@ -165,13 +169,13 @@ public class GcalendarTask {
 											break;
 										case "title" :
 											if(actionParam.getCanReceive())
-												title = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+												title = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event, triggerId);
 											else
 												title = actionIngredient.getValue();
 											break;
 										case "description" :
 											if(actionParam.getCanReceive())
-												description = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+												description = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event, triggerId);
 											else
 												description = actionIngredient.getValue();
 											break;
@@ -181,7 +185,7 @@ public class GcalendarTask {
 									}
 								}
 								
-								SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+								SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 	
 								String startDate = startDateString + " " + startTimeString;
 								String endDate = endDateString + " " + endTimeString;
@@ -204,7 +208,7 @@ public class GcalendarTask {
 		
 									if(actionParam.getKeyword().equals("post")){
 										if(actionParam.getCanReceive())
-											post = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+											post = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event, triggerId);
 										else
 											post = actionIngredient.getValue();
 									}		
@@ -228,13 +232,13 @@ public class GcalendarTask {
 									switch(actionParam.getKeyword()){
 										case "tweet" :
 											if(actionParam.getCanReceive())
-												tweet = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+												tweet = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event, triggerId);
 											else
 												tweet = actionIngredient.getValue();
 											break;
 										case "hashtag" :
 											if(actionParam.getCanReceive())
-												hashtag = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event);
+												hashtag = gCalendarUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), event, triggerId);
 											else
 												hashtag = actionIngredient.getValue();
 											break;
