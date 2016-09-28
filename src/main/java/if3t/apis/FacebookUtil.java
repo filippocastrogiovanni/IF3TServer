@@ -219,9 +219,9 @@ public class FacebookUtil {
 		return publishMessageResponse.getType();
 	}
 	
-	public String validateAndReplaceKeywords(String ingredient, int maxLength, String post){
+	public String validateAndReplaceKeywords(String ingredient, Long triggerId, int maxLength, String post){
 		String ingredientReplaced = ingredient;
-		Set<String> validKeywords = createRecipeService.readChannelKeywords("facebook");
+		Set<String> validKeywords = createRecipeService.readChannelKeywords(triggerId, "facebook");
 		int index = 0;
 		
 		while(true){

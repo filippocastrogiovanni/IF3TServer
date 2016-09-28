@@ -58,7 +58,7 @@ public class FacebookTask {
 	private ConcurrentHashMap<String, String> couples_access_token_locations = new ConcurrentHashMap<String, String>();
 
 	@Scheduled(initialDelay = 5 * 30 * 1000, fixedRateString = "${app.scheduler.value}")
-	public void gmailScheduler(){
+	public void facebookScheduler(){
 		List<Recipe> facebookTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("facebook");
 		for(Recipe recipe: facebookTriggerRecipes){
 			try{
@@ -82,6 +82,7 @@ public class FacebookTask {
 					continue;
 				}
 				
+				long triggerId = recipe.getTrigger().getId();
 				//take the trigger ingredients related to this facebook trigger
 				//List<TriggerIngredient> related_facebook_ingredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
 				List<TriggerIngredient> related_facebook_ingredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
@@ -309,7 +310,7 @@ public class FacebookTask {
 	
 									if(actionParam.getKeyword().equals("post")){
 										if(actionParam.getCanReceive())
-											message = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), post);
+											message = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), post);
 										else
 											message = actionIngredient.getValue();
 									}
@@ -339,7 +340,7 @@ public class FacebookTask {
 											break;
 										case "subject" :
 											if(actionParam.getCanReceive())
-												subject = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), post);
+												subject = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), post);
 											else
 												subject = actionIngredient.getValue();
 											break;
@@ -380,13 +381,13 @@ public class FacebookTask {
 											break;
 										case "title" :
 											if(actionParam.getCanReceive())
-												title = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), post);
+												title = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), post);
 											else
 												title = actionIngredient.getValue();
 											break;
 										case "description" :
 											if(actionParam.getCanReceive())
-												description = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), post);
+												description = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), post);
 											else
 												description = actionIngredient.getValue();
 											break;
@@ -423,13 +424,13 @@ public class FacebookTask {
 									switch(actionParam.getKeyword()){
 										case "tweet" :
 											if(actionParam.getCanReceive())
-												tweet = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), post);
+												tweet = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), post);
 											else
 												tweet = actionIngredient.getValue();
 											break;
 										case "hashtag" :
 											if(actionParam.getCanReceive())
-												hashtag = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), post);
+												hashtag = facebookUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), post);
 											else
 												hashtag = actionIngredient.getValue();
 											break;

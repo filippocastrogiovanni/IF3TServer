@@ -161,9 +161,9 @@ public class GmailUtil {
         return message;
 	}
 	
-	public String validateAndReplaceKeywords(String ingredient, int maxLength, Message message){
+	public String validateAndReplaceKeywords(String ingredient, Long triggerId, int maxLength, Message message){
 		String ingredientReplaced = ingredient;
-		Set<String> validKeywords = createRecipeService.readChannelKeywords("gmail");
+		Set<String> validKeywords = createRecipeService.readChannelKeywords(triggerId, "gmail");
 		int index = 0;
 		
 		String from = "";

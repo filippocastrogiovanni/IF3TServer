@@ -84,6 +84,7 @@ public class GmailTasks {
 					continue;
 				}
 
+				long triggerId = recipe.getTrigger().getId();
 				List<TriggerIngredient> triggerIngredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
 
 				Long timestamp = 0l;
@@ -124,13 +125,13 @@ public class GmailTasks {
 											break;
 										case "subject" :
 											if(actionParam.getCanReceive())
-												subject = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+												subject = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), message);
 											else
 												subject = actionIngredient.getValue();
 											break;
 										case "body" :
 											if(actionParam.getCanReceive())
-												body = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+												body = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), message);
 											else
 												body = actionIngredient.getValue();
 											break;	
@@ -168,13 +169,13 @@ public class GmailTasks {
 											break;
 										case "title" :
 											if(actionParam.getCanReceive())
-												title = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+												title = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), message);
 											else
 												title = actionIngredient.getValue();
 											break;
 										case "description" :
 											if(actionParam.getCanReceive())
-												description = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+												description = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), message);
 											else
 												description = actionIngredient.getValue();
 											break;
@@ -207,7 +208,7 @@ public class GmailTasks {
 		
 									if(actionParam.getKeyword().equals("post")){
 										if(actionParam.getCanReceive())
-											post = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+											post = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), message);
 										else
 											post = actionIngredient.getValue();
 									}
@@ -231,13 +232,13 @@ public class GmailTasks {
 									switch(actionParam.getKeyword()){
 										case "tweet" :
 											if(actionParam.getCanReceive())
-												tweet = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+												tweet = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), message);
 											else
 												tweet = actionIngredient.getValue();
 											break;
 										case "hashtag" :
 											if(actionParam.getCanReceive())
-												hashtag = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), actionParam.getMaxLength(), message);
+												hashtag = gmailUtil.validateAndReplaceKeywords(actionIngredient.getValue(), triggerId, actionParam.getMaxLength(), message);
 											else
 												hashtag = actionIngredient.getValue();
 											break;

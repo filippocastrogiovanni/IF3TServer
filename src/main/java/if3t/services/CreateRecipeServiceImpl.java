@@ -97,11 +97,11 @@ public class CreateRecipeServiceImpl implements CreateRecipeService
 	}
 
 	@Override
-	public Set<String> readChannelKeywords(String keyword) 
+	public Set<String> readChannelKeywords(Long triggerId, String keyword) 
 	{
 		Set<String> keywords = new HashSet<String>();
 		
-		for (ParametersTriggers pt : parametersTriggersRepository.findByChannel_keywordAndIsSendable(keyword, true))
+		for (ParametersTriggers pt : parametersTriggersRepository.findByTrigger_idAndIsSendable(triggerId, true))
 		{
 			keywords.add(pt.getKeyword());
 		}
