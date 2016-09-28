@@ -190,7 +190,7 @@ public class TwitterTask
 						try
 						{
 							TimeZone timezone = TimeZone.getTimeZone(user.getTimezone().getZone_id());
-							SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+							SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 		
 							String startDate = startDateString + " " + startTimeString;
 							String endDate = endDateString + " " + endTimeString;
