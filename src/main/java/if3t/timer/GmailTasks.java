@@ -58,7 +58,7 @@ public class GmailTasks {
 	private long rate;
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 
-	@Scheduled(initialDelay = 3 * 30 * 1000, fixedRateString = "${app.scheduler.value}")
+	@Scheduled(/*initialDelay = 3 * 30 * 1000, */fixedRate = 5 * 60 * 1000)
 	public void gmailScheduler(){
 
 		List<Recipe> gmailTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gmail");

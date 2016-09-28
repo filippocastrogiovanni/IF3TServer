@@ -54,7 +54,7 @@ public class TwitterTask
 	private AuthorizationService authService;
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 	
-	@Scheduled(initialDelay = 1 * 30 * 1000, fixedRateString = "${app.scheduler.value}")
+	@Scheduled(/*initialDelay = 1 * 30 * 1000, */fixedRate = 5 * 60 * 1000)
     public void twitterScheduler() 
 	{		
 		for (Recipe recipe : recipeService.getEnabledRecipesByTriggerChannel("twitter"))

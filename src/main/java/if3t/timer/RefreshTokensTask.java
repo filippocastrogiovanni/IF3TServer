@@ -34,7 +34,7 @@ public class RefreshTokensTask {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 
-	@Scheduled(fixedRateString = "${app.scheduler.value}")
+	@Scheduled(fixedRate = 5 * 60 * 1000)
 	public void gmailTokenRefresh() {
 		log.info("Gmail refresh: start check");
 

@@ -57,7 +57,7 @@ public class FacebookTask {
 	private ConcurrentHashMap<String, String> couples_access_token_profile_pictures = new ConcurrentHashMap<String, String>();
 	private ConcurrentHashMap<String, String> couples_access_token_locations = new ConcurrentHashMap<String, String>();
 
-	@Scheduled(initialDelay = 5 * 30 * 1000, fixedRateString = "${app.scheduler.value}")
+	@Scheduled(/*initialDelay = 5 * 30 * 1000, */fixedRate = 5 * 60 * 1000)
 	public void facebookScheduler(){
 		List<Recipe> facebookTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("facebook");
 		for(Recipe recipe: facebookTriggerRecipes){

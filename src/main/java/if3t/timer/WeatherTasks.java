@@ -58,7 +58,7 @@ public class WeatherTasks
 	private ActionIngredientService actionIngrService;
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 	
-	@Scheduled(initialDelay = 2 * 30 * 1000, fixedRateString = "${app.scheduler.value.weather}")
+	@Scheduled(/*initialDelay = 2 * 30 * 1000, */fixedRate = 15 * 60 * 1000)
 	public void tomorrowWeatherScheduler()
 	{		
 		for (Recipe recipe : recipeService.getEnabledRecipesByTriggerChannel("weather"))
