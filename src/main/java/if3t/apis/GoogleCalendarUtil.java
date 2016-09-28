@@ -48,8 +48,10 @@ public class GoogleCalendarUtil {
     
 	public boolean createEvent(Calendar startDate, Calendar endDate, String title, String description, String location, Authorization auth) throws InvalidParametersException, URISyntaxException, IOException{
 		if(startDate == null || endDate == null)
-			throw new InvalidParametersException("startDate and endDate are required fields and can not be null!");
-		
+			throw new InvalidParametersException("ERROR: startDate and endDate are required fields and can not be null!");
+		if(startDate.after(endDate))
+			throw new InvalidParametersException("ERROR: startDate can't be after endDate!");
+
 		GoogleCredential credential = new GoogleCredential().setAccessToken(auth.getAccessToken());
 		com.google.api.services.calendar.Calendar calendar = 
 				 new com.google.api.services.calendar.Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
@@ -60,7 +62,7 @@ public class GoogleCalendarUtil {
 		EventDateTime end = new EventDateTime();
 		start.setDateTime(new DateTime(startDate.getTimeInMillis()));
 		end.setDateTime(new DateTime(endDate.getTimeInMillis()));
-		
+
 		Event event = new Event();
 		event.setStart(start);
 		event.setEnd(end);
@@ -150,15 +152,21 @@ public class GoogleCalendarUtil {
 		
 		ChannelStatus channelStatus = channelStatusService.readChannelStatusByRecipeId(recipe.getId());
 		
-		Long timestamp = 0L;
+		Long timestampMax = 0L;
+		Long timestampMin = 0L;
 		if(channelStatus == null){
-			timestamp = Calendar.getInstance().getTimeInMillis() - (rate);
-			channelStatus = channelStatusService.createNewChannelStatus(recipe.getId(), timestamp);
+			timestampMax = Calendar.getInstance().getTimeInMillis();
+			timestampMin = Calendar.getInstance().getTimeInMillis() - (rate);
+			channelStatus = channelStatusService.createNewChannelStatus(recipe.getId(), timestampMin, timestampMax);
 		}
-		else
-			timestamp = channelStatus.getSinceRef();
+		else{
+			timestampMin = channelStatus.getSinceRef();
+			timestampMax = channelStatus.getFacebookSinceRef();
+		}
 		
-		DateTime dateMin = new DateTime(timestamp);
+		DateTime dateMax = new DateTime(timestampMax);
+		DateTime dateMin = new DateTime(timestampMin);
+
 		Events events = null;
 		if(channelStatus.getPageToken() == null){
 			events = calendar.events()
@@ -166,6 +174,7 @@ public class GoogleCalendarUtil {
 							.setMaxResults(50)
 							.setOrderBy("startTime")
 							.setSingleEvents(true)
+							.setTimeMax(dateMax)
 							.setTimeMin(dateMin)
 							.execute();
 		}
@@ -176,6 +185,7 @@ public class GoogleCalendarUtil {
 							.setOrderBy("startTime")
 							.setPageToken(channelStatus.getPageToken())
 							.setSingleEvents(true)
+							.setTimeMax(dateMax)
 							.setTimeMin(dateMin)
 							.execute();
 		}
@@ -183,14 +193,17 @@ public class GoogleCalendarUtil {
 		if(events.getNextPageToken() != null)
 			channelStatus.setPageToken(events.getNextPageToken());
 		
-		timestamp += rate;
-		channelStatus.setSinceRef(timestamp);
+		timestampMax += rate;
+		timestampMin += rate;
+		channelStatus.setSinceRef(timestampMin);
+		channelStatus.setFacebookSinceRef(timestampMax);
 		
 		channelStatusService.updateChannelStatus(channelStatus);
 		
 		List<Event> items = events.getItems();
-        if (items.size() == 0)
+        if (items.size() == 0){
             return items;
+        }
         if(ingredientValue == null || ingredientValue.equals(""))
         	return items;
 

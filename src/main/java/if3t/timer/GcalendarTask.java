@@ -56,9 +56,9 @@ public class GcalendarTask {
 	private long rate;
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 	
-	@Scheduled(initialDelay = 4 * 30 * 1000, fixedRateString = "${app.scheduler.value}")
+	@Scheduled(/*initialDelay = 4 * 30 * 1000,*/ fixedRateString = "${app.scheduler.value}")
 	public void gCalendarScheduler(){
-		logger.info("Google Calendat Task started");
+		logger.info("Google Calendar Task started");
 		List<Recipe> gCalendarTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gcalendar");
 		for(Recipe recipe: gCalendarTriggerRecipes){
 			try{
@@ -72,7 +72,7 @@ public class GcalendarTask {
 				//Checking if the access token of the trigger channel is expired
 				Calendar now = Calendar.getInstance();
 				if(triggerAuth == null || triggerAuth.getExpireDate()*1000 <= now.getTimeInMillis()){
-					logger.info("Gmail channel not authorized or expired for the user " + user.getUsername());
+					logger.info("Google Calendar channel not authorized or expired for the user " + user.getUsername());
 					continue;
 				}
 				
@@ -89,15 +89,18 @@ public class GcalendarTask {
 				List<Event> events = new ArrayList<>();
 				switch(triggerParam.getKeyword()){
 					case "add" :
+						System.out.println("add case");
 						events = gCalendarUtil.checkEventsAdded(triggerAuth, recipe, triggerIngredient.getValue());
 						break;
 					case "start" :
+						System.out.println("start case");
 						events = gCalendarUtil.checkEventsStarted(triggerAuth, recipe, triggerIngredient.getValue());
 						break;
 				}
-				
+				if(events.isEmpty())
+					logger.info("Google Calendar Task: found 0 events");
 				if(!events.isEmpty()){
-					logger.info("Google Calendat Task: found " + events.size() + " events");
+					logger.info("Google Calendar Task: found " + events.size() + " events");
 					List<ActionIngredient> actionIngredients = actionIngredientService.getRecipeActionIngredients(recipe.getId());
 					
 					//Checking if the access token of the action channel is expired
