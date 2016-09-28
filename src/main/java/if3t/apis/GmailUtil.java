@@ -87,33 +87,30 @@ public class GmailUtil {
 		for(TriggerIngredient triggerIngredient: triggerIngredients){
 			ParametersTriggers param = triggerIngredient.getParam();
 			if(param.getKeyword().equals("from_address"))
-				q.append("from:" + triggerIngredient.getValue());
+				q.append("from:" + triggerIngredient.getValue() + " ");
 			else
-				q.append(param.getKeyword() + ":" + triggerIngredient.getValue());
+				q.append(param.getKeyword() + ":" + triggerIngredient.getValue() + " ");
 		}
-		
+
 		Long timestamp = 0L;
 		ChannelStatus channelStatus = channelStatusService.readChannelStatusByRecipeId(recipe.getId());
 		if(channelStatus == null){
 			timestamp = Calendar.getInstance().getTimeInMillis() - (rate);
 			channelStatus = channelStatusService.createNewChannelStatus(recipe.getId(), timestamp);
 		}
+		q.append(" after:" + channelStatus.getSinceRef()/1000);
 		
-		ListMessagesResponse messageList = new ListMessagesResponse();
-		
-		if(channelStatus.getPageToken() == null){
-			q.append(" after:" + channelStatus.getSinceRef()/1000);
-			messageList = gmail.users()
-								.messages()
-								.list("me")
-								.setQ(q.toString())
-								.execute();
-		}
+		 ListMessagesResponse messageList = gmail.users()
+												.messages()
+												.list("me")
+												.setQ(q.toString())
+												.execute();
 		
 		timestamp += rate;
 		channelStatus.setSinceRef(timestamp);
 		channelStatusService.updateChannelStatus(channelStatus);
 		
+		System.out.println("q=" + q + " " + messageList.toPrettyString());
 		List<Message> messages = messageList.getMessages() == null? new ArrayList<Message>() : messageList.getMessages();
 		
 		return messages;
@@ -194,10 +191,10 @@ public class GmailUtil {
 			
 			if(validKeywords.contains(keyword)){
 				switch(keyword){
-					case "from" :
+					case "from_address" :
 						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", from);
 						break;
-					case "to" :
+					case "to_address" :
 						ingredientReplaced = ingredientReplaced.replace("[" + keyword + "]", to);
 						break;
 					case "subject" :

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +46,8 @@ public class GoogleCalendarUtil {
 	private CreateRecipeService createRecipeService;
     @Value("${app.scheduler.value}")
 	private long rate;
+    @Value("${app.server.timezone}")
+    private String zone;
     
 	public boolean createEvent(Calendar startDate, Calendar endDate, String title, String description, String location, Authorization auth) throws InvalidParametersException, URISyntaxException, IOException{
 		if(startDate == null || endDate == null)
@@ -88,6 +91,7 @@ public class GoogleCalendarUtil {
 				 .setApplicationName("IF3T")
 				 .build();
 		
+		TimeZone timezone = TimeZone.getTimeZone(zone);
 		ChannelStatus channelStatus = channelStatusService.readChannelStatusByRecipeId(recipe.getId());
 		
 		Long timestamp = 0L;
@@ -133,6 +137,13 @@ public class GoogleCalendarUtil {
 
         List<Event> targetEvents = new ArrayList<>();
         for (Event event : items) {
+        	Calendar created = Calendar.getInstance();
+        	created.setTimeInMillis(event.getCreated().getValue());
+        	DateTime create = new DateTime(created.getTime(), timezone);
+
+        	if(create.getValue() < dateMin.getValue())
+        		continue;
+        	
             if(	(event.getSummary() != null && event.getSummary().contains(ingredientValue)) ||
             	(event.getDescription() != null &&event.getDescription().contains(ingredientValue)) ||
             	(event.getLocation() != null && event.getLocation().contains(ingredientValue)))

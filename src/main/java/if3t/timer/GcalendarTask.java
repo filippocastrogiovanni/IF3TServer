@@ -103,7 +103,8 @@ public class GcalendarTask {
 					
 					//Checking if the access token of the action channel is expired
 					now = Calendar.getInstance();
-					if(actionAuth.getExpireDate() == null || actionAuth.getExpireDate()*1000 <= now.getTimeInMillis()){
+					if(!recipe.getAction().getChannel().getKeyword().equals("twitter") && 
+						(actionAuth.getExpireDate() == null || actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())){
 						logger.info("Action channel (" + actionChannel.getKeyword() + "): token expired for the user " + user.getUsername());
 						continue;
 					}
@@ -245,6 +246,7 @@ public class GcalendarTask {
 											break;
 									}
 								}
+								System.out.println(hashtag);
 								twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
 							}
 							break;

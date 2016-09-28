@@ -184,9 +184,12 @@ public class FacebookTask {
 
 				//Checking if the access token of the action channel is expired
 				now = Calendar.getInstance();
-				if(actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())
+				if(!recipe.getAction().getChannel().getKeyword().equals("twitter") && 
+					(actionAuth.getExpireDate() == null || actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())){
+					
+					logger.info("Action channel (" + actionChannel.getKeyword() + "): token expired for the user " + user.getUsername());
 					continue;
-				
+				}
 			
 				//we need to repeat the action for each new post, or just once 
 				if(situation != 0){ //not new_post as trigger

@@ -22,14 +22,12 @@ import if3t.apis.TwitterUtil;
 import if3t.entities.ActionIngredient;
 import if3t.entities.Authorization;
 import if3t.entities.Channel;
-import if3t.entities.ChannelStatus;
 import if3t.entities.ParametersActions;
 import if3t.entities.Recipe;
 import if3t.entities.TriggerIngredient;
 import if3t.entities.User;
 import if3t.services.ActionIngredientService;
 import if3t.services.AuthorizationService;
-import if3t.services.ChannelStatusService;
 import if3t.services.RecipeService;
 import if3t.services.TriggerIngredientService;
 
@@ -52,13 +50,11 @@ public class GmailTasks {
 	private ActionIngredientService actionIngredientService;
 	@Autowired
 	private AuthorizationService authService;
-	@Autowired
-	private ChannelStatusService channelStatusService;
 	@Value("${app.scheduler.value}")
 	private long rate;
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 
-	@Scheduled(/*initialDelay = 3 * 30 * 1000, */fixedRate = 5 * 60 * 1000)
+	@Scheduled(/*initialDelay = 3 * 30 * 1000, */fixedRate = 60 * 1000)
 	public void gmailScheduler(){
 		List<Recipe> gmailTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gmail");
 		for(Recipe recipe: gmailTriggerRecipes){
@@ -86,16 +82,6 @@ public class GmailTasks {
 				long triggerId = recipe.getTrigger().getId();
 				List<TriggerIngredient> triggerIngredients = triggerIngredientService.getRecipeTriggerIngredients(recipe.getId());
 
-				Long timestamp = 0l;
-
-				ChannelStatus channelStatus = channelStatusService.readChannelStatusByRecipeId(recipe.getId());
-				if(channelStatus == null){
-					timestamp = Calendar.getInstance().getTimeInMillis()- (rate);
-					channelStatus = channelStatusService.createNewChannelStatus(recipe.getId(), timestamp);
-				}
-				else
-					timestamp = channelStatus.getSinceRef();
-	
 				List<Message> messages = gmailUtil.checkEmailReceived(triggerAuth, triggerIngredients, recipe);
 				
 				if(messages.isEmpty())
@@ -108,7 +94,8 @@ public class GmailTasks {
 
 					//Checking if the access token of the action channel is expired
 					now = Calendar.getInstance();
-					if(actionAuth.getExpireDate() == null || actionAuth.getExpireDate()*1000 <= now.getTimeInMillis()){
+					if(!recipe.getAction().getChannel().getKeyword().equals("twitter") && 
+						(actionAuth.getExpireDate() == null || actionAuth.getExpireDate()*1000 <= now.getTimeInMillis())){
 						logger.info("Action channel (" + actionChannel.getKeyword() + "): token expired for the user " + user.getUsername());
 						continue;
 					}
