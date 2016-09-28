@@ -19,7 +19,7 @@ public class FacebookAuthRequest {
 		   -code (default). I dati della risposta sono parametri di URL contenenti il parametro code (una stringa criptata diversa per ogni richiesta di accesso). Si tratta del comportamento predefinito quando il parametro non viene specificato. È utile per la gestione del token da parte del server.
 		   -token. I dati della risposta sono un frammento di URL contenente un token d'accesso. Le app per computer devono usare questa impostazione per response_type. È utile per la gestione del token da parte del client.
 		 */
-		this.scope = "publish_actions,public_profile,user_friends,email,user_about_me,user_birthday,user_likes,user_location,user_photos,user_posts,status_update";
+		this.scope = "publish_actions,public_profile,user_friends,email,user_about_me,user_birthday,user_likes,user_location,user_photos,user_posts";
 	}
 		
 	public String getState() {

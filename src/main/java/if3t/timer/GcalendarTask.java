@@ -245,8 +245,7 @@ public class GcalendarTask {
 												hashtag = actionIngredient.getValue();
 											break;
 									}
-								}
-								System.out.println(hashtag);
+								} 
 								twitterUtil.postTweet(user.getId(), actionAuth, tweet, hashtag);
 							}
 							break;

@@ -98,6 +98,9 @@ public class GmailUtil {
 			timestamp = Calendar.getInstance().getTimeInMillis() - (rate);
 			channelStatus = channelStatusService.createNewChannelStatus(recipe.getId(), timestamp);
 		}
+		else
+			timestamp = channelStatus.getSinceRef();
+		
 		q.append(" after:" + channelStatus.getSinceRef()/1000);
 		
 		 ListMessagesResponse messageList = gmail.users()
@@ -110,7 +113,6 @@ public class GmailUtil {
 		channelStatus.setSinceRef(timestamp);
 		channelStatusService.updateChannelStatus(channelStatus);
 		
-		System.out.println("q=" + q + " " + messageList.toPrettyString());
 		List<Message> messages = messageList.getMessages() == null? new ArrayList<Message>() : messageList.getMessages();
 		
 		return messages;
