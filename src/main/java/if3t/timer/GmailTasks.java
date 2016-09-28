@@ -60,7 +60,6 @@ public class GmailTasks {
 
 	@Scheduled(/*initialDelay = 3 * 30 * 1000, */fixedRate = 5 * 60 * 1000)
 	public void gmailScheduler(){
-
 		List<Recipe> gmailTriggerRecipes = recipeService.getEnabledRecipesByTriggerChannel("gmail");
 		for(Recipe recipe: gmailTriggerRecipes){
 			try{
@@ -189,7 +188,7 @@ public class GmailTasks {
 									}
 								}
 								
-								SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+								SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 		
 								String startDate = startDateString + " " + startTimeString;
 								String endDate = endDateString + " " + endTimeString;
