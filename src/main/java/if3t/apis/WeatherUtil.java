@@ -605,10 +605,10 @@ public class WeatherUtil
 		}   
 	}
 	
-	public String replaceKeywords(String text, List<TriggerIngredient> trigIngrList, int maxLength)
+	public String replaceKeywords(String text, Long triggerId, List<TriggerIngredient> trigIngrList, int maxLength)
 	{
 		String target;
-		Set<String> validKeywords = createRecipeService.readChannelKeywords("weather");
+		Set<String> validKeywords = createRecipeService.readChannelKeywords(triggerId, "weather");
 		
 		for (String vk : validKeywords)
 		{

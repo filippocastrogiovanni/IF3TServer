@@ -86,6 +86,7 @@ public class TwitterTask
 				}
 			}
 			
+			long triggerId = recipe.getTrigger().getId();
 			String hashtagTrigger = null, fromUser = null;
 			List<TriggerIngredient> trigIngrList = triggerIngrService.getRecipeTriggerIngredients(recipe.getId());
 			
@@ -128,7 +129,7 @@ public class TwitterTask
 							ParametersActions param = ai.getParam();
 		
 							if (param.getKeyword().equals("post")) {
-								post = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+								post = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
 							}
 						}
 						
@@ -175,13 +176,13 @@ public class TwitterTask
 									endTimeString = ai.getValue();
 									break;
 								case "title" :
-									title = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+									title = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
 									break;
 								case "description" :
-									description = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+									description = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
 									break;
 								case "location" :
-									location = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+									location = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
 									break;
 							}
 						}
@@ -224,13 +225,13 @@ public class TwitterTask
 							ParametersActions param = ai.getParam();
 							
 							if (param.getKeyword().equals("to_address")) {
-								to = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+								to = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
 							}
 							else if (param.getKeyword().equals("subject")) {
-								subject = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+								subject = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
 							}
 							else if (param.getKeyword().equals("body")) {
-								body = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+								body = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
 							}
 						}
 							
@@ -263,10 +264,10 @@ public class TwitterTask
 							ParametersActions param = ai.getParam();
 							
 							if (param.getKeyword().equals("tweet")) {
-								tweetAction = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+								tweetAction = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
 							}
 							else if (param.getKeyword().equals("hashtag")) {
-								hashtagAction = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
+								hashtagAction = param.getCanReceive() ? twitterUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, tweet, param.getMaxLength()) : ai.getValue();
 							}
 						}
 					

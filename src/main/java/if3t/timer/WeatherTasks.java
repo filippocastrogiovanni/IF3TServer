@@ -73,6 +73,7 @@ public class WeatherTasks
 				continue;
 			}
 			
+			long triggerId = recipe.getTrigger().getId();
 			Channel actionChannel = recipe.getAction().getChannel();
 			Authorization authAction = authService.getAuthorization(user.getId(), actionChannel.getKeyword());
 			
@@ -85,7 +86,7 @@ public class WeatherTasks
 			String report = null;
 			List<TriggerIngredient> trigIngrList = triggerIngrService.getRecipeTriggerIngredients(recipe.getId());
 			
-			if (recipe.getTrigger().getId() == 4) 
+			if (triggerId == 4) 
 			{
 				String time = "";
 				
@@ -99,7 +100,7 @@ public class WeatherTasks
 				// WARNING: the access_token field is used to store the id of the location associated with the weather channel
 				report = weatherUtil.getTomorrowReport(Long.parseLong(authTrigger.getAccessToken()), recipe.getId(), time, user.getTimezone().getZone_id(), UnitsFormat.CELSIUS);
 			}
-			else if (recipe.getTrigger().getId() == 5) 
+			else if (triggerId == 5) 
 			{
 				String below = "", above = "", temperature = "";
 				
@@ -121,7 +122,7 @@ public class WeatherTasks
 				report = weatherUtil.getEventTemperatureAboveOrBelow(Long.parseLong(authTrigger.getAccessToken()), recipe.getId(), mode, Double.parseDouble(temperature), UnitsFormat.CELSIUS);
 				
 			}
-			else if (recipe.getTrigger().getId() == 6) 
+			else if (triggerId == 6) 
 			{
 				String sunrise = "", sunset = "";
 				
@@ -169,7 +170,7 @@ public class WeatherTasks
 						ParametersActions param = ai.getParam();
 
 						if (param.getKeyword().equals("post")) {
-							post = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), trigIngrList, param.getMaxLength()) : ai.getValue();
+							post = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, param.getMaxLength()) : ai.getValue();
 						}
 					}
 					
@@ -214,13 +215,13 @@ public class WeatherTasks
 								endTimeString = ai.getValue();
 								break;
 							case "title" :
-								title = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), trigIngrList, param.getMaxLength()) : ai.getValue();
+								title = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, param.getMaxLength()) : ai.getValue();
 								break;
 							case "description" :
-								description = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), trigIngrList, param.getMaxLength()) : ai.getValue();
+								description = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, param.getMaxLength()) : ai.getValue();
 								break;
 							case "location" :
-								location = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), trigIngrList, param.getMaxLength()) : ai.getValue();
+								location = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, param.getMaxLength()) : ai.getValue();
 								break;
 						}
 					}
@@ -260,13 +261,13 @@ public class WeatherTasks
 						ParametersActions param = ai.getParam();
 						
 						if (param.getKeyword().equals("to_address")) {
-							to = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), trigIngrList, param.getMaxLength()) : ai.getValue();
+							to = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, param.getMaxLength()) : ai.getValue();
 						}
 						else if (param.getKeyword().equals("subject")) {
-							subject = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), trigIngrList, param.getMaxLength()) : ai.getValue();
+							subject = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, param.getMaxLength()) : ai.getValue();
 						}
 						else if (param.getKeyword().equals("body")) {
-							body = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), trigIngrList, param.getMaxLength()) : ai.getValue();
+							body = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, param.getMaxLength()) : ai.getValue();
 						}
 					}
 					
@@ -296,10 +297,10 @@ public class WeatherTasks
 						ParametersActions param = ai.getParam();
 						
 						if (param.getKeyword().equals("tweet")) {
-							tweet = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), trigIngrList, param.getMaxLength()) : ai.getValue();
+							tweet = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, param.getMaxLength()) : ai.getValue();
 						}
 						else if (param.getKeyword().equals("hashtag")) {
-							hashtag = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), trigIngrList, param.getMaxLength()) : ai.getValue();
+							hashtag = param.getCanReceive() ? weatherUtil.replaceKeywords(ai.getValue(), triggerId, trigIngrList, param.getMaxLength()) : ai.getValue();
 						}
 					}
 					
